@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="GameBoard">
+    <Position X="4" Y="5.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAMAABAAABAEAIAACAAQAAAAAAAAA0AAgAAAAAQA=</HashCode>
+      <FileName>src\GameBoard.hpp</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="controller" />
+      <Field Name="pawns" />
+      <Field Name="path" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="PathFinding">
+    <Position X="1" Y="3.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAEJAAEAAIAAAAAAAAIAEAgAAAAEAAOAAAQAAAAAA=</HashCode>
+      <FileName>src\GameBoard.hpp</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="board" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="LudoBoard">
+    <Position X="7.25" Y="3.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAgAAAAAAAAAAAAAAAAACAQAIAIAAAAAAAIAAAAEAAA=</HashCode>
+      <FileName>src\LudoBoard.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LudoGame">
+    <Position X="10.5" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAgAAAAAAAAAAAAAKoAAAAAAAAAAAACAIAAAAAAAAAA=</HashCode>
+      <FileName>src\LudoGame.hpp</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="board" />
+    </ShowAsAssociation>
+    <ShowAsCollectionAssociation>
+      <Field Name="players" />
+      <Field Name="UIMs" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="LudoInputModule">
+    <Position X="11" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAgAAAAAAAgAAAAACAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>src\LudoUserInput.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MoterController">
+    <Position X="4.25" Y="0.5" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAEYAAQAQsADAAAQAAAAABAIAACAgAAAAAA=</HashCode>
+      <FileName>src\MoterController.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Pawn">
+    <Position X="7.25" Y="7" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAgA4AAAAAAAAAAACgAABAAARgAAQAAoA=</HashCode>
+      <FileName>src\pawn.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Player">
+    <Position X="9.75" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAABAACQAAABA=</HashCode>
+      <FileName>src\Player.hpp</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Field Name="pawns" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="UserInputModule">
+    <Position X="13.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAACAIAAAQAQAAAAAAAAAAAAAAAAAAAAAAQ=</HashCode>
+      <FileName>src\UserInputModule.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Enum Name="uimCommand">
+    <Position X="1.75" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAgAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>src\UIMCommand.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="uimState">
+    <Position X="1.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAA=</HashCode>
+      <FileName>src\UIMState.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>
