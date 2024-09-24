@@ -10,7 +10,7 @@ void UimSlave::requestEvent() {
   Wire.write(lowByte(*modState));
 }
 
-void UimSlave::receiveEvent() {
+void UimSlave::receiveEvent(int bytes) {
   byte highByte;
   byte lowByte;
   int index = 0;
@@ -24,7 +24,7 @@ void UimSlave::receiveEvent() {
   functionToCall(word(highByte, lowByte));
 }
 
-void UimSlave::begin(const int address, void *parseFunction, int *state) {
+void UimSlave::begin(const int address, void (*parseFunction)(int), int *state) {
   Wire.begin(address);
   Wire.onReceive(receiveEvent);
   Wire.onRequest(requestEvent);

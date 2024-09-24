@@ -14,9 +14,9 @@ ButtonManager::ButtonManager() {
 uimButton ButtonManager::buttonPressed() {
   for (int i = UIMBUTTON_DICEROLL; i <= UIMBUTTON_PAWN_4; i++) {
     if (digitalRead(i) == 0)
-      return i;
+      return (uimButton)i;  //was i but gave an error - Rémon
   }
-  return 0;
+  return;   //was 0 but gave an error - Rémon
 }
 
 void ButtonManager::toggleLed(uimButtonLED led, bool state) {
