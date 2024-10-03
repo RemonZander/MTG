@@ -1,148 +1,150 @@
-#include "GameBoard.hpp"
-#include "Memory.cpp"
+#include "PathFinding.hpp"
+#include "config.h"
 
+#include <cstdint>
+#include <cstring>
+#include <stdio.h>
 
-#define DEST_DEF 255
-#define PAWN_DEF 80
-#define MAX_FLOOD_ITT 79
-
-PathFinding::PathFinding(GameBoard *board) {
-    this->board = board;
-    int arrayLength = (board->boardWidth) * (board->boardHeigth);
-    map = new byte[arrayLength];
-
-    clearMap();
-}
-
-PathFinding::~PathFinding()
+#ifdef DEBUG_EXPORT
+void print_map(PF_Map_t ffMap, char *indent)
 {
-}
-
-void PathFinding::updateMap()
-{
-    clearMap();
-
-
-    for (int i = 0; i < board->pawnAmount; i++)
+    printf("{\n");
+    printf("%s  \"size\": {\"x\": %u, \"y\": %u},\n", indent, ffMap.mapSize.x, ffMap.mapSize.y);
+    printf("%s  \"map\": [\n", indent);
+    for (int x=0; x<ffMap.mapSize.x; x++)
     {
-        int pawnX = board->pawns[i]->x +board->originOffsetX;
-        int pawnY = board->pawns[i]->y+board->originOffsetY;
-       
-        if(pawnX < 0 || pawnX >= board->boardWidth ||pawnY < 0 || pawnY >= board->boardHeigth)
-            continue;
-        
-        map[pawnX * board->boardWidth + pawnY] = board->pawns[i]->id + PAWN_DEF;
-    }
-}
-void PathFinding::clearMap()
-{
-
-    for (int x = 0; x < board->boardWidth; x++)
-    {
-        for (int y = 0; y < board->boardHeigth; y++){
-            map[x * board->boardWidth + y] = 0;
-        }
-    }
-}
-
-void PathFinding::printMap()
-{
-    for (int x = 0; x < board->boardWidth; x++)
-    {
-        for (int y = 0; y < board->boardHeigth; y++)
+        printf("%s    [", indent);
+        for (int y=0; y<ffMap.mapSize.y; y++)
         {
-            Serial.print(map[x * board->boardWidth + y]);
-            if (map[x * board->boardWidth + y] < 10)
-                Serial.print(" ");
-            Serial.print(" ");
-        }
-        Serial.println();
-    }
-}
-
-void PathFinding::displayPath(int *instructions, int arraySize)
-{
-    clearMap();
-
-    for (int i = 0; i < arraySize; i++)
-    {
-        byte x = instructions[i * 2] +board->originOffsetX ;
-        byte y = instructions[i * 2 + 1]+board->originOffsetY;
-
-        map[x * board->boardWidth + y] = i;
-    }
-
-    printMap();
-}
-
-bool PathFinding::find(int fromX, int fromY, int toX, int toY,int **instructions,int *arraySize)
-{
-    fromX +=board->originOffsetX;
-    fromY += board->originOffsetY;
-    toX += board->originOffsetX;
-    toY += board->originOffsetY;
-
-    if (fromX < 0 || fromX >= board->boardWidth || fromY < 0 || fromY >= board->boardHeigth)
-        return false;
-    if (toX < 0 || toX >= board->boardWidth || toY < 0 || toY >= board->boardHeigth)
-        return false;
-
-    clearMap();
-    updateMap();
-
-    int stepCount = floodfill(fromX, fromY, toX, toY);
-
-    if (stepCount == -1)
-    {
-        Serial.println("Floodfailed");
-        Serial.print(fromX);
-        Serial.print("|");
-        Serial.print(fromY);
-        Serial.print("\t");
-        Serial.print(toX);
-        Serial.print("|");
-        Serial.println(toY);
-
-        return false;
-    }
-
-    *instructions = new int[(stepCount - 1) * 2];
-    *arraySize = stepCount - 1;
-
-    findPath(*instructions, stepCount, fromX, fromY);
-
-    return true;
-}
-
-int PathFinding::floodfill(int fromX, int fromY, int toX, int toY)
-{
-    bool done = false;
-    int index = 1;
-    if (map[toX * board->boardWidth + toY] != 0)
-        return -1; 
-
-    map[toX * board->boardWidth + toY] = 1;
-    map[fromX * board->boardWidth + fromY] = DEST_DEF;
-
-    while (!done)
-    { 
-        for (int x = 0; x < board->boardWidth && !done; x++)
-        {
-            for (int y = 0; y < board->boardHeigth && !done; y++)
+            if (y == ffMap.mapSize.y-1)
             {
-                if (index == map[x * board->boardWidth + y])
+                printf("%u", ffMap.map[x][y]);
+            }
+            else
+            {
+                printf("%u, ", ffMap.map[x][y]);
+            }
+        }
+        if (x == ffMap.mapSize.x-1)
+        {
+            printf("]\n");
+        }
+        else
+        {
+            printf("],\n");
+        }
+    }
+    printf("%s  ]\n%s}", indent, indent);
+}
+#endif
+
+enum PF_map_wights {
+    EMPTY_FIELD = 254,
+    TARGET_FIELD = 255,
+    START_FIELD = 1
+};
+
+PathFinding_impoved::PathFinding_impoved()
+{
+    // do nothing??
+}
+
+PathFinding_impoved::~PathFinding_impoved()
+{
+    // do nothing??
+}
+
+PF_Path_t PathFinding_impoved::findPath(PF_Cords_t start, PF_Cords_t end, PF_Map_t wightMap, const PF_Cords_s *powns)
+{
+    #ifdef DEBUG_EXPORT
+    printf("{\n");
+    printf("  \"inputs\": {\n");
+    printf("    \"start\": {\"x\": %u, \"y\": %u},\n", start.x, start.y);
+    printf("    \"end\": {\"x\": %u, \"y\": %u},\n", end.x, end.y);
+    printf("    \"wightMap\": ");
+    print_map(wightMap, "    ");
+    printf(",\n");
+    printf("  \"steps\": [\n");
+    #endif
+    // if (fromX < 0 || fromX >= board->boardWidth || fromY < 0 || fromY >= board->boardHeigth)
+    //     return false;
+    // if (toX < 0 || toX >= board->boardWidth || toY < 0 || toY >= board->boardHeigth)
+    //     return false;
+
+    //TODO: add powns to wightMap
+
+    PF_Map_t ffMap = floodFill(start, end, wightMap);
+
+    #ifdef DEBUG_EXPORT
+    printf("    {}\n");
+    printf("  ],\n");
+    printf("  \"result_floodFill_map\": ");
+    print_map(ffMap, "  ");
+    printf(",\n");
+    #endif
+
+    PF_Path_t path = gatherPath(ffMap);
+
+    #ifdef DEBUG_EXPORT
+    printf("  \"result_path\": {\n");
+    printf("    \"moveNum\": %i,\n", path.moveNum);
+    printf("    \"totalPathLength\": %u,\n", path.totalPathLength);
+    printf("    \"moves\": [\n");
+    for (int i=0; i<path.moveNum; ++i)
+    {
+        printf("      {\n");
+        printf("        \"start\": [%u, %u],\n", path.moves[i].start.x, path.moves[i].start.y);
+        printf("        \"end\": [%u, %u]\n", path.moves[i].end.x, path.moves[i].end.y);
+        printf("      },\n");
+    }
+    printf("    ]\n  }\n}\n");
+    #endif
+
+    //TODO: check for powns to move
+
+    return path;
+}
+
+PF_Map_t PathFinding_impoved::floodFill(PF_Cords_t start, PF_Cords_t end, PF_Map_t wightMap)
+{
+    bool pathFound = false;
+    int index = 1;
+    PF_Map_t result;
+
+    // inti the result map
+    memset(&result, EMPTY_FIELD, sizeof(PF_Map_t));
+
+    result.mapSize.x = wightMap.mapSize.x;
+    result.mapSize.y = wightMap.mapSize.y;
+
+    result.map[end.x][end.y] = TARGET_FIELD;
+    result.map[start.x][start.y] = START_FIELD;
+
+    while (!pathFound && index < PF_WIEGHT_MAX)
+    { 
+        PF_Cords_t curField;
+
+        for (curField.x = 0; curField.x < wightMap.mapSize.x && !pathFound; curField.x++)
+        {
+            for (curField.y = 0; curField.y < wightMap.mapSize.y && !pathFound; curField.y++)
+            {
+                if (result.map[curField.x][curField.y] == index)
                 {
-                    done = rangeIncrement(x, y,index);
+                    pathFound = floodFill_scanField(curField, &result);
+
+                    #ifdef DEBUG_EXPORT
+                    printf("    ");
+                    print_map(result, "    ");
+                    printf(",\n");
+                    #endif
                 } 
             }
         }
-        if(index == MAX_FLOOD_ITT)
-                return -1; 
 
         index++;
     }
 
-    return index;
+    return result;
 }
 
 /**
@@ -150,73 +152,106 @@ int PathFinding::floodfill(int fromX, int fromY, int toX, int toY)
  *
  * @return true if DEST_DEF is found
  */
-bool PathFinding::rangeIncrement(int x, int y, int value)
+bool PathFinding_impoved::floodFill_scanField(PF_Cords_t field, PF_Map_t *result)
 {
+    const int8_t cordModifiers[4][2] = {
+        { 1,  0},
+        { 0,  1},
+        {-1,  0},
+        { 0, -1}
+    };
+    bool targetFound = false;
     for (int i = 0; i < 4; i++)
     {
-        int y1 = y + (i % 2 == 0 ? sgn(i - 1) : 0);
-        int x1 = x + (i % 2 == 0 ? 0 : -sgn(i - 2));
+        int16_t x = field.x + cordModifiers[i][0];
+        int16_t y = field.y + cordModifiers[i][1];
 
-        if (y1 < 0 || y1 >= board->boardHeigth || x1 < 0 || x1 >= board->boardWidth)
+        if (y < 0 || y >= result->mapSize.y || x < 0 || x >= result->mapSize.x)
             continue;
-            
-        if (map[x1 * board->boardWidth + y1] == DEST_DEF)
-        {
-            return true;
-        }
 
-        if (map[x1 * board->boardWidth + y1] == 0)
-            map[x1 * board->boardWidth + y1] = value + 1;
+        switch (result->map[x][y])
+        {
+            case EMPTY_FIELD:
+                result->map[x][y] = result->map[field.x][field.y] + 1;
+                break;
+            case START_FIELD:
+                break;
+            case TARGET_FIELD:
+                targetFound = true;
+            default:
+                break;
+        }
     }
-    return false;
+    return targetFound;
 }
 
-void PathFinding::findPath(int *instructions, int size, int locX, int locY)
+PF_Path_t PathFinding_impoved::gatherPath(PF_Map_t floodFill_Map)
 {
-    
-    int currentSearchValue = size-1;
-    int xTemp = locX;
-    int yTemp = locY;
+    const int8_t cordModifiers[4][2] = {
+        { 1,  0},
+        { 0,  1},
+        {-1,  0},
+        { 0, -1}
+    };
 
-    for(int index = 0 ; index<size; index++){
-        
+    PF_Cords_t startPos, endPos, curPos;
+    PF_Path_t result;
+    memset(&result, 0, sizeof(PF_Path_t));
+
+    // find start and end positions
+    PF_Cords_t curField;
+    for (curField.x = 0; curField.x < floodFill_Map.mapSize.x; curField.x++)
+    {
+        for (curField.y = 0; curField.y < floodFill_Map.mapSize.y; curField.y++)
+        {
+            switch (floodFill_Map.map[curField.x][curField.y]) {
+                case START_FIELD:
+                    startPos = curField;
+                    break;
+                case TARGET_FIELD:
+                    endPos = curField;
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    curPos = endPos;
+
+    for(int index = 0; index < PF_PATH_MOVE_LEN_MAX; index++)
+    {
+        uint8_t minWieght_val = 255;
+        PF_Cords_t minWieght_pos;
+
         for (int i = 0; i < 4; i++)
         {
-            int x1 = xTemp + (i % 2 == 0 ? 0 : -sgn(i - 2));
-            int y1 = yTemp + (i % 2 == 0 ? sgn(i - 1) : 0);
-
-            if (y1 < 0 || y1 >= board->boardHeigth || x1 < 0 || x1 >= board->boardWidth)
+            int16_t x = curPos.x + cordModifiers[i][0];
+            int16_t y = curPos.y + cordModifiers[i][1];
+    
+            if (y < 0 || y >= floodFill_Map.mapSize.y || x < 0 || x >= floodFill_Map.mapSize.x)
                 continue;
-      
-            if(map[x1*board->boardWidth+y1] == (currentSearchValue)){
-                xTemp = x1;
-                yTemp = y1;
-                break;
-            }
-        }
 
-        instructions[index*2] = xTemp - board->originOffsetX;
-        instructions[index*2+1] = yTemp - board->originOffsetY;
-
-        map[xTemp*board->boardWidth+yTemp] = 255;
-        Serial.print("Mem :");
-        Serial.println(freeRAM());
-        currentSearchValue--;
-    }
-   
-}
-
-void PathFinding::findLocOfNumber(byte number, int *locX, int *locY)
-{
-    for (int x = 0; x < board->boardWidth; x++)
-    {
-        for (int y = 0; y < board->boardHeigth; y++)
-        {
-            if (map[x * board->boardWidth + y] == number)
+            if (floodFill_Map.map[x][y] < minWieght_val)
             {
-                *locX = x;
-                *locY = y;
+                minWieght_val = floodFill_Map.map[x][y];
+                minWieght_pos.x = x;
+                minWieght_pos.y = y;
             }
         }
+
+        result.moveNum++;
+        result.totalPathLength++;
+        result.moves[index] = {
+            .start = minWieght_pos,
+            .end = curPos
+        };
+        curPos = minWieght_pos;
+        if (minWieght_val == START_FIELD)
+        {
+            break;
+        }
     }
+
+    return result;
 }
