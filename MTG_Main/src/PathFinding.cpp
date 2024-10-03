@@ -63,7 +63,8 @@ PF_Path_t PathFinding_impoved::findPath(PF_Cords_t start, PF_Cords_t end, PF_Map
     printf("    \"end\": {\"x\": %u, \"y\": %u},\n", end.x, end.y);
     printf("    \"wightMap\": ");
     print_map(wightMap, "    ");
-    printf(",\n");
+    printf("\n");
+    printf("  },\n");
     printf("  \"steps\": [\n");
     #endif
     // if (fromX < 0 || fromX >= board->boardWidth || fromY < 0 || fromY >= board->boardHeigth)
@@ -95,7 +96,14 @@ PF_Path_t PathFinding_impoved::findPath(PF_Cords_t start, PF_Cords_t end, PF_Map
         printf("      {\n");
         printf("        \"start\": [%u, %u],\n", path.moves[i].start.x, path.moves[i].start.y);
         printf("        \"end\": [%u, %u]\n", path.moves[i].end.x, path.moves[i].end.y);
-        printf("      },\n");
+        if (i == path.moveNum-1)
+        {
+            printf("      }\n");
+        }
+        else
+        {
+            printf("      },\n");
+        }
     }
     printf("    ]\n  }\n}\n");
     #endif
