@@ -7,6 +7,7 @@ const ROWS = 10
 function App() 
 {
   const [Grid, setGrid] = useState();
+
   
 
   return (
@@ -18,6 +19,9 @@ function App()
         input.onchange = _ => {
           let file = Array.from(input.files)[0]
           console.log(file)
+          // fs.readFile(file, 'utf-8', (err, data) => {
+          //   console.log(data)
+          // })
         };
         input.click()
       }}>
