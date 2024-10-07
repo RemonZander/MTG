@@ -1,10 +1,37 @@
 @startuml componentdiagram
+package "Main" {
+    cords <-- [PathFinding]
 
-[GameBase] --> cords : sendCords
+    [motorDriver] <-- cords
 
-cords -> [motorDriver]
+    [motorDriver] --> result
 
-result <-- [motorDriver]
+    result --> [PathFinding]
 
-[GameBase] <- result
+    [GameBase] -> gameState
+
+    gameState -> [StorageManager]
+
+    bordState <-- [GameBase]
+
+    [PathFinding] <-- bordState
+
+    [GameBase] --> command
+
+    [I2CHAL] <- command
+
+    response <-- [I2CHAL]
+
+    response -> [GameBase]
+
+    [I2CHAL] --> commando
+}
+
+package "UIM" {
+    [InputHandler]
+
+    commando --> [I2C HAL]
+
+    
+}
 @enduml

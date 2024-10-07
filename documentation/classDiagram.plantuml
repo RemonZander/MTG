@@ -1,11 +1,14 @@
 @startuml classDiagram
 abstract GameBase {
     .. Abstract ..
-    {abstract} void GameLoop()
+    {abstract} + void GameLoop()
 }
 
 
-class           LUDO
+class LUDO {
+    .. Public ..
+    + void GameLoop()
+}
 
 
 class StorageManager <<static>> {
@@ -32,9 +35,9 @@ entity          I2CHAL <<static>>
 
 
 
-GameBase <|--   LUDO
-StorageManager --     GameBase
-MotorDriver --     GameBase
-GameBase --     PathFinding
-GameBase --     I2CHAL         
+GameBase <--           LUDO
+StorageManager ..>     GameBase
+MotorDriver ..>        GameBase
+GameBase <..           PathFinding
+GameBase <..           I2CHAL         
 @enduml
