@@ -1,0 +1,10 @@
+@startuml componentdiagram
+
+[GameBase] --> cords : sendCords
+
+cords -> [motorDriver]
+
+result <-- [motorDriver]
+
+[GameBase] <- result
+@enduml
