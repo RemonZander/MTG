@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <cstring>
 #include <stdio.h>
+#include <vector>
 
 #ifdef DEBUG_EXPORT
 void print_map(PF_Map_t ffMap, char *indent)
@@ -39,9 +40,10 @@ void print_map(PF_Map_t ffMap, char *indent)
 #endif
 
 enum PF_map_wights {
-    EMPTY_FIELD = 254,
-    TARGET_FIELD = 255,
-    START_FIELD = 1
+    EMPTY_FIELD = 253,
+    TARGET_FIELD = 0,
+    START_FIELD = 254,
+    OPSTRUCTION_FIELD = 255
 };
 
 PathFinding_impoved::PathFinding_impoved()
@@ -54,7 +56,7 @@ PathFinding_impoved::~PathFinding_impoved()
     // do nothing??
 }
 
-PF_Path_t PathFinding_impoved::findPath(PF_Cords_t start, PF_Cords_t end, PF_Map_t wightMap, const PF_Cords_s *powns)
+PF_Path_t PathFinding_impoved::findPath(PF_Cords_t start, PF_Cords_t end, PF_Map_t wightMap, const PF_Cords_s *powns, uint8_t pown_wight)
 {
     #ifdef DEBUG_EXPORT
     printf("{\n");
@@ -77,7 +79,6 @@ PF_Path_t PathFinding_impoved::findPath(PF_Cords_t start, PF_Cords_t end, PF_Map
     PF_Map_t ffMap = floodFill(start, end, wightMap);
 
     #ifdef DEBUG_EXPORT
-    printf("    {}\n");
     printf("  ],\n");
     printf("  \"result_floodFill_map\": ");
     print_map(ffMap, "  ");
@@ -91,12 +92,13 @@ PF_Path_t PathFinding_impoved::findPath(PF_Cords_t start, PF_Cords_t end, PF_Map
     printf("    \"moveNum\": %i,\n", path.moveNum);
     printf("    \"totalPathLength\": %u,\n", path.totalPathLength);
     printf("    \"moves\": [\n");
-    for (int i=0; i<path.moveNum; ++i)
+    for (int i = 0; i < path.moves->size(); i++)
     {
+        PF_Move_t move = path.moves->at(i);
         printf("      {\n");
-        printf("        \"start\": [%u, %u],\n", path.moves[i].start.x, path.moves[i].start.y);
-        printf("        \"end\": [%u, %u]\n", path.moves[i].end.x, path.moves[i].end.y);
-        if (i == path.moveNum-1)
+        printf("        \"start\": [%u, %u],\n", move.start.x, move.start.y);
+        printf("        \"end\": [%u, %u]\n", move.end.x, move.end.y);
+        if (i == path.moves->size()-1)
         {
             printf("      }\n");
         }
@@ -116,7 +118,7 @@ PF_Path_t PathFinding_impoved::findPath(PF_Cords_t start, PF_Cords_t end, PF_Map
 PF_Map_t PathFinding_impoved::floodFill(PF_Cords_t start, PF_Cords_t end, PF_Map_t wightMap)
 {
     bool pathFound = false;
-    int index = 1;
+    int index = TARGET_FIELD;
     PF_Map_t result;
 
     // inti the result map
@@ -143,7 +145,14 @@ PF_Map_t PathFinding_impoved::floodFill(PF_Cords_t start, PF_Cords_t end, PF_Map
                     #ifdef DEBUG_EXPORT
                     printf("    ");
                     print_map(result, "    ");
-                    printf(",\n");
+                    if (pathFound)
+                    {
+                        printf("\n");
+                    }
+                    else
+                    {
+                        printf(",\n");
+                    }
                     #endif
                 } 
             }
@@ -182,9 +191,9 @@ bool PathFinding_impoved::floodFill_scanField(PF_Cords_t field, PF_Map_t *result
             case EMPTY_FIELD:
                 result->map[x][y] = result->map[field.x][field.y] + 1;
                 break;
-            case START_FIELD:
-                break;
             case TARGET_FIELD:
+                break;
+            case START_FIELD:
                 targetFound = true;
             default:
                 break;
@@ -205,6 +214,7 @@ PF_Path_t PathFinding_impoved::gatherPath(PF_Map_t floodFill_Map)
     PF_Cords_t startPos, endPos, curPos;
     PF_Path_t result;
     memset(&result, 0, sizeof(PF_Path_t));
+    result.moves = new std::vector<PF_Move_t>;
 
     // find start and end positions
     PF_Cords_t curField;
@@ -225,7 +235,7 @@ PF_Path_t PathFinding_impoved::gatherPath(PF_Map_t floodFill_Map)
         }
     }
 
-    curPos = endPos;
+    curPos = startPos;
 
     for(int index = 0; index < PF_PATH_MOVE_LEN_MAX; index++)
     {
@@ -250,12 +260,12 @@ PF_Path_t PathFinding_impoved::gatherPath(PF_Map_t floodFill_Map)
 
         result.moveNum++;
         result.totalPathLength++;
-        result.moves[index] = {
+        result.moves->push_back({
             .start = minWieght_pos,
             .end = curPos
-        };
+        });
         curPos = minWieght_pos;
-        if (minWieght_val == START_FIELD)
+        if (minWieght_val == TARGET_FIELD)
         {
             break;
         }
