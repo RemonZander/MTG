@@ -38,7 +38,7 @@ function App()
 function MakeGrid(result)
 {
   let content = []
-  for (let k = 0; k < result.steps.length - 1; k++) {
+  for (let k = 0; k < result.steps.length; k++) {
     let map = []
     for (let i = 0; i < result.inputs.wightMap.size.y; i++) {
       let columns = []
