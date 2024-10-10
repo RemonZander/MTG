@@ -10,14 +10,14 @@
 void print_map(PF_Map_t ffMap, char *indent)
 {
     printf("{\n");
-    printf("%s  \"size\": {\"x\": %u, \"y\": %u},\n", indent, ffMap.mapSize.x, ffMap.mapSize.y);
+    printf("%s  \"size\": {\"x\": %u, \"y\": %u},\n", indent, ffMap.size.x, ffMap.size.y);
     printf("%s  \"map\": [\n", indent);
-    for (int x=0; x<ffMap.mapSize.x; x++)
+    for (int x=0; x<ffMap.size.x; x++)
     {
         printf("%s    [", indent);
-        for (int y=0; y<ffMap.mapSize.y; y++)
+        for (int y=0; y<ffMap.size.y; y++)
         {
-            if (y == ffMap.mapSize.y-1)
+            if (y == ffMap.size.y-1)
             {
                 printf("%u", ffMap.map[x][y]);
             }
@@ -26,7 +26,7 @@ void print_map(PF_Map_t ffMap, char *indent)
                 printf("%u, ", ffMap.map[x][y]);
             }
         }
-        if (x == ffMap.mapSize.x-1)
+        if (x == ffMap.size.x-1)
         {
             printf("]\n");
         }
@@ -36,6 +36,17 @@ void print_map(PF_Map_t ffMap, char *indent)
         }
     }
     printf("%s  ]\n%s}", indent, indent);
+}
+
+void printQue(const std::vector<PF_ffQue_item_t>* que)
+{
+    printf("ffQue: [\n");
+    for (int i = 0; i < que->size(); i++)
+    {
+        PF_ffQue_item_t item = que->at(i);
+        printf("  {.wight = %u, .field = (%u, %u)},\n", item.pathWight, item.field.x, item.field.y);
+    }
+    printf("]\n");
 }
 #endif
 
@@ -56,7 +67,7 @@ PathFinding_impoved::~PathFinding_impoved()
     // do nothing??
 }
 
-PF_Path_t PathFinding_impoved::findPath(PF_Cords_t start, PF_Cords_t end, PF_Map_t wightMap, const PF_Cords_s *powns, uint8_t pown_wight)
+PF_Path_t PathFinding_impoved::findPath(PF_Cords_t start, PF_Cords_t end, PF_Map_t wightMap, const std::vector<PF_Cords_t> *powns, uint8_t pown_wight)
 {
     #ifdef DEBUG_EXPORT
     printf("{\n");
@@ -74,9 +85,14 @@ PF_Path_t PathFinding_impoved::findPath(PF_Cords_t start, PF_Cords_t end, PF_Map
     // if (toX < 0 || toX >= board->boardWidth || toY < 0 || toY >= board->boardHeigth)
     //     return false;
 
-    //TODO: add powns to wightMap
+    this->wightMap = wightMap;
+    for (int i=0; i<powns->size(); i++)
+    {
+        const PF_Cords_t pown = powns->at(i);
+        this->wightMap.map[pown.x][pown.y] = pown_wight;
+    }
 
-    PF_Map_t ffMap = floodFill(start, end, wightMap);
+    PF_Map_t ffMap = floodFill(start, end);
 
     #ifdef DEBUG_EXPORT
     printf("  ],\n");
@@ -115,7 +131,7 @@ PF_Path_t PathFinding_impoved::findPath(PF_Cords_t start, PF_Cords_t end, PF_Map
     return path;
 }
 
-PF_Map_t PathFinding_impoved::floodFill(PF_Cords_t start, PF_Cords_t end, PF_Map_t wightMap)
+PF_Map_t PathFinding_impoved::floodFill(PF_Cords_t start, PF_Cords_t end)
 {
     bool pathFound = false;
     int index = TARGET_FIELD;
@@ -124,43 +140,80 @@ PF_Map_t PathFinding_impoved::floodFill(PF_Cords_t start, PF_Cords_t end, PF_Map
     // inti the result map
     memset(&result, EMPTY_FIELD, sizeof(PF_Map_t));
 
-    result.mapSize.x = wightMap.mapSize.x;
-    result.mapSize.y = wightMap.mapSize.y;
+    result.size.x = wightMap.size.x;
+    result.size.y = wightMap.size.y;
 
     result.map[end.x][end.y] = TARGET_FIELD;
     result.map[start.x][start.y] = START_FIELD;
 
+    floodFill_Que = new std::vector<PF_ffQue_item_t>;
+    floodFill_Que->push_back({ .field = end, .pathWight = 0});
+
     while (!pathFound && index < PF_WIEGHT_MAX)
-    { 
-        PF_Cords_t curField;
+    {
+        PF_Cords_t curField = floodFill_Que_pop();
 
-        for (curField.x = 0; curField.x < wightMap.mapSize.x && !pathFound; curField.x++)
+        if (curField.x != 255 || curField.y != 255)
         {
-            for (curField.y = 0; curField.y < wightMap.mapSize.y && !pathFound; curField.y++)
-            {
-                if (result.map[curField.x][curField.y] == index)
-                {
-                    pathFound = floodFill_scanField(curField, &result);
-
-                    #ifdef DEBUG_EXPORT
-                    printf("    ");
-                    print_map(result, "    ");
-                    if (pathFound)
-                    {
-                        printf("\n");
-                    }
-                    else
-                    {
-                        printf(",\n");
-                    }
-                    #endif
-                } 
-            }
+            pathFound = floodFill_scanField(curField, &result);
+        }
+        else
+        { // que is empty, becouse there is no path posible
+            // memset(&result, EMPTY_FIELD, sizeof(PF_Map_t));
+            return result;
         }
 
+        #ifdef DEBUG_EXPORT
+        printf("    ");
+        print_map(result, "    ");
+        if (pathFound)
+        {
+            printf("\n");
+        }
+        else
+        {
+            printf(",\n");
+        }
+        #endif
         index++;
     }
 
+    return result;
+}
+
+void PathFinding_impoved::floodFill_Que_add(PF_Cords_t field, uint8_t pathWight)
+{
+    const PF_ffQue_item_t newQueItem = { .field = field, .pathWight = pathWight};
+    bool inserted = false;
+    for (std::vector<PF_ffQue_item_t>::iterator it = floodFill_Que->begin(); it != floodFill_Que->end() && !inserted; it++)
+    {
+        if (it->pathWight > pathWight)
+        {
+            floodFill_Que->insert(it, newQueItem);
+            inserted = true;
+        }
+    }
+    if (!inserted)
+    {
+        if (floodFill_Que->end()->pathWight > pathWight)
+        {
+            floodFill_Que->insert(floodFill_Que->end(), newQueItem);
+        }
+        else
+        {
+            floodFill_Que->push_back(newQueItem);
+        }
+    }
+}
+
+PF_Cords_t PathFinding_impoved::floodFill_Que_pop()
+{
+    PF_Cords_t result = {.x = 255, .y = 255};
+    if (floodFill_Que->size() != 0)
+    {
+        result = floodFill_Que->at(0).field;
+        floodFill_Que->erase(floodFill_Que->begin());
+    }
     return result;
 }
 
@@ -180,21 +233,27 @@ bool PathFinding_impoved::floodFill_scanField(PF_Cords_t field, PF_Map_t *result
     bool targetFound = false;
     for (int i = 0; i < 4; i++)
     {
-        int16_t x = field.x + cordModifiers[i][0];
-        int16_t y = field.y + cordModifiers[i][1];
+        const PF_Cords_t curField = {
+            .x = (uint8_t)(field.x + cordModifiers[i][0]),
+            .y = (uint8_t)(field.y + cordModifiers[i][1])
+        };
 
-        if (y < 0 || y >= result->mapSize.y || x < 0 || x >= result->mapSize.x)
+        if (curField.y < 0 || curField.y >= result->size.y || curField.x < 0 || curField.x >= result->size.x)
             continue;
 
-        switch (result->map[x][y])
+        switch (result->map[curField.x][curField.y])
         {
             case EMPTY_FIELD:
-                result->map[x][y] = result->map[field.x][field.y] + 1;
-                break;
-            case TARGET_FIELD:
+                result->map[curField.x][curField.y] = result->map[field.x][field.y] + this->wightMap.map[curField.x][curField.y];
+                floodFill_Que_add(curField, result->map[curField.x][curField.y]);
                 break;
             case START_FIELD:
                 targetFound = true;
+                break;
+            case TARGET_FIELD:
+                break;
+            case OPSTRUCTION_FIELD:
+                break;
             default:
                 break;
         }
@@ -218,9 +277,9 @@ PF_Path_t PathFinding_impoved::gatherPath(PF_Map_t floodFill_Map)
 
     // find start and end positions
     PF_Cords_t curField;
-    for (curField.x = 0; curField.x < floodFill_Map.mapSize.x; curField.x++)
+    for (curField.x = 0; curField.x < floodFill_Map.size.x; curField.x++)
     {
-        for (curField.y = 0; curField.y < floodFill_Map.mapSize.y; curField.y++)
+        for (curField.y = 0; curField.y < floodFill_Map.size.y; curField.y++)
         {
             switch (floodFill_Map.map[curField.x][curField.y]) {
                 case START_FIELD:
@@ -247,7 +306,7 @@ PF_Path_t PathFinding_impoved::gatherPath(PF_Map_t floodFill_Map)
             int16_t x = curPos.x + cordModifiers[i][0];
             int16_t y = curPos.y + cordModifiers[i][1];
     
-            if (y < 0 || y >= floodFill_Map.mapSize.y || x < 0 || x >= floodFill_Map.mapSize.x)
+            if (y < 0 || y >= floodFill_Map.size.y || x < 0 || x >= floodFill_Map.size.x)
                 continue;
 
             if (floodFill_Map.map[x][y] < minWieght_val)
