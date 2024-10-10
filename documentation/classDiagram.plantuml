@@ -1,0 +1,43 @@
+@startuml classDiagram
+abstract GameBase {
+    .. Abstract ..
+    {abstract} + void GameLoop()
+}
+
+
+class LUDO {
+    .. Public ..
+    + void GameLoop()
+}
+
+
+class StorageManager <<static>> {
+    .. Public ..
+    {static} + void SaveGameState()
+    + LoadGameState()
+}
+
+
+class MotorDriver <<static>> {
+    .. Public ..
+    {static} + void MovePawn()
+}
+
+class PathFinding <<static>> {
+    .. Public ..
+    + GeneratePath()
+    .. Private ..
+
+}
+
+
+entity          I2CHAL <<static>>
+
+
+
+GameBase <--           LUDO
+StorageManager ..>     GameBase
+MotorDriver ..>        GameBase
+GameBase <..           PathFinding
+GameBase <..           I2CHAL         
+@enduml
