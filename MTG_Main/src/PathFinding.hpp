@@ -5,6 +5,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <vector>
 
 typedef struct PF_Cords_s {
     uint8_t x;
@@ -24,7 +25,7 @@ typedef struct PF_Move_s {
 typedef struct PF_Path_s {
     uint16_t moveNum;
     uint16_t totalPathLength;
-    PF_Move_t moves[PF_PATH_MOVE_LEN_MAX]; //TODO: make dynamic
+    std::vector<PF_Move_t>* moves;
 } PF_Path_t;
 
 class PathFinding_impoved
@@ -33,7 +34,7 @@ public:
     PathFinding_impoved();
     ~PathFinding_impoved();
 
-    PF_Path_t findPath(PF_Cords_t start, PF_Cords_t end, PF_Map_t wightMap, const PF_Cords_s *powns);
+    PF_Path_t findPath(PF_Cords_t start, PF_Cords_t end, PF_Map_t wightMap, const PF_Cords_s *powns, uint8_t pown_wight);
 
 private:
     PF_Map_t floodFill(PF_Cords_t start, PF_Cords_t end, PF_Map_t wightMap);
