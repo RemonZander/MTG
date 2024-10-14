@@ -7,6 +7,10 @@ module.exports = [
     use: 'node-loader',
   },
   {
+    test: /\.(png|jpe?g|gif)$/i,
+    loader: 'file-loader'
+  }, 
+  {
     test: /\.jsx?$/,
     use: {
       loader: 'babel-loader',
