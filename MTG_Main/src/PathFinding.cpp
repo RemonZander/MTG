@@ -44,7 +44,15 @@ void printQue(const std::vector<PF_ffQue_item_t>* que)
     for (int i = 0; i < que->size(); i++)
     {
         PF_ffQue_item_t item = que->at(i);
-        printf("  {.wight = %u, .field = (%u, %u)},\n", item.pathWight, item.field.x, item.field.y);
+        printf("  {.wight = %u, .field = (%u, %u)}", item.pathWight, item.field.x, item.field.y);
+        if (i == que->size()-1)
+        {
+            printf("\n");
+        }
+        else
+        {
+            printf(",\n");
+        }
     }
     printf("]\n");
 }
@@ -76,13 +84,29 @@ PF_Path_t PathFinding_impoved::findPath(PF_Cords_t start, PF_Cords_t end, PF_Map
     printf("    \"end\": {\"x\": %u, \"y\": %u},\n", end.x, end.y);
     printf("    \"wightMap\": ");
     print_map(wightMap, "    ");
-    printf("\n");
+    printf(",\n");
+    printf("    \"powns\": [\n");
+    for (int i = 0; i < powns->size(); i++)
+    {
+        PF_Cords_t item = powns->at(i);
+        printf("      {\"x\": %u, \"y\": %u}", item.x, item.y);
+        if (i == powns->size()-1)
+        {
+            printf("\n");
+        }
+        else
+        {
+            printf(",\n");
+        }
+    }
+    printf("    ],\n");
+    printf("    \"pown_wight\": %u\n", pown_wight);
     printf("  },\n");
     printf("  \"steps\": [\n");
     #endif
-    // if (fromX < 0 || fromX >= board->boardWidth || fromY < 0 || fromY >= board->boardHeigth)
+    // if (start.x < 0 || start.x >= wightMap.size.x || start.y < 0 || start.y >= wightMap.size.y)
     //     return false;
-    // if (toX < 0 || toX >= board->boardWidth || toY < 0 || toY >= board->boardHeigth)
+    // if (end.x < 0 || end.x >= wightMap.size.x || end.y < 0 || end.y >= wightMap.size.y)
     //     return false;
 
     this->wightMap = wightMap;
