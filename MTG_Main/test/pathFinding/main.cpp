@@ -8,7 +8,7 @@ int main(void)
 {
     PathFinding_impoved pathFind = PathFinding_impoved();
 
-    PF_Map_t wightMap = {
+    BoardMap_t wightMap = {
         .size = {.x = 10, .y = 10},
         .map = {
             {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
@@ -23,9 +23,9 @@ int main(void)
             {1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
         }
     };
-    PF_Cords_t start = { .x = 2, .y = 2 };
-    PF_Cords_t end = { .x = 7, .y = 7 };
-    std::vector<PF_Cords_t> *powns = new std::vector<PF_Cords_t>;
+    Cordinates_s start = { .x = 2, .y = 2 };
+    Cordinates_s end = { .x = 7, .y = 7 };
+    std::vector<Cordinates_s> *powns = new std::vector<Cordinates_s>;
     powns->push_back({.x = 1, .y = 7});
     powns->push_back({.x = 2, .y = 6});
     powns->push_back({.x = 3, .y = 5});
