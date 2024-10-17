@@ -11,6 +11,12 @@ MotorDriver::MotorDriver(motorPins_t pinsMotorA, motorPins_t pinsMotorB, uint32_
     pinMode(endStopYPin, INPUT);
 }
 
+MotorDriver::~MotorDriver()
+{
+    delete(stepperMotorA);
+    delete(stepperMotorB);
+}
+
 void MotorDriver::setSpeeds(uint32_t maxSpeed, uint32_t acceleration, uint32_t jurk)
 {
 	stepperMotorA->setMaxSpeed(maxSpeed);
@@ -32,7 +38,7 @@ void MotorDriver::move(int32_t deltaA, int32_t deltaB, uint32_t speed)
 
     bool motorAFinished = false, motorBFinished = false;
 
-    while (!motorAFinished && !motorAFinished)
+    while (!motorAFinished && !motorBFinished)
     {
         motorAFinished = stepperMotorA->run();
         motorBFinished = stepperMotorB->run();
@@ -49,7 +55,7 @@ void MotorDriver::home(int32_t maxMove, uint32_t speed)
 
     bool motorAFinished = false, motorBFinished = false;
 
-    while (!motorAFinished && !motorAFinished && (digitalRead(endStopXPin) == 1))
+    while (!motorAFinished && !motorBFinished && (digitalRead(endStopXPin) == 1))
     {
         motorAFinished = stepperMotorA->run();
         motorBFinished = stepperMotorB->run();
@@ -61,7 +67,7 @@ void MotorDriver::home(int32_t maxMove, uint32_t speed)
     motorAFinished = false;
     motorBFinished = false;
 
-    while (!motorAFinished && !motorAFinished && (digitalRead(endStopYPin) == 1))
+    while (!motorAFinished && !motorBFinished && (digitalRead(endStopYPin) == 1))
     {
         motorAFinished = stepperMotorA->run();
         motorBFinished = stepperMotorB->run();

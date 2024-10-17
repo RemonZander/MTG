@@ -48,7 +48,7 @@ private:
     AccelStepper *stepperMotorB = NULL;
     uint32_t endStopXPin, endStopYPin;
 
-    uint32_t jurk;
+    uint32_t jurk = 0;
 };
 
 #endif

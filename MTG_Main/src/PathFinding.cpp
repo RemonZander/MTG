@@ -207,7 +207,7 @@ void PathFinding_impoved::floodFill_Que_add(Cordinates_s field, uint8_t pathWigh
 {
     const PF_ffQue_item_t newQueItem = { .field = field, .pathWight = pathWight};
     bool inserted = false;
-    for (std::vector<PF_ffQue_item_t>::iterator it = floodFill_Que->begin(); it != floodFill_Que->end() && !inserted; it++)
+    for (std::vector<PF_ffQue_item_t>::iterator it = floodFill_Que->begin(); it != floodFill_Que->end() && !inserted; ++it)
     {
         if (it->pathWight > pathWight)
         {
@@ -313,7 +313,8 @@ pathfinding_path_t PathFinding_impoved::gatherPath(BoardMap_t floodFill_Map)
         }
     }
 
-    curPos = startPos;
+    curPos.x = startPos.x;
+    curPos.y = startPos.y;
     int lastDirection = -1;
     pathfinding_path_t path = new std::vector<pathfinding_step_t>;
     path->push_back({.target = startPos, .magnetEn = false});
@@ -346,7 +347,8 @@ pathfinding_path_t PathFinding_impoved::gatherPath(BoardMap_t floodFill_Map)
             path->push_back({.target = curPos, .magnetEn = true});
         }
         lastDirection = minWieght_dir;
-        curPos = minWieght_pos;
+        curPos.x = minWieght_pos.x;
+        curPos.y = minWieght_pos.y;
         if (minWieght_val == TARGET_FIELD)
         {
             path->push_back({.target = minWieght_pos, .magnetEn = true});
