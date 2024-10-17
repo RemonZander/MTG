@@ -4,6 +4,9 @@
 #define BOARD_SIZE_X_MAX 255
 #define BOARD_SIZE_Y_MAX 255
 
+#define BOARD_SIZE_X_LUDO 20
+#define BOARD_SIZE_Y_LUDO 20
+
 // path finding
 
 #define PF_WIEGHT_MAX 250

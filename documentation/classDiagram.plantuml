@@ -2,14 +2,15 @@
 abstract GameBase {
     .. Abstract ..
     {abstract} + void GameLoop()
-    {abstract} # void Init()
-
-    {abstract} # Player currentPlayer
-    {abstract} # Player* players
+    {abstract} + void Init()
 
     .. Protected ..
-    # PF_Map_s Map
+    # Player currentPlayer
+    # Player* players
+
+    # BoardMap_s Map
     # PathFinding pathFinding
+    # BordSize bordSize
 }
 
 class Player<T> {
@@ -20,18 +21,24 @@ class Player<T> {
 
 class Pawns<T> {
     + uint8_t ID
-    + Cords_s squareCords
+    + Cordinates_s squareCords
     + T State
 }
 
-struct Cords_s {
+struct Cordinates_s {
     + uint8_t y
     + uint8_t x
+}
+
+struct BordSize {
+    + Cordinates_s size
+    + Cordinates_s squareSize
 }
 
 class LUDO {
     .. Public ..
     + void GameLoop()
+    + void Init()
 }
 
 
@@ -53,17 +60,23 @@ class MotorDriver <<static>> {
 
 class PathFinding <<static>> {
     .. Public ..
-    + GeneratePath()
+    + findPath()
     .. Private ..
+    - floodFill()
+    - floodFill_Que_add()
+    - floodFill_Que_pop()
+    - floodFill_scanField()
+    - gatherPath()
 
 }
 
 
 entity          I2CHAL <<static>>
 
-GameBase --             Player
+BordSize -             GameBase
+GameBase -             Player
 Pawns <--               Cords_s 
-Player <--              Pawns
+Player <-              Pawns
 GameBase <|--           LUDO
 StorageManager --       GameBase
 MotionController --     GameBase

@@ -2,7 +2,7 @@
 #include "config.h"
 #include "typedefs.h"
 
-#include <cstdint>
+//#include <cstdint>
 #include <cstring>
 #include <stdio.h>
 #include <vector>
