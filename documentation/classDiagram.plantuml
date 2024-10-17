@@ -2,8 +2,32 @@
 abstract GameBase {
     .. Abstract ..
     {abstract} + void GameLoop()
+    {abstract} # void Init()
+
+    {abstract} # Player currentPlayer
+    {abstract} # Player* players
+
+    .. Protected ..
+    # PF_Map_s Map
+    # PathFinding pathFinding
 }
 
+class Player<T> {
+    + uint8_t ID
+    + Pawns pawns
+    + T state
+}
+
+class Pawns<T> {
+    + uint8_t ID
+    + Cords_s squareCords
+    + T State
+}
+
+struct Cords_s {
+    + uint8_t y
+    + uint8_t x
+}
 
 class LUDO {
     .. Public ..
@@ -18,9 +42,13 @@ class StorageManager <<static>> {
 }
 
 
-class MotorDriver <<static>> {
+class MotionController {
     .. Public ..
     {static} + void MovePawn()
+}
+
+class MotorDriver <<static>> {
+
 }
 
 class PathFinding <<static>> {
@@ -33,11 +61,13 @@ class PathFinding <<static>> {
 
 entity          I2CHAL <<static>>
 
-
-
-GameBase <--           LUDO
-StorageManager ..>     GameBase
-MotorDriver ..>        GameBase
-GameBase <..           PathFinding
-GameBase <..           I2CHAL         
+GameBase --             Player
+Pawns <--               Cords_s 
+Player <--              Pawns
+GameBase <|--           LUDO
+StorageManager --       GameBase
+MotionController --     GameBase
+MotorDriver --          MotionController
+GameBase --             PathFinding
+GameBase --             I2CHAL         
 @enduml
