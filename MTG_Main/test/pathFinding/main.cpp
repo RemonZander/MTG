@@ -1,4 +1,5 @@
 #include "../../src/PathFinding.hpp"
+#include "../../src/typedefs.h"
 
 #include <stdio.h>
 #include <stddef.h>
@@ -29,12 +30,12 @@ int main(void)
     powns->push_back({.x = 1, .y = 7});
     powns->push_back({.x = 2, .y = 6});
     powns->push_back({.x = 3, .y = 5});
-    powns->push_back({.x = 4, .y = 4});
+    // powns->push_back({.x = 4, .y = 4});
     powns->push_back({.x = 5, .y = 3});
-    // powns->push_back({.x = 6, .y = 2});
+    powns->push_back({.x = 6, .y = 2});
     powns->push_back({.x = 7, .y = 1});
 
-    PF_Path_t path = pathFind.findPath(start, end, wightMap, powns, 5);
-    delete(path.moves);
+    pathfinding_path_t path = pathFind.findPath(start, end, wightMap, powns, 5);
+    delete(path);
 }
 

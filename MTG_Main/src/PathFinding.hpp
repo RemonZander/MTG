@@ -31,7 +31,7 @@ public:
     PathFinding_impoved();
     ~PathFinding_impoved();
 
-    PF_Path_t findPath(Coordinates_t start, Coordinates_t end, BoardMap_t wightMap, const std::vector<Coordinates_t> *powns, uint8_t pown_wight);
+    pathfinding_path_t findPath(Coordinates_t start, Coordinates_t end, BoardMap_t wightMap, const std::vector<Coordinates_t> *powns, uint8_t pown_wight);
 
 private:
     BoardMap_t wightMap;
@@ -41,7 +41,7 @@ private:
     void floodFill_Que_add(Coordinates_t field, uint8_t pathWight);
     Coordinates_t floodFill_Que_pop();
     bool floodFill_scanField(Coordinates_t field, BoardMap_t *result);
-    PF_Path_t gatherPath(BoardMap_t floodFill_Map);
+    pathfinding_path_t gatherPath(BoardMap_t floodFill_Map);
 };
 
 #endif
