@@ -1,5 +1,12 @@
+#include <cstdint>
+#include <stdint.h>
+
 #include <AccelStepper.h>
 
+struct motorPins_t {
+    uint16_t step;
+    uint16_t dir;
+};
 
 class MoterController
 {
@@ -13,7 +20,7 @@ public:
     bool isMagnetOn = false;
 
 
-    MoterController();
+    MoterController(motorPins_t pinsMotorA, motorPins_t pinsMotorB);
     ~MoterController();
 
     void HomeMotors();
@@ -22,6 +29,4 @@ public:
     void test();
     void magnetOn();
     void magnetOff();
-    int getMaxBoardX();
-    int getMaxBoardY();
 };
