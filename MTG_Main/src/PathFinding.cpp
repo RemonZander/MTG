@@ -1,5 +1,6 @@
 #include "PathFinding.hpp"
 #include "config.h"
+#include "typedefs.h"
 
 #include <cstdint>
 #include <cstring>
@@ -75,7 +76,7 @@ PathFinding_impoved::~PathFinding_impoved()
     // do nothing??
 }
 
-PF_Path_t PathFinding_impoved::findPath(Cordinates_s start, Cordinates_s end, BoardMap_t wightMap, const std::vector<Cordinates_s> *powns, uint8_t pown_wight)
+pathfinding_path_t PathFinding_impoved::findPath(Cordinates_s start, Cordinates_s end, BoardMap_t wightMap, const std::vector<Cordinates_s> *powns, uint8_t pown_wight)
 {
     #ifdef DEBUG_EXPORT
     printf("{\n");
@@ -125,29 +126,26 @@ PF_Path_t PathFinding_impoved::findPath(Cordinates_s start, Cordinates_s end, Bo
     printf(",\n");
     #endif
 
-    PF_Path_t path = gatherPath(ffMap);
+    pathfinding_path_t path = gatherPath(ffMap);
 
     #ifdef DEBUG_EXPORT
-    printf("  \"result_path\": {\n");
-    printf("    \"moveNum\": %i,\n", path.moveNum);
-    printf("    \"totalPathLength\": %u,\n", path.totalPathLength);
-    printf("    \"moves\": [\n");
-    for (int i = 0; i < path.moves->size(); i++)
+    printf("  \"result_path\": [\n");
+    for (int i = 0; i < path->size(); i++)
     {
-        PF_Move_t move = path.moves->at(i);
-        printf("      {\n");
-        printf("        \"start\": [%u, %u],\n", move.start.x, move.start.y);
-        printf("        \"end\": [%u, %u]\n", move.end.x, move.end.y);
-        if (i == path.moves->size()-1)
+        pathfinding_step_t move = path->at(i);
+        printf("    {\n");
+        printf("      \"target\": [%u, %u],\n", move.target.x, move.target.y);
+        printf("      \"magnet\": %s\n", (move.magnetEn) ? "true" : "false");
+        if (i == path->size()-1)
         {
-            printf("      }\n");
+            printf("    }\n");
         }
         else
         {
-            printf("      },\n");
+            printf("    },\n");
         }
     }
-    printf("    ]\n  }\n}\n");
+    printf("  ]\n}\n");
     #endif
 
     //TODO: check for powns to move
@@ -285,7 +283,7 @@ bool PathFinding_impoved::floodFill_scanField(Cordinates_s field, BoardMap_t *re
     return targetFound;
 }
 
-PF_Path_t PathFinding_impoved::gatherPath(BoardMap_t floodFill_Map)
+pathfinding_path_t PathFinding_impoved::gatherPath(BoardMap_t floodFill_Map)
 {
     const int8_t cordModifiers[4][2] = {
         { 1,  0},
@@ -295,9 +293,6 @@ PF_Path_t PathFinding_impoved::gatherPath(BoardMap_t floodFill_Map)
     };
 
     Cordinates_s startPos, endPos, curPos;
-    PF_Path_t result;
-    memset(&result, 0, sizeof(PF_Path_t));
-    result.moves = new std::vector<PF_Move_t>;
 
     // find start and end positions
     Cordinates_s curField;
@@ -319,17 +314,21 @@ PF_Path_t PathFinding_impoved::gatherPath(BoardMap_t floodFill_Map)
     }
 
     curPos = startPos;
+    int lastDirection = -1;
+    pathfinding_path_t path = new std::vector<pathfinding_step_t>;
+    path->push_back({.target = startPos, .magnetEn = false});
 
     for(int index = 0; index < PF_PATH_MOVE_LEN_MAX; index++)
     {
         uint8_t minWieght_val = 255;
         Cordinates_s minWieght_pos;
+        int minWieght_dir;
 
         for (int i = 0; i < 4; i++)
         {
             int16_t x = curPos.x + cordModifiers[i][0];
             int16_t y = curPos.y + cordModifiers[i][1];
-    
+
             if (y < 0 || y >= floodFill_Map.size.y || x < 0 || x >= floodFill_Map.size.x)
                 continue;
 
@@ -338,21 +337,22 @@ PF_Path_t PathFinding_impoved::gatherPath(BoardMap_t floodFill_Map)
                 minWieght_val = floodFill_Map.map[x][y];
                 minWieght_pos.x = x;
                 minWieght_pos.y = y;
+                minWieght_dir = i;
             }
         }
 
-        result.moveNum++;
-        result.totalPathLength++;
-        result.moves->push_back({
-            .start = minWieght_pos,
-            .end = curPos
-        });
+        if (minWieght_dir != lastDirection && lastDirection != -1)
+        {
+            path->push_back({.target = curPos, .magnetEn = true});
+        }
+        lastDirection = minWieght_dir;
         curPos = minWieght_pos;
         if (minWieght_val == TARGET_FIELD)
         {
+            path->push_back({.target = minWieght_pos, .magnetEn = true});
             break;
         }
     }
 
-    return result;
+    return path;
 }
