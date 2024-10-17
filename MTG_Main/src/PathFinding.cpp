@@ -1,5 +1,6 @@
 #include "PathFinding.hpp"
 #include "config.h"
+#include "typedefs.h"
 
 #include <cstdint>
 #include <cstring>
@@ -7,7 +8,7 @@
 #include <vector>
 
 #ifdef DEBUG_EXPORT
-void print_map(PF_Map_t ffMap, char *indent)
+void print_map(BoardMap_t ffMap, char *indent)
 {
     printf("{\n");
     printf("%s  \"size\": {\"x\": %u, \"y\": %u},\n", indent, ffMap.size.x, ffMap.size.y);
@@ -44,7 +45,15 @@ void printQue(const std::vector<PF_ffQue_item_t>* que)
     for (int i = 0; i < que->size(); i++)
     {
         PF_ffQue_item_t item = que->at(i);
-        printf("  {.wight = %u, .field = (%u, %u)},\n", item.pathWight, item.field.x, item.field.y);
+        printf("  {.wight = %u, .field = (%u, %u)}", item.pathWight, item.field.x, item.field.y);
+        if (i == que->size()-1)
+        {
+            printf("\n");
+        }
+        else
+        {
+            printf(",\n");
+        }
     }
     printf("]\n");
 }
@@ -67,7 +76,7 @@ PathFinding_impoved::~PathFinding_impoved()
     // do nothing??
 }
 
-PF_Path_t PathFinding_impoved::findPath(PF_Cords_t start, PF_Cords_t end, PF_Map_t wightMap, const std::vector<PF_Cords_t> *powns, uint8_t pown_wight)
+pathfinding_path_t PathFinding_impoved::findPath(Cordinates_s start, Cordinates_s end, BoardMap_t wightMap, const std::vector<Cordinates_s> *powns, uint8_t pown_wight)
 {
     #ifdef DEBUG_EXPORT
     printf("{\n");
@@ -76,23 +85,39 @@ PF_Path_t PathFinding_impoved::findPath(PF_Cords_t start, PF_Cords_t end, PF_Map
     printf("    \"end\": {\"x\": %u, \"y\": %u},\n", end.x, end.y);
     printf("    \"wightMap\": ");
     print_map(wightMap, "    ");
-    printf("\n");
+    printf(",\n");
+    printf("    \"powns\": [\n");
+    for (int i = 0; i < powns->size(); i++)
+    {
+        Cordinates_s item = powns->at(i);
+        printf("      {\"x\": %u, \"y\": %u}", item.x, item.y);
+        if (i == powns->size()-1)
+        {
+            printf("\n");
+        }
+        else
+        {
+            printf(",\n");
+        }
+    }
+    printf("    ],\n");
+    printf("    \"pown_wight\": %u\n", pown_wight);
     printf("  },\n");
     printf("  \"steps\": [\n");
     #endif
-    // if (fromX < 0 || fromX >= board->boardWidth || fromY < 0 || fromY >= board->boardHeigth)
+    // if (start.x < 0 || start.x >= wightMap.size.x || start.y < 0 || start.y >= wightMap.size.y)
     //     return false;
-    // if (toX < 0 || toX >= board->boardWidth || toY < 0 || toY >= board->boardHeigth)
+    // if (end.x < 0 || end.x >= wightMap.size.x || end.y < 0 || end.y >= wightMap.size.y)
     //     return false;
 
     this->wightMap = wightMap;
     for (int i=0; i<powns->size(); i++)
     {
-        const PF_Cords_t pown = powns->at(i);
+        const Cordinates_s pown = powns->at(i);
         this->wightMap.map[pown.x][pown.y] = pown_wight;
     }
 
-    PF_Map_t ffMap = floodFill(start, end);
+    BoardMap_t ffMap = floodFill(start, end);
 
     #ifdef DEBUG_EXPORT
     printf("  ],\n");
@@ -101,29 +126,26 @@ PF_Path_t PathFinding_impoved::findPath(PF_Cords_t start, PF_Cords_t end, PF_Map
     printf(",\n");
     #endif
 
-    PF_Path_t path = gatherPath(ffMap);
+    pathfinding_path_t path = gatherPath(ffMap);
 
     #ifdef DEBUG_EXPORT
-    printf("  \"result_path\": {\n");
-    printf("    \"moveNum\": %i,\n", path.moveNum);
-    printf("    \"totalPathLength\": %u,\n", path.totalPathLength);
-    printf("    \"moves\": [\n");
-    for (int i = 0; i < path.moves->size(); i++)
+    printf("  \"result_path\": [\n");
+    for (int i = 0; i < path->size(); i++)
     {
-        PF_Move_t move = path.moves->at(i);
-        printf("      {\n");
-        printf("        \"start\": [%u, %u],\n", move.start.x, move.start.y);
-        printf("        \"end\": [%u, %u]\n", move.end.x, move.end.y);
-        if (i == path.moves->size()-1)
+        pathfinding_step_t move = path->at(i);
+        printf("    {\n");
+        printf("      \"target\": [%u, %u],\n", move.target.x, move.target.y);
+        printf("      \"magnet\": %s\n", (move.magnetEn) ? "true" : "false");
+        if (i == path->size()-1)
         {
-            printf("      }\n");
+            printf("    }\n");
         }
         else
         {
-            printf("      },\n");
+            printf("    },\n");
         }
     }
-    printf("    ]\n  }\n}\n");
+    printf("  ]\n}\n");
     #endif
 
     //TODO: check for powns to move
@@ -131,14 +153,14 @@ PF_Path_t PathFinding_impoved::findPath(PF_Cords_t start, PF_Cords_t end, PF_Map
     return path;
 }
 
-PF_Map_t PathFinding_impoved::floodFill(PF_Cords_t start, PF_Cords_t end)
+BoardMap_t PathFinding_impoved::floodFill(Cordinates_s start, Cordinates_s end)
 {
     bool pathFound = false;
     int index = TARGET_FIELD;
-    PF_Map_t result;
+    BoardMap_t result;
 
     // inti the result map
-    memset(&result, EMPTY_FIELD, sizeof(PF_Map_t));
+    memset(&result, EMPTY_FIELD, sizeof(BoardMap_t));
 
     result.size.x = wightMap.size.x;
     result.size.y = wightMap.size.y;
@@ -151,7 +173,7 @@ PF_Map_t PathFinding_impoved::floodFill(PF_Cords_t start, PF_Cords_t end)
 
     while (!pathFound && index < PF_WIEGHT_MAX)
     {
-        PF_Cords_t curField = floodFill_Que_pop();
+        Cordinates_s curField = floodFill_Que_pop();
 
         if (curField.x != 255 || curField.y != 255)
         {
@@ -159,7 +181,7 @@ PF_Map_t PathFinding_impoved::floodFill(PF_Cords_t start, PF_Cords_t end)
         }
         else
         { // que is empty, becouse there is no path posible
-            // memset(&result, EMPTY_FIELD, sizeof(PF_Map_t));
+            // memset(&result, EMPTY_FIELD, sizeof(BoardMap_t));
             return result;
         }
 
@@ -181,7 +203,7 @@ PF_Map_t PathFinding_impoved::floodFill(PF_Cords_t start, PF_Cords_t end)
     return result;
 }
 
-void PathFinding_impoved::floodFill_Que_add(PF_Cords_t field, uint8_t pathWight)
+void PathFinding_impoved::floodFill_Que_add(Cordinates_s field, uint8_t pathWight)
 {
     const PF_ffQue_item_t newQueItem = { .field = field, .pathWight = pathWight};
     bool inserted = false;
@@ -206,9 +228,9 @@ void PathFinding_impoved::floodFill_Que_add(PF_Cords_t field, uint8_t pathWight)
     }
 }
 
-PF_Cords_t PathFinding_impoved::floodFill_Que_pop()
+Cordinates_s PathFinding_impoved::floodFill_Que_pop()
 {
-    PF_Cords_t result = {.x = 255, .y = 255};
+    Cordinates_s result = {.x = 255, .y = 255};
     if (floodFill_Que->size() != 0)
     {
         result = floodFill_Que->at(0).field;
@@ -222,7 +244,7 @@ PF_Cords_t PathFinding_impoved::floodFill_Que_pop()
  *
  * @return true if DEST_DEF is found
  */
-bool PathFinding_impoved::floodFill_scanField(PF_Cords_t field, PF_Map_t *result)
+bool PathFinding_impoved::floodFill_scanField(Cordinates_s field, BoardMap_t *result)
 {
     const int8_t cordModifiers[4][2] = {
         { 1,  0},
@@ -233,7 +255,7 @@ bool PathFinding_impoved::floodFill_scanField(PF_Cords_t field, PF_Map_t *result
     bool targetFound = false;
     for (int i = 0; i < 4; i++)
     {
-        const PF_Cords_t curField = {
+        const Cordinates_s curField = {
             .x = (uint8_t)(field.x + cordModifiers[i][0]),
             .y = (uint8_t)(field.y + cordModifiers[i][1])
         };
@@ -261,7 +283,7 @@ bool PathFinding_impoved::floodFill_scanField(PF_Cords_t field, PF_Map_t *result
     return targetFound;
 }
 
-PF_Path_t PathFinding_impoved::gatherPath(PF_Map_t floodFill_Map)
+pathfinding_path_t PathFinding_impoved::gatherPath(BoardMap_t floodFill_Map)
 {
     const int8_t cordModifiers[4][2] = {
         { 1,  0},
@@ -270,13 +292,10 @@ PF_Path_t PathFinding_impoved::gatherPath(PF_Map_t floodFill_Map)
         { 0, -1}
     };
 
-    PF_Cords_t startPos, endPos, curPos;
-    PF_Path_t result;
-    memset(&result, 0, sizeof(PF_Path_t));
-    result.moves = new std::vector<PF_Move_t>;
+    Cordinates_s startPos, endPos, curPos;
 
     // find start and end positions
-    PF_Cords_t curField;
+    Cordinates_s curField;
     for (curField.x = 0; curField.x < floodFill_Map.size.x; curField.x++)
     {
         for (curField.y = 0; curField.y < floodFill_Map.size.y; curField.y++)
@@ -295,17 +314,21 @@ PF_Path_t PathFinding_impoved::gatherPath(PF_Map_t floodFill_Map)
     }
 
     curPos = startPos;
+    int lastDirection = -1;
+    pathfinding_path_t path = new std::vector<pathfinding_step_t>;
+    path->push_back({.target = startPos, .magnetEn = false});
 
     for(int index = 0; index < PF_PATH_MOVE_LEN_MAX; index++)
     {
         uint8_t minWieght_val = 255;
-        PF_Cords_t minWieght_pos;
+        Cordinates_s minWieght_pos;
+        int minWieght_dir;
 
         for (int i = 0; i < 4; i++)
         {
             int16_t x = curPos.x + cordModifiers[i][0];
             int16_t y = curPos.y + cordModifiers[i][1];
-    
+
             if (y < 0 || y >= floodFill_Map.size.y || x < 0 || x >= floodFill_Map.size.x)
                 continue;
 
@@ -314,21 +337,22 @@ PF_Path_t PathFinding_impoved::gatherPath(PF_Map_t floodFill_Map)
                 minWieght_val = floodFill_Map.map[x][y];
                 minWieght_pos.x = x;
                 minWieght_pos.y = y;
+                minWieght_dir = i;
             }
         }
 
-        result.moveNum++;
-        result.totalPathLength++;
-        result.moves->push_back({
-            .start = minWieght_pos,
-            .end = curPos
-        });
+        if (minWieght_dir != lastDirection && lastDirection != -1)
+        {
+            path->push_back({.target = curPos, .magnetEn = true});
+        }
+        lastDirection = minWieght_dir;
         curPos = minWieght_pos;
         if (minWieght_val == TARGET_FIELD)
         {
+            path->push_back({.target = minWieght_pos, .magnetEn = true});
             break;
         }
     }
 
-    return result;
+    return path;
 }
