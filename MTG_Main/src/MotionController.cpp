@@ -36,11 +36,12 @@ void MotionController::SetPhisicalBoardSize(float x, float y, Coordinates_t boar
 	_squareSize_y = y / boardSize.y;
 }
 
-bool MotionController::ExecutePath(pathfinding_path_t path)
+// bool MotionController::ExecutePath(pathfinding_path_t path)
+bool MotionController::ExecutePath(pathfinding_step_t* path, uint16_t pathLen)
 {
-	for (int i=0; i < path->size(); i++)
+	for (uint16_t i=0; i < pathLen; i++)
 	{
-		pathfinding_step_t step = path->at(i);
+		pathfinding_step_t step = *(path + i);
 		SetMagnet(step.magnetEn);
 		MotorToPos(step.target);
 	}

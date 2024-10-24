@@ -16,7 +16,8 @@ public:
     void SetStepsPerMM(float stepsPerMM_A, float stepsPerMM_B);
     void SetPhisicalBoardSize(float x, float y, Coordinates_t boardSize);
 
-    bool ExecutePath(pathfinding_path_t path);
+    // bool ExecutePath(pathfinding_path_t path);
+    bool ExecutePath(pathfinding_step_t* path, uint16_t pathLen);
 
     bool MotorToPos(Coordinates_t pos);
     void SetMagnet(bool state);
