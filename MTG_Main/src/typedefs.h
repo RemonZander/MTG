@@ -4,7 +4,7 @@
 #include "config.h"
 
 #include <stdint.h>
-#include <vector>
+// #include <vector>
 
 typedef struct Cordinates_s {
     uint8_t x;
@@ -21,6 +21,6 @@ struct pathfinding_step_t {
     bool magnetEn;
 };
 
-typedef std::vector<pathfinding_step_t>* pathfinding_path_t;
+// typedef std::vector<pathfinding_step_t>* pathfinding_path_t;
 
 #endif
