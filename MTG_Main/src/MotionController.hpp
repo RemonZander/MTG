@@ -2,7 +2,6 @@
 #define MOTIONCONTROLLER_H
 
 #include "typedefs.h"
-#include <cstdint>
 #include <stdint.h>
 
 #include "motorDriver.hpp"
@@ -23,7 +22,7 @@ public:
     void SetMagnet(bool state);
 
 private:
-    MotorDriver _driver;
+    MotorDriver *_driver;
     Coordinates_t _boardSize = {0, 0};
     float _phisicalBoardSizeX = 0.0;
     float _phisicalBoardSizeY = 0.0;

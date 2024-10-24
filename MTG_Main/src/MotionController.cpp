@@ -1,5 +1,4 @@
 #include "MotionController.hpp"
-#include <math.h>
 
 #include "config.h"
 #include "motorDriver.hpp"
@@ -18,6 +17,9 @@ MotionController::~MotionController()
 void MotionController::SetPins(motorPins_t pinsMotorA, motorPins_t pinsMotorB, uint32_t endStopXPin, uint32_t endStopYPin)
 {
 	_driver = new MotorDriver(pinsMotorA, pinsMotorB, endStopXPin, endStopYPin);
+	_driver->SetSpeeds(MOTOR_HOME_SPEED, MOTOR_HOME_ACCELARATION, 0);
+	_driver->home(1000, 100);
+	_driver->SetSpeeds(MOTOR_MAX_SPEED, MOTOR_ACCELARATION, 0);
 }
 
 void MotionController::SetStepsPerMM(float stepsPerMM_A, float stepsPerMM_B)
@@ -60,10 +62,10 @@ bool MotionController::MotorToPos(Coordinates_t pos)
 	float deltaMM_X = ((float)(pos.x - _currPos.x)) * _squareSize_x;
 	float deltaMM_Y = ((float)(pos.y - _currPos.y)) * _squareSize_y;
 
-	float deltaA = deltaMM_Y + deltaMM_X;
-	float deltaB = deltaMM_Y - deltaMM_X;
+	float deltaA = -deltaMM_Y + deltaMM_X;
+	float deltaB = -deltaMM_Y - deltaMM_X;
 
-	_driver.move(deltaA * _stepsPerMM_A, deltaB * _stepsPerMM_B, 100);
+	_driver->move(deltaA * _stepsPerMM_A, deltaB * _stepsPerMM_B, 100);
 
 	_currPos = pos;
 	return true;

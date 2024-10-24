@@ -1,29 +1,24 @@
-#include "LudoBoard.hpp"
-#include "pawn.hpp"
-#include "player.hpp"
-#include "LudoUserInput.hpp"
-#include "LudoGame.hpp"
+#include "config.h"
 
-#define dicePin 4
+#include "MotionController.hpp"
 
-LudoGame *game;
+MotionController *motion;
 
 void setup()
 {
-
   Serial.begin(9600);
-  pinMode(dicePin, INPUT_PULLUP);
-  pinMode(7, INPUT);
-  pinMode(10, INPUT);
-  Serial.println("board started");
+  Serial.println("board started V0.0.4");
 
-  game = new LudoGame(4);
+
+  motion = new MotionController();
+  motion->SetPins(MOTOR_A_PINS, MOTOR_B_PINS, limitX, limitY);
+  motion->SetPhisicalBoardSize(1000.0, 1000.0, {.x = 10, .y = 10});
+
+  motion->MotorToPos({.x = 5, .y = 5});
 }
 
 void loop(){
-  game->nextTurn();
-  delay(200);
 }
-  	
+
 // void(* resetFunc) (void) = 0; //declare reset function @ address 0
 
