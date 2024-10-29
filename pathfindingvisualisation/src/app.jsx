@@ -49,8 +49,10 @@ function MakeGrid(result)
             result.steps[k].map[i][j] == 0 ? "rgb(0, 230, 0)" : result.steps[k].map[i][j] == 254 ? "rgb(0, 0, 230)" : ""}`}} 
           className={`relative min-w-[20px] min-h-[20px] border-2 border-solid border-black text-center m-[2px] p-[2px] ${result.steps[k].map[i][j] != 253 ? "text-white" : ""}`}>
             {result.steps[k].map[i][j]}
-            {result.result_path.moves.some(item => (item.start[0] == i && item.start[1] == j) || (item.end[0] == i && item.end[1] == j)) ? 
-            <img className="absolute top-[1px] right-[1px] max-w-[6px] max-h-[6px]" src={pathLED} /> : ""}</div>)
+            {result.result_path.some(item => 
+             item.target[0] == i && item.target[1] == j) ?
+            <img className="absolute top-[1px] right-[1px] max-w-[6px] max-h-[6px]" src={pathLED} /> : ""}
+            </div>)
       }
       map.push(<div className="min-w-[30px] pt-[5px] pb-[5px] flex flex-col items-center">{columns}</div>)
     } 
