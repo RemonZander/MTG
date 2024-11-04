@@ -6,14 +6,15 @@ typedef struct BordSize_s {
     Cordinates_s squareSize;
 } BordSize_t;
 
-template <class T, class U>
+template <class T, class U, class V>
 class GameBase {
     public:
         virtual void GameLoop();
         virtual void Init();
     
     protected:
-        std::vector<Player<T, U>>* players;
+        std::vector<Player<T, U>*>* players;
         BoardMap_t map;
         BordSize_t bordSize;
+        V state;
 };

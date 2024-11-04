@@ -1,12 +1,12 @@
 @startuml classDiagram
-abstract GameBase {
+abstract GameBase<T,U> {
     .. Abstract ..
     {abstract} + void GameLoop()
     {abstract} + void Init()
 
     .. Protected ..
-    # Player currentPlayer
-    # Player* players
+    # Player<T> currentPlayer
+    # std::vector<Player<T>*> players
 
     # BoardMap_s Map
     # PathFinding pathFinding
@@ -14,15 +14,16 @@ abstract GameBase {
 }
 
 class Player<T> {
+    + DoTurn()
     + uint8_t ID
-    + Pawns pawns
+    + std::vector<Pawn<U>*> pawns
     + T state
 }
 
-class Pawns<T> {
+class Pawns<U> {
     + uint8_t ID
     + Cordinates_s squareCords
-    + T State
+    + U State
 }
 
 struct Cordinates_s {
@@ -70,17 +71,12 @@ class PathFinding <<static>> {
 
 }
 
-
-entity          I2CHAL <<static>>
-
 BordSize -             GameBase
 GameBase -             Player
-Pawns <--               Cords_s 
 Player <-              Pawns
 GameBase <|--           LUDO
 StorageManager --       GameBase
 MotionController --     GameBase
 MotorDriver --          MotionController
-GameBase --             PathFinding
-GameBase --             I2CHAL         
+GameBase --             PathFinding       
 @enduml

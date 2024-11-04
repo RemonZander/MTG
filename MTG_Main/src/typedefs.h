@@ -6,6 +6,16 @@
 #include <stdint.h>
 #include <vector>
 
+enum class LudoGameStates {
+    init = -1,
+    Player1 = 0,
+    Player2 = 1,
+    Player3 = 2,
+    Player4 = 3,
+    stopped = 4,
+    error = 5,
+};
+
 typedef struct Cordinates_s {
     uint8_t x;
     uint8_t y;

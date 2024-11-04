@@ -8,12 +8,11 @@ LudoGame *game;
 void setup()
 {
   Serial.begin(9600);
+  Serial.println("Starting program...");
   game->Init();
 }
 
 void loop(){
-  game->GameLoop();
+  //Serial.println("test");
+  //game->GameLoop();
 }
-  	
-// void(* resetFunc) (void) = 0; //declare reset function @ address 0
-
