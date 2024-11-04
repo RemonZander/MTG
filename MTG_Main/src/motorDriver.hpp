@@ -3,8 +3,6 @@
 
 #include <stdint.h>
 
-#include <AccelStepper.h>
-
 struct motorPins_t {
     uint16_t step;
     uint16_t dir;
@@ -44,8 +42,6 @@ public:
     void home(int32_t maxMove, uint32_t speed);
 
 private:
-    AccelStepper *stepperMotorA = NULL;
-    AccelStepper *stepperMotorB = NULL;
     uint32_t endStopXPin, endStopYPin;
 
     uint32_t jurk = 0;

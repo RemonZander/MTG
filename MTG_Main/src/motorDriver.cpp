@@ -1,6 +1,11 @@
 #include "motorDriver.hpp"
 #include <stdint.h>
 
+#include <AccelStepper.h>
+
+AccelStepper *stepperMotorA = NULL;
+AccelStepper *stepperMotorB = NULL;
+
 MotorDriver::MotorDriver(motorPins_t pinsMotorA, motorPins_t pinsMotorB, uint32_t endStopXPin, uint32_t endStopYPin)
     : endStopXPin(endStopXPin), endStopYPin(endStopYPin)
 {
