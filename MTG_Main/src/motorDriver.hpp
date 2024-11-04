@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#include <AccelStepper.h>
+
 struct motorPins_t {
     uint16_t step;
     uint16_t dir;
