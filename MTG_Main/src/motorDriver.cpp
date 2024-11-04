@@ -56,8 +56,6 @@ void MotorDriver::home(int32_t maxMove, uint32_t speed)
 
     bool motorAFinished = false, motorBFinished = false;
 
-    Serial.println("homing");
-
     while (!motorAFinished && !motorBFinished && (digitalRead(endStopXPin) == 1))
     {
         stepperMotorA->run();
