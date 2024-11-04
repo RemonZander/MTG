@@ -1,18 +1,24 @@
-#include <LudoGame.hpp>
-#include <Arduino.h>
+#include "config.h"
 
-//#define dicePin 4
+#include "MotionController.hpp"
 
-LudoGame *game;
+MotionController *motion;
 
 void setup()
 {
   Serial.begin(9600);
-  Serial.println("Starting program...");
-  game->Init();
+  Serial.println("board started V0.0.4");
+
+
+  motion = new MotionController();
+  motion->SetPins(MOTOR_A_PINS, MOTOR_B_PINS, limitX, limitY);
+  motion->SetPhisicalBoardSize(1000.0, 1000.0, {.x = 10, .y = 10});
+
+  motion->MotorToPos({.x = 5, .y = 5});
 }
 
 void loop(){
-  //Serial.println("test");
-  //game->GameLoop();
 }
+
+// void(* resetFunc) (void) = 0; //declare reset function @ address 0
+
