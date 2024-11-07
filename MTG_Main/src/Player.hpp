@@ -1,21 +1,16 @@
-#ifndef PLAYER_HPP
-#define PLAYER_HPP
+#pragma once
+#include <Pawns.hpp>
+#include <vector>
+#include <Arduino.h>
 
-#include "pawn.hpp"
-#include <arduino.h>
-#define PAWN_AMOUNT 4
-
-class Player{
+template <class T, class U>
+class Player {
     public:
-        Pawn *pawns[4];
-        int playerNumber;
-        int finish = 0;
-        Player(){}
-        Player(int playerNumber);
+        Player(uint8_t ID, std::vector<Pawn<U>*>* Pawns,T State) : ID(ID), State(State), Pawns(Pawns) {}
 
-                ~Player(){
-            Serial.println("Player, I say good day");
-        }
+        uint8_t ID;
+        std::vector<Pawn<U>*>* Pawns;
+        T State;
+
+        virtual void DoTurn();
 };
-
-#endif
