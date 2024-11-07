@@ -33,12 +33,12 @@ void MotorDriver::SetSpeeds(uint32_t maxSpeed, uint32_t acceleration, uint32_t j
 
 void MotorDriver::move(int32_t deltaA, int32_t deltaB, uint32_t speed)
 {
-	stepperMotorA->moveTo(deltaA);
-	stepperMotorB->moveTo(deltaB);
+	stepperMotorA->move(deltaA);
+	stepperMotorB->move(deltaB);
 
     bool motorAFinished = false, motorBFinished = false;
 
-    while (!motorAFinished && !motorBFinished)
+    while (!motorAFinished || !motorBFinished)
     {
         stepperMotorA->run();
         stepperMotorB->run();
@@ -47,10 +47,10 @@ void MotorDriver::move(int32_t deltaA, int32_t deltaB, uint32_t speed)
     }
 }
 
-void MotorDriver::home(int32_t maxMove, uint32_t speed)
+void MotorDriver::home(int32_t maxMove, uint32_t speed, float offsetX, float offsetY)
 {
-	stepperMotorA->moveTo(-maxMove);
-	stepperMotorB->moveTo(maxMove);
+	stepperMotorA->move(-maxMove);
+	stepperMotorB->move(maxMove);
 
     bool motorAFinished = false, motorBFinished = false;
 
@@ -64,13 +64,13 @@ void MotorDriver::home(int32_t maxMove, uint32_t speed)
     stepperMotorA->stop();
     stepperMotorB->stop();
 
-	stepperMotorA->moveTo(maxMove);
-	stepperMotorB->moveTo(maxMove);
+	stepperMotorA->move(maxMove);
+	stepperMotorB->move(maxMove);
 
     motorAFinished = false;
     motorBFinished = false;
 
-    while (!motorAFinished && !motorBFinished && (digitalRead(endStopYPin) == 1))
+    while (!motorAFinished && !motorBFinished && (digitalRead(endStopYPin) == 0))
     {
         stepperMotorA->run();
         stepperMotorB->run();
@@ -79,4 +79,20 @@ void MotorDriver::home(int32_t maxMove, uint32_t speed)
     }
     stepperMotorA->stop();
     stepperMotorB->stop();
+
+	float deltaA = -offsetY + offsetX;
+	float deltaB = -offsetY - offsetX;
+	stepperMotorA->move((long) deltaA * 10);
+	stepperMotorB->move((long) deltaB * 10);
+
+    motorAFinished = false;
+    motorBFinished = false;
+
+    while (!motorAFinished || !motorBFinished)
+    {
+        stepperMotorA->run();
+        stepperMotorB->run();
+        motorAFinished = stepperMotorA->distanceToGo() == 0;
+        motorBFinished = stepperMotorB->distanceToGo() == 0;
+    }
 }

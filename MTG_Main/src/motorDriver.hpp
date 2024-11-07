@@ -41,7 +41,7 @@ public:
      * - maxMove: max number of steps to set during homeing
      * - speed: speed of the motors in steps/sec
      */
-    void home(int32_t maxMove, uint32_t speed);
+    void home(int32_t maxMove, uint32_t speed, float offsetX, float offsetY);
 
 private:
     uint32_t endStopXPin, endStopYPin;
