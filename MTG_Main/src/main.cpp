@@ -1,20 +1,17 @@
 #include "config.h"
+#include <ludoGame.hpp>
 
 #include "MotionController.hpp"
 
-MotionController *motion;
+LudoGame* game;
 
 void setup()
 {
   Serial.begin(9600);
-  Serial.println("board started V0.0.4");
+  
+  game->Init();
 
-
-  motion = new MotionController();
-  motion->SetPins(MOTOR_A_PINS, MOTOR_B_PINS, limitX, limitY);
-  motion->SetPhisicalBoardSize(1000.0, 1000.0, {.x = 10, .y = 10});
-
-  motion->MotorToPos({.x = 5, .y = 5});
+  game->GameLoop();
 }
 
 void loop(){

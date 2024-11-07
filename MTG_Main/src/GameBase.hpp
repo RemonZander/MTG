@@ -1,5 +1,8 @@
+#pragma once
 #include <stdint.h>
 #include <Player.hpp>
+#include <MotionController.hpp>
+#include <PathFinding.hpp>
 
 typedef struct BordSize_s {
     Cordinates_s size;
@@ -17,4 +20,7 @@ class GameBase {
         BoardMap_t map;
         BordSize_t bordSize;
         V state;
+        MotionController *motion;
+        PathFinding_impoved *Pathfinding;
+
 };
