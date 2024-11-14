@@ -22,10 +22,9 @@ void MotionController::SetPins(motorPins_t pinsMotorA, motorPins_t pinsMotorB, u
 	_driver->SetSpeeds(MOTOR_MAX_SPEED, MOTOR_ACCELARATION, 0);
 }
 
-void MotionController::SetStepsPerMM(float stepsPerMM_A, float stepsPerMM_B)
+void MotionController::SetStepsPerMM(int32_t stepsPerMM_A, int32_t stepsPerMM_B)
 {
-	_stepsPerMM_A = stepsPerMM_A;
-	_stepsPerMM_B = stepsPerMM_B;
+	_driver->SetStepsPerMM(stepsPerMM_A, stepsPerMM_B);
 }
 
 void MotionController::SetPhisicalBoardSize(float x, float y, Coordinates_t boardSize)
@@ -65,10 +64,7 @@ bool MotionController::MotorToPos(Coordinates_t pos)
 	float deltaMM_X = ((float)(pos.x - _currPos.x)) * _squareSize_x;
 	float deltaMM_Y = ((float)(pos.y - _currPos.y)) * _squareSize_y;
 
-	float deltaA = -deltaMM_Y + deltaMM_X;
-	float deltaB = -deltaMM_Y - deltaMM_X;
-
-	_driver->move(deltaA * _stepsPerMM_A, deltaB * _stepsPerMM_B, 100);
+	_driver->move(deltaMM_X, deltaMM_Y, 100);
 
 	_currPos = pos;
 	return true;

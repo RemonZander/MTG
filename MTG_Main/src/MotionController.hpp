@@ -41,7 +41,7 @@ public:
     *
     * @return void
     */
-    void SetStepsPerMM(float stepsPerMM_A, float stepsPerMM_B);
+    void SetStepsPerMM(int32_t stepsPerMM_A, int32_t stepsPerMM_B);
     void SetPhisicalBoardSize(float x, float y, Coordinates_t boardSize);
 
     bool ExecutePath(pathfinding_path_t path);
@@ -55,8 +55,6 @@ private:
     float _phisicalBoardSizeX = 0.0;
     float _phisicalBoardSizeY = 0.0;
     Coordinates_t _currPos = {0, 0};
-    float _stepsPerMM_A = 0.0;
-    float _stepsPerMM_B = 0.0;
     float _squareSize_x = 0.0;
     float _squareSize_y = 0.0;
     float _boardOffset_x = 0.0;

@@ -24,6 +24,8 @@ public:
      */
     void SetSpeeds(uint32_t maxSpeed, uint32_t acceleration, uint32_t jurk);
 
+    void SetStepsPerMM(int32_t a, int32_t b);
+
     /** move
      * move the motors relitivly
      * 
@@ -32,7 +34,7 @@ public:
      * - deltaB: number of steps to move in B motor
      * - speed: speed of the motors in steps/sec
      */
-    void move(int32_t deltaA, int32_t deltaB, uint32_t speed);
+    void move(float x, float y, uint32_t speed);
 
     /** home
      * Move to endstops (home position)
@@ -45,6 +47,7 @@ public:
 
 private:
     uint32_t endStopXPin, endStopYPin;
+    int32_t stepsPerMMA, stepsPerMMB;
 
     uint32_t jurk = 0;
 };
