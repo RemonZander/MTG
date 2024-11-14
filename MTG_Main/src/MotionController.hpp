@@ -59,6 +59,8 @@ private:
     float _stepsPerMM_B = 0.0;
     float _squareSize_x = 0.0;
     float _squareSize_y = 0.0;
+    float _boardOffset_x = 0.0;
+    float _boardOffset_y = 0.0;
 };
 
 #endif
