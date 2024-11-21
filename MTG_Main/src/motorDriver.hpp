@@ -3,7 +3,9 @@
 
 #include <stdint.h>
 
+#ifdef ARDUINO
 #include <AccelStepper.h>
+#endif
 
 struct motorPins_t {
     uint16_t step;

@@ -50,8 +50,10 @@ bool MotionController::ExecutePath(pathfinding_path_t path)
 
 void MotionController::SetMagnet(bool state)
 {
+	#ifdef ARDUINO
 	digitalWrite(electromagnetPin, state);
 	digitalWrite(BUILTIN_LED, state);
+	#endif
 }
 
 bool MotionController::MotorToPos(Coordinates_t pos)
