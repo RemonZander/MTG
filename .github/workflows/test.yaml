@@ -4,7 +4,7 @@ on:
 permissions:
   contents: read
 jobs:
-  build:
+  tests:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -20,5 +20,5 @@ jobs:
       - name: create artafect for debug export
         uses: actions/upload-artifact@v4
         with:
-          name: code-coverage-report
+          name: pathfind_export
           path: pathfind.json
