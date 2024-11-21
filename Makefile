@@ -21,3 +21,5 @@ MTGMain_test_MotionController: prepare_linux
 
 MTGMain_pathFinding_debugExport: prepare_linux
 	cd $(BUILD_DIR) && make MTG_test_motionController
+
+all_tests: MTGMain_test_MotionController MTGMain_pathFinding_debugExport
