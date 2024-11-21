@@ -104,4 +104,6 @@ void MotorDriver::home(int32_t maxMove, uint32_t speed, float offsetX, float off
         motorAFinished = stepperMotorA->distanceToGo() == 0;
         motorBFinished = stepperMotorB->distanceToGo() == 0;
     }
+    stepperMotorA->stop();
+    stepperMotorB->stop();
 }
