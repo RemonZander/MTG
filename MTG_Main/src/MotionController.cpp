@@ -33,8 +33,8 @@ void MotionController::SetPhisicalBoardSize(float x, float y, Coordinates_t boar
 	_phisicalBoardSizeY = y;
 	_squareSize_x = x / boardSize.x;
 	_squareSize_y = y / boardSize.y;
-	_boardOffset_x = x / (boardSize.x*2);
-	_boardOffset_y = y / (boardSize.y*2);
+	_boardOffset_x = 125.0 - (x/2) + (_squareSize_x/2);
+	_boardOffset_y = 118.0 - (y/2) + (_squareSize_y/2);
 }
 
 bool MotionController::ExecutePath(pathfinding_path_t path)
