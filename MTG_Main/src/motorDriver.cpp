@@ -1,6 +1,9 @@
 #include "motorDriver.hpp"
 #include <stdint.h>
 
+AccelStepper *stepperMotorA = NULL;
+AccelStepper *stepperMotorB = NULL;
+
 MotorDriver::MotorDriver(motorPins_t pinsMotorA, motorPins_t pinsMotorB, uint32_t endStopXPin, uint32_t endStopYPin)
     : endStopXPin(endStopXPin), endStopYPin(endStopYPin)
 {
@@ -28,14 +31,23 @@ void MotorDriver::SetSpeeds(uint32_t maxSpeed, uint32_t acceleration, uint32_t j
     this->jurk = jurk;
 }
 
-void MotorDriver::move(int32_t deltaA, int32_t deltaB, uint32_t speed)
+
+void MotorDriver::SetStepsPerMM(int32_t a, int32_t b)
 {
-	stepperMotorA->moveTo(deltaA);
-	stepperMotorB->moveTo(deltaB);
+    stepsPerMMA = a;
+    stepsPerMMB = b;
+}
+
+void MotorDriver::move(float x, float y, uint32_t speed)
+{
+    int32_t stepsA = -y + x;
+    int32_t stepsB = -y - x;
+	stepperMotorA->move(stepsA * stepsPerMMA);
+	stepperMotorB->move(stepsB * stepsPerMMB);
 
     bool motorAFinished = false, motorBFinished = false;
 
-    while (!motorAFinished && !motorBFinished)
+    while (!motorAFinished || !motorBFinished)
     {
         stepperMotorA->run();
         stepperMotorB->run();
@@ -44,10 +56,10 @@ void MotorDriver::move(int32_t deltaA, int32_t deltaB, uint32_t speed)
     }
 }
 
-void MotorDriver::home(int32_t maxMove, uint32_t speed)
+void MotorDriver::home(int32_t maxMove, uint32_t speed, float offsetX, float offsetY)
 {
-	stepperMotorA->moveTo(-maxMove);
-	stepperMotorB->moveTo(maxMove);
+	stepperMotorA->move(-maxMove);
+	stepperMotorB->move(maxMove);
 
     bool motorAFinished = false, motorBFinished = false;
 
@@ -61,13 +73,13 @@ void MotorDriver::home(int32_t maxMove, uint32_t speed)
     stepperMotorA->stop();
     stepperMotorB->stop();
 
-	stepperMotorA->moveTo(maxMove);
-	stepperMotorB->moveTo(maxMove);
+	stepperMotorA->move(maxMove);
+	stepperMotorB->move(maxMove);
 
     motorAFinished = false;
     motorBFinished = false;
 
-    while (!motorAFinished && !motorBFinished && (digitalRead(endStopYPin) == 1))
+    while (!motorAFinished && !motorBFinished && (digitalRead(endStopYPin) == 0))
     {
         stepperMotorA->run();
         stepperMotorB->run();
@@ -76,4 +88,20 @@ void MotorDriver::home(int32_t maxMove, uint32_t speed)
     }
     stepperMotorA->stop();
     stepperMotorB->stop();
+
+	float deltaA = -offsetY + offsetX;
+	float deltaB = -offsetY - offsetX;
+	stepperMotorA->move((long) deltaA * 10);
+	stepperMotorB->move((long) deltaB * 10);
+
+    motorAFinished = false;
+    motorBFinished = false;
+
+    while (!motorAFinished || !motorBFinished)
+    {
+        stepperMotorA->run();
+        stepperMotorB->run();
+        motorAFinished = stepperMotorA->distanceToGo() == 0;
+        motorBFinished = stepperMotorB->distanceToGo() == 0;
+    }
 }

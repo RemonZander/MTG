@@ -1,8 +1,6 @@
 #include "config.h"
 #include <ludoGame.hpp>
 
-#include "MotionController.hpp"
-
 LudoGame* game;
 
 void setup()
@@ -16,6 +14,4 @@ void setup()
 
 void loop(){
 }
-
-// void(* resetFunc) (void) = 0; //declare reset function @ address 0
 
