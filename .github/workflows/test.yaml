@@ -1,0 +1,17 @@
+name: run tests
+on:
+  - push
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: install gtest
+        run: sudo apt install -y libgtest-dev
+      - name: build
+        run: make all_tests
+      - name: test motion controller
+        run: ./bin/MTG_test_motionController

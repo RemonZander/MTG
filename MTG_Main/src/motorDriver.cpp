@@ -31,10 +31,19 @@ void MotorDriver::SetSpeeds(uint32_t maxSpeed, uint32_t acceleration, uint32_t j
     this->jurk = jurk;
 }
 
-void MotorDriver::move(int32_t deltaA, int32_t deltaB, uint32_t speed)
+
+void MotorDriver::SetStepsPerMM(int32_t a, int32_t b)
 {
-	stepperMotorA->move(deltaA);
-	stepperMotorB->move(deltaB);
+    stepsPerMMA = a;
+    stepsPerMMB = b;
+}
+
+void MotorDriver::move(float x, float y, uint32_t speed)
+{
+    int32_t stepsA = -y + x;
+    int32_t stepsB = -y - x;
+	stepperMotorA->move(stepsA * stepsPerMMA);
+	stepperMotorB->move(stepsB * stepsPerMMB);
 
     bool motorAFinished = false, motorBFinished = false;
 
