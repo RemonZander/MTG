@@ -15,3 +15,10 @@ jobs:
         run: make all_tests
       - name: test motion controller
         run: ./bin/MTG_test_motionController
+      - name: generate pathfind debug export
+        run: ./bin/MTG_pathfind_debugExport > pathfind.json
+      - name: create artafect for debug export
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage-report
+          path: pathfind.json
