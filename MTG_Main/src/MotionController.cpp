@@ -39,7 +39,7 @@ void MotionController::SetPhisicalBoardSize(float x, float y, Coordinates_t boar
 
 bool MotionController::ExecutePath(pathfinding_path_t path)
 {
-	for (size_t i=0; i < path->size(); i++)
+	for (std::size_t i=0; i < path->size(); i++)
 	{
 		pathfinding_step_t step = path->at(i);
 		SetMagnet(step.magnetEn);
