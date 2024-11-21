@@ -9,6 +9,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: install gtest
+        run: sudo apt install -y libgtest-dev
       - name: build
         run: make all_tests
       - name: test motion controller
