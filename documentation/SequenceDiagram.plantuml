@@ -1,0 +1,45 @@
+@startuml
+actor       Player              as player
+entity      UIM                 as uim
+entity      LudoGame            as ludogame
+entity      PathFinding         as pathfinding
+entity      MotionController    as motioncontroller
+entity      MotorDriver         as motordriver
+
+ludogame -> uim: EnableDiceRoll
+activate uim
+
+player -> uim: RollDice
+
+uim -> player: sendFeedback
+
+uim -> ludogame: SendResult
+deactivate uim
+
+ludogame -> uim: EnablePawnSelect
+activate uim
+
+player -> uim: choosePawn
+
+uim -> player: sendFeedback
+
+uim -> ludogame: SendPawnID
+deactivate uim
+
+ludogame -> pathfinding: FindPath
+activate pathfinding
+
+pathfinding -> ludogame: PathResult
+deactivate pathfinding
+
+ludogame -> motioncontroller: ExecutePath
+activate motioncontroller
+
+motioncontroller -> motordriver: SendCommands
+activate motordriver
+
+motordriver -> motioncontroller: Done
+deactivate motordriver
+
+motioncontroller -> ludogame: SendResult
+@enduml

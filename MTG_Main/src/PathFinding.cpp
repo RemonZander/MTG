@@ -76,7 +76,8 @@ PathFinding_impoved::~PathFinding_impoved()
     // do nothing??
 }
 
-pathfinding_path_t PathFinding_impoved::findPath(Cordinates_s start, Cordinates_s end, BoardMap_t wightMap, const std::vector<Pawn<LudoPawnState_t>*>* pawns, uint8_t pown_wight)
+template <typename T>
+pathfinding_path_t PathFinding_impoved::findPath(Cordinates_s start, Cordinates_s end, BoardMap_t wightMap, const std::vector<Pawn<T>*>* pawns, uint8_t pown_wight)
 {
     #ifdef DEBUG_EXPORT
     printf("{\n");
