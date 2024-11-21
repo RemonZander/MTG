@@ -4,7 +4,7 @@
 #include <typedefs.h>
 #include <ludoStates.hpp>
 
-class LudoGame : public GameBase<LudoPlayerState_s, LudoPawnState_s, LudoGameState_t> {
+class LudoGame : public GameBase<LudoPlayerState_s, LudoPawnState_t, LudoGameState_t> {
     public:
         void GameLoop();
         void Init();
