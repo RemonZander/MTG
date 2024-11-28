@@ -8,15 +8,11 @@ void LudoGame::Init()
     this->state.State = LudoGameStates::init;
 
     this->motion = new MotionController();
+    motion->SetPhisicalBoardSize(240.0, 240.0, {.x = 15, .y = 15});
+    motion->SetStepsPerMM(STEPS_PER_MM, STEPS_PER_MM);
     motion->SetPins(MOTOR_A_PINS, MOTOR_B_PINS, limitX, limitY);
-    motion->SetPhisicalBoardSize(1000.0, 1000.0, {.x = 10, .y = 10});
-    motion->MotorToPos({.x = 5, .y = 5});
 
     this->Pathfinding = new PathFinding_impoved();
-
-    //actual bord size
-    this->bordSize.size = Coordinates_t{.x = 100, .y = 100};
-    this->bordSize.squareSize = Coordinates_t{.x = 10, .y=10};
 
     //init bord map
     this->map = BoardMap_t{Coordinates_t{.x = BOARD_SIZE_X_LUDO, .y = BOARD_SIZE_Y_LUDO}, .map = {
