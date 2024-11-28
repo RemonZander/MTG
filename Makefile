@@ -20,6 +20,7 @@ MTGMain_test_MotionController: prepare_linux
 	cp $(BUILD_DIR)/MTG_Main/test/motionController/MTG_test_motionController $(BIN_DIR)/MTG_test_motionController
 
 MTGMain_pathFinding_debugExport: prepare_linux
-	cd $(BUILD_DIR) && make MTG_test_motionController
+	cd $(BUILD_DIR) && make MTG_pathfind_debugExport
+	cp $(BUILD_DIR)/MTG_Main/test/pathFinding/MTG_pathfind_debugExport $(BIN_DIR)/MTG_pathfind_debugExport
 
 all_tests: MTGMain_test_MotionController MTGMain_pathFinding_debugExport
