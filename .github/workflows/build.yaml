@@ -1,0 +1,27 @@
+name: run tests
+on:
+  - push
+permissions:
+  contents: read
+jobs:
+  build_MTG_Main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: install make
+        run: |
+          sudo update
+          sudo apt-get install -y make
+      - name: install esp-idf dependencies
+        run: |
+          sudo make install_dependencies_ubuntu
+      - name: install esp-idf
+        run: make install_ESP_IDF_linux
+      - name: build
+        run: make MTGMain_build
+      - name: create artafect for elf file
+        uses: actions/upload-artifact@v4
+        with:
+          name: MTG_Main
+          path: bin/*.bin

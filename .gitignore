@@ -3,6 +3,8 @@
 /MTG/.vs/MTG
 /MTG UIM/.vs/MTG UIM
 *.code-workspace
+.vscode
 
-/build
-/bin
+build
+bin
+.cache
