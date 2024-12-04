@@ -1,4 +1,4 @@
-name: run tests
+name: build
 on:
   - push
 permissions:
@@ -11,7 +11,7 @@ jobs:
         uses: actions/checkout@v4
       - name: install make
         run: |
-          sudo update
+          sudo apt-get update
           sudo apt-get install -y make
       - name: install esp-idf dependencies
         run: |
