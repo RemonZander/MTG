@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <stdio.h>
 
-#include "../../src/MotionController.hpp"
+#include "../../main/MotionController.hpp"
 
 
 TEST(MotionController, init)

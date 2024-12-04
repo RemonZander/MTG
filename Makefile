@@ -17,11 +17,11 @@ MAIN_PATHFINDING_SRC_FILES := $(MAIN_SRC_DIR)/PathFinding.cpp $(MAIN_SRC_DIR)/Pa
 ESP_IDF_CMD := IDF_TOOLS_PATH="$(MAIN_LIB_DIR)/esp-idf_tools" . "$(MAIN_LIB_DIR)/esp-idf/export.sh" && esp-idf.py
 
 fullclean:
-	rm -r MTG_Main/lib/esp-idf* bin build MTG_Main/build
+	rm -r "$(MTG_DIR)/MTG_Main/lib/esp-idf"* "$(MTG_DIR)/bin" "$(MTG_DIR)/build" "$(MTG_DIR)/MTG_Main/build"
 
 prepare_linux:
 	mkdir -p "$(BUILD_DIR)" "$(BIN_DIR)"
-	# cd "$(BUILD_DIR)" && cmake ..
+	cd "$(BUILD_DIR)" && cmake ..
 
 install_dependencies_ubuntu:
 	apt-get update
