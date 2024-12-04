@@ -41,7 +41,7 @@ MTGMain_build: prepare_linux
 		> "$(BUILD_DIR)/esp_idf.sh"
 	cd MTG_Main && bash "$(BUILD_DIR)/esp_idf.sh" build
 	cp "$(MAIN_DIR)/build/MTG_Main.bin" "$(BIN_DIR)/MTG_Main.bin"
-	cp "$(MAIN_DIR)/build/bootloader.bin" "$(BIN_DIR)/bootloader.bin"
+	cp "$(MAIN_DIR)/build/bootloader/bootloader.bin" "$(BIN_DIR)/bootloader.bin"
 	cp "$(MAIN_DIR)/build/partition_table/partition-table.bin" "$(BIN_DIR)/partition-table.bin"
 
 MTGMain_build_full: install_dependencies_ubuntu install_ESP_IDF_linux MTGMain_build
