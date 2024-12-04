@@ -1,5 +1,5 @@
 #include "LudoUserInput.hpp"
-#include "arduino.h"
+#include "logger.h"
 
 int LudoInputModule:: rollDice(){
     transmit(UIMCOMMAND_ENABLE_DICE_2);
@@ -8,9 +8,9 @@ int LudoInputModule:: rollDice(){
         int state = requestState();
         diceroll = state >> 8;
     } while (diceroll == 0);
-    delay(1000);
+    // delay(1000);
     transmit(UIMCOMMAND_ACKNOWLEDGE);
-    Serial.println(diceroll);
+    // println(diceroll);
     return diceroll;
 };
 
@@ -24,8 +24,8 @@ int LudoInputModule:: selectPawn(){
         if (selectedPawn == 8) selectedPawn = 4;            /// maurice bedenk ff comment voor dit
     } while (selectedPawn == 0);
     selectedPawn -= 1;              // so we can use this as an index
-    delay(100);
+    // delay(100);
     transmit(UIMCOMMAND_ACKNOWLEDGE);
-    Serial.println(selectedPawn);
+    // println(selectedPawn);
     return selectedPawn;
 };

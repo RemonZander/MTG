@@ -17,8 +17,8 @@ LudoGame::LudoGame(int playerAmount){
         
         for (int pawnIndex = 0; pawnIndex < PAWN_AMOUNT; pawnIndex++) {
             board->pawns[i*PAWN_AMOUNT+pawnIndex] = players[i]->pawns[pawnIndex];
-            Serial.println(players[i]->pawns[pawnIndex]->id);
-            Serial.println(board->pawns[i*PAWN_AMOUNT+pawnIndex]->id);
+            // println(players[i]->pawns[pawnIndex]->id);
+            // println(board->pawns[i*PAWN_AMOUNT+pawnIndex]->id);
 
         }
     }
@@ -43,7 +43,7 @@ bool LudoGame::nextTurn(){
 
     bool AllowedToMove = true;
     do {
-        delay(1000);
+        // delay(1000);
         int pawnToMove = UIMs[currentPlayer].selectPawn();
         AllowedToMove = true;
 
@@ -52,26 +52,26 @@ bool LudoGame::nextTurn(){
             if (diceroll == 6) {
                 board->movePawn(players[currentPlayer]->pawns[pawnToMove], 0); // move to first tile
                 players[currentPlayer]->pawns[pawnToMove]->isOnBoard = true;
-                Serial.println("pawn moved to board");
+                println("pawn moved to board");
                 break;
             } else {
                 AllowedToMove = false;
                 UIMs[currentPlayer].transmit(UIMCOMMAND_BLINK);
-                Serial.println("pawn not allowed to move");
+                println("pawn not allowed to move");
                 continue;
             }
         }
-        Serial.println("pawn is on board");
+        println("pawn is on board");
 
         for (int i = 0; i < PAWN_AMOUNT; i++) {
             if (players[currentPlayer]->pawns[i]->step == players[currentPlayer]->pawns[pawnToMove]->step + diceroll) {
                 AllowedToMove = false;
                 UIMs[currentPlayer].transmit(UIMCOMMAND_BLINK);
-                Serial.println("pawn capturing self");
+                println("pawn capturing self");
                 continue;
             }
         }
-        Serial.println("pawn moved");
+        println("pawn moved");
         board->movePawn(players[currentPlayer]->pawns[pawnToMove], diceroll);
     } while(!AllowedToMove);
 
