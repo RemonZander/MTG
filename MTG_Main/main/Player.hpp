@@ -2,7 +2,7 @@
 #define PLAYER_HPP
 
 #include "pawn.hpp"
-#include "logger.h"
+#include <arduino.h>
 #define PAWN_AMOUNT 4
 
 class Player{
@@ -13,8 +13,8 @@ class Player{
         Player(){}
         Player(int playerNumber);
 
-        ~Player(){
-            println("Player, I say good day");
+                ~Player(){
+            Serial.println("Player, I say good day");
         }
 };
 

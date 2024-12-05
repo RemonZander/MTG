@@ -1,8 +1,5 @@
 #ifndef LUDOBOARD_HPP
 #define LUDOBOARD_HPP
-
-#include "logger.h"
-
 #include "GameBoard.hpp"
 #include "pawn.hpp"
 
@@ -13,7 +10,7 @@ class LudoBoard: public GameBoard {
         void movePawn(Pawn* pawn, int x, int y) {GameBoard::movePawn(pawn, x, y);}
 
         ~LudoBoard(){
-            println("LudoBoard, I say good day");
+            Serial.println("LudoBoard, I say good day");
         }
 
     private:
