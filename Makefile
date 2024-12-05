@@ -1,26 +1,60 @@
-PWD := .
+# mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
+# MTG_DIR := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
+MTG_DIR := $(shell pwd)
 
-MAIN_SRC_DIR := $(PWD)/MTG_Main/src
-MAIN_TEST_DIR := $(PWD)/MTG_Main/test
-BUILD_DIR := $(PWD)/build
-BIN_DIR := $(PWD)/bin
+CHIP := esp32s3
+
+MAIN_DIR := $(MTG_DIR)/MTG_Main
+MAIN_SRC_DIR := $(MAIN_DIR)/main
+MAIN_LIB_DIR := $(MAIN_DIR)/lib
+MAIN_TEST_DIR := $(MAIN_DIR)/test
+BUILD_DIR := $(MTG_DIR)/build
+BIN_DIR := $(MTG_DIR)/bin
 
 MAIN_MOTIONCONTROLLER_SRC_FILES := $(MAIN_SRC_DIR)/motionController.cpp $(MAIN_SRC_DIR)/motionController.hpp
 MAIN_PATHFINDING_SRC_FILES := $(MAIN_SRC_DIR)/PathFinding.cpp $(MAIN_SRC_DIR)/PathFinding.hpp
 
-prepare_linux:
-	mkdir -p $(BUILD_DIR) $(BIN_DIR)
-	cd $(BUILD_DIR) && cmake ..
+ESP_IDF_CMD := IDF_TOOLS_PATH="$(MAIN_LIB_DIR)/esp-idf_tools" . "$(MAIN_LIB_DIR)/esp-idf/export.sh" && esp-idf.py
 
-MTGMain_all_tests: MTGMain_test_MotionController
+fullclean:
+	rm -r MTG_Main/lib/esp-idf* bin build MTG_Main/build
+
+prepare_linux:
+	mkdir -p "$(BUILD_DIR)" "$(BIN_DIR)"
+	# cd "$(BUILD_DIR)" && cmake ..
+
+install_dependencies_ubuntu:
+	apt-get update
+	apt-get install -y git wget flex bison gperf python3 python3-pip python3-venv cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0
+	apt-get install -y make libgtest-dev
+
+install_ESP_IDF_linux:
+# download
+	test -d "$(MAIN_LIB_DIR)/esp-idf" || git clone -b v5.3.1 --depth 1 --recursive https://github.com/espressif/esp-idf.git "$(MAIN_LIB_DIR)/esp-idf"
+
+# install
+	mkdir -p "$(MAIN_LIB_DIR)/esp-idf_tools"
+	"$(MAIN_LIB_DIR)/esp-idf/install.sh" $(CHIP)
+
+MTGMain_build: prepare_linux
+	echo -e "#!/bin/bash\n# IDF_PATH=\"$(MAIN_LIB_DIR)/esp-idf\"\n. \"$(MAIN_LIB_DIR)/esp-idf/export.sh\"\nidf.py \$$*" \
+		> "$(BUILD_DIR)/esp_idf.sh"
+	cd MTG_Main && bash "$(BUILD_DIR)/esp_idf.sh" build
+	cp "$(MAIN_DIR)/build/MTG_Main.bin" "$(BIN_DIR)/MTG_Main.bin"
+	cp "$(MAIN_DIR)/build/bootloader/bootloader.bin" "$(BIN_DIR)/bootloader.bin"
+	cp "$(MAIN_DIR)/build/partition_table/partition-table.bin" "$(BIN_DIR)/partition-table.bin"
+
+MTGMain_build_full: install_dependencies_ubuntu install_ESP_IDF_linux MTGMain_build
+
+all_tests: MTGMain_all_tests
+
+MTGMain_all_tests: MTGMain_test_MotionController MTGMain_pathFinding_debugExport
 
 # build/MTG_Main/test/motionController/MTG_test_motionController
 MTGMain_test_MotionController: prepare_linux
-	cd $(BUILD_DIR) && make MTG_test_motionController
-	cp $(BUILD_DIR)/MTG_Main/test/motionController/MTG_test_motionController $(BIN_DIR)/MTG_test_motionController
+	cd "$(BUILD_DIR)" && make MTG_test_motionController
+	cp "$(BUILD_DIR)/MTG_Main/test/motionController/MTG_test_motionController" "$(BIN_DIR)/MTG_test_motionController"
 
 MTGMain_pathFinding_debugExport: prepare_linux
-	cd $(BUILD_DIR) && make MTG_pathfind_debugExport
-	cp $(BUILD_DIR)/MTG_Main/test/pathFinding/MTG_pathfind_debugExport $(BIN_DIR)/MTG_pathfind_debugExport
-
-all_tests: MTGMain_test_MotionController MTGMain_pathFinding_debugExport
+	cd "$(BUILD_DIR)" && make MTG_pathfind_debugExport
+	cp "$(BUILD_DIR)/MTG_Main/test/pathFinding/MTG_pathfind_debugExport" "$(BIN_DIR)/MTG_pathfind_debugExport"
