@@ -37,7 +37,7 @@ install_ESP_IDF_linux:
 	"$(MAIN_LIB_DIR)/esp-idf/install.sh" $(CHIP)
 
 MTGMain_build: prepare_linux
-	echo "#!/bin/bash\n# IDF_PATH=\"$(MAIN_LIB_DIR)/esp-idf\"\n. \"$(MAIN_LIB_DIR)/esp-idf/export.sh\"\nidf.py \$$*" \
+	echo -e "#!/bin/bash\n# IDF_PATH=\"$(MAIN_LIB_DIR)/esp-idf\"\n. \"$(MAIN_LIB_DIR)/esp-idf/export.sh\"\nidf.py \$$*" \
 		> "$(BUILD_DIR)/esp_idf.sh"
 	cd MTG_Main && bash "$(BUILD_DIR)/esp_idf.sh" build
 	cp "$(MAIN_DIR)/build/MTG_Main.bin" "$(BIN_DIR)/MTG_Main.bin"
