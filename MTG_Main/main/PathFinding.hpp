@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <vector>
+#include <ludoStates.hpp>
+#include <Pawns.hpp>
 
 #include "config.h"
 #include "typedefs.h"
@@ -30,7 +32,7 @@ public:
     PathFinding_impoved();
     ~PathFinding_impoved();
 
-    pathfinding_path_t findPath(Coordinates_t start, Coordinates_t end, BoardMap_t wightMap, const std::vector<Coordinates_t> *powns, uint8_t pown_wight);
+    pathfinding_path_t findPath(Coordinates_t start, Coordinates_t end, BoardMap_t wightMap, const std::vector<Pawn<LudoPawnState_t>*>* pawns, uint8_t pown_wight);
 
 private:
     BoardMap_t wightMap;

@@ -1,11 +1,10 @@
 #include "LudoBoard.hpp"
-#include <cstdint>
 #define FINISH_LANE_LENGTH 6
 #define LAP_LENGTH 52
 #define QUART_LAP LAP_LENGTH / 4
 #define STEPS_TO_FINISH LAP_LENGTH + FINISH_LANE_LENGTH - 2
 
-const int posXTable[] = {0, 1, 1, 1, 1, 1, 1, 2, 3, 4, 5, 6, 7, 7, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1, 1, 1, 0, -1, -1, -1, -1, -1, -1, -2, -3, -4, -5, -6, -7, -7, -7, -6, -5, -4, -3, -2, -1, -1, -1, -1, -1, -1, 0};
+const int posXTable[] PROGMEM = {0, 1, 1, 1, 1, 1, 1, 2, 3, 4, 5, 6, 7, 7, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1, 1, 1, 0, -1, -1, -1, -1, -1, -1, -2, -3, -4, -5, -6, -7, -7, -7, -6, -5, -4, -3, -2, -1, -1, -1, -1, -1, -1, 0};
 
 void LudoBoard::movePawn(Pawn *pawn, int steps)
 {
@@ -21,13 +20,13 @@ void LudoBoard::movePawn(Pawn *pawn, int steps)
             x = stepToXPos(step + currentStep);
             y = stepToYPos(step + currentStep);
         } else {
-            println("on finish lane!");
-            // x = stepToXPos(pawn->beginStep-2) - (step+currentStep - (LAP_LENGTH+pawn->beginStep-2)) * (int)round(sin(3.1415/2.0 * (pawn->id/10)));
-			// y = stepToYPos(pawn->beginStep-2) - (step+currentStep - (LAP_LENGTH+pawn->beginStep-2)) * (int)round(cos(3.1415/2.0 * (pawn->id/10)));
-            // println("Moving to");
-            // print(x);
-            // print("|");
-            // print(y);
+            Serial.println("on finish lane!");
+            x = stepToXPos(pawn->beginStep-2) - (step+currentStep - (LAP_LENGTH+pawn->beginStep-2)) * (int)round(sin(PI/2*floor(pawn->id/10)));
+			y = stepToYPos(pawn->beginStep-2) - (step+currentStep - (LAP_LENGTH+pawn->beginStep-2)) * (int)round(cos(PI/2*floor(pawn->id/10)));
+            Serial.println("Moving to");
+            Serial.print(x);
+            Serial.print("|");
+            Serial.print(y);
         }
 
         int *instructions = nullptr;
@@ -58,7 +57,7 @@ void LudoBoard::movePawn(Pawn *pawn, int steps)
     pawn->step += steps;
     if (!pawn->isFinished && pawn->step == LAP_LENGTH+FINISH_LANE_LENGTH+pawn->beginStep-2) {
         pawn->isFinished = true;
-        // delay(1000);
+        delay(1000);
         movePawn(pawn, pawn->HomeX-1, pawn->HomeY);
     }
 }
@@ -68,7 +67,7 @@ int LudoBoard::stepToXPos(int step)
     if (step < 0) step = 52 + step%52;
     step %= 52;
     step *= 1;
-    int pos = 0;//pgm_read_word_near(posXTable + step);
+    int pos = pgm_read_word_near(posXTable + step);
     return pos;
 }
 
@@ -88,14 +87,14 @@ void LudoBoard::capturePawn(int x, int y) {
     if(pawnToCapture == nullptr)
         return;
 
-    // print("Pawn capturing: ");
-    // print(pawnToCapture->id);
-    // print("\t ");
+    Serial.print("Pawn capturing: ");
+    Serial.print(pawnToCapture->id);
+    Serial.print("\t ");
 
-    // print(pawnToCapture->HomeX);
-    // print("|");
+    Serial.print(pawnToCapture->HomeX);
+    Serial.print("|");
 
-    // println(pawnToCapture->HomeY);
+    Serial.println(pawnToCapture->HomeY);
 
 
 

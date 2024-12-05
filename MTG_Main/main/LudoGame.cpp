@@ -1,85 +1,88 @@
+#include <ludoGame.hpp>
+#include <Arduino.h>
+#include <ludoPlayer.hpp>
 
-#include "LudoGame.hpp"
+void LudoGame::Init()
+{
+    Serial.println("initializing game");
+    this->state = LudoGameStates::init;
 
-LudoGame::LudoGame(int playerAmount){
-    //bord grid is 15x15 vakjes
-    //x en y offset van 7x7 vanuit origin
-    board = new LudoBoard(15, 15, 7, 7);
+    this->motion = new MotionController();
+    motion->SetPins(MOTOR_A_PINS, MOTOR_B_PINS, limitX, limitY);
+    motion->SetPhisicalBoardSize(1000.0, 1000.0, {.x = 10, .y = 10});
+    motion->MotorToPos({.x = 5, .y = 5});
 
-    for (int i = 0; i < sizeof(UIMs)/sizeof(LudoInputModule); i++) UIMs[i].transmit(UIMCOMMAND_ACKNOWLEDGE);
+    this->Pathfinding = new PathFinding_impoved();
 
-    this->playerAmount = playerAmount;
-    board->pawns = new Pawn*[playerAmount*PAWN_AMOUNT];
-    board->pawnAmount = playerAmount*PAWN_AMOUNT;
-    for (int i = 0; i < playerAmount; i++) {
-    
-        players[i] = new Player(i);
+    //actual bord size
+    this->bordSize.size = Coordinates_t{.x = 100, .y = 100}; //in mm
+    this->bordSize.squareSize = Coordinates_t{.x = 10, .y=10}; //in mm
+
+    //init bord map
+    this->map = BoardMap_t{Coordinates_t{.x = BOARD_SIZE_X_LUDO, .y = BOARD_SIZE_Y_LUDO}, BOARD_SIZE_X_LUDO, BOARD_SIZE_Y_LUDO};
+
+    //init players with pawns
+    this->players = new std::vector<Player<LudoPlayerState_t, LudoPawnState_t>*>{
+        new LudoPlayer<LudoPlayerState_t,LudoPawnState_t>(0, new std::vector<Pawn<LudoPawnState_t>*>{ 
+        new Pawn<LudoPawnState_t>(0, Coordinates_t{10, 10}, LudoPawnState_t{.IsSelected = false, .Steps = 0}),
+        new Pawn<LudoPawnState_t>(0, Coordinates_t{10, 10}, LudoPawnState_t{.IsSelected = false, .Steps = 0}),
+        new Pawn<LudoPawnState_t>(0, Coordinates_t{10, 10}, LudoPawnState_t{.IsSelected = false, .Steps = 0}),
+        new Pawn<LudoPawnState_t>(0, Coordinates_t{10, 10}, LudoPawnState_t{.IsSelected = false, .Steps = 0}) 
+        }, LudoPlayerState_t{.userInputModule = LudoInputModule(0x08), .HasPawnOnboard = false}),
+        new LudoPlayer<LudoPlayerState_t, LudoPawnState_t>(1, new std::vector<Pawn<LudoPawnState_t>*>{ 
+        new Pawn<LudoPawnState_t>(0, Coordinates_t{20, 20}, LudoPawnState_t{.IsSelected = false, .Steps = 0}),
+        new Pawn<LudoPawnState_t>(0, Coordinates_t{20, 20}, LudoPawnState_t{.IsSelected = false, .Steps = 0}),
+        new Pawn<LudoPawnState_t>(0, Coordinates_t{20, 20}, LudoPawnState_t{.IsSelected = false, .Steps = 0}),
+        new Pawn<LudoPawnState_t>(0, Coordinates_t{20, 20}, LudoPawnState_t{.IsSelected = false, .Steps = 0}) 
+        }, LudoPlayerState_t{.userInputModule = LudoInputModule(0x0B), .HasPawnOnboard = false}),
+        new LudoPlayer<LudoPlayerState_t, LudoPawnState_t>(2, new std::vector<Pawn<LudoPawnState_t>*>{ 
+        new Pawn<LudoPawnState_t>(0, Coordinates_t{30, 30}, LudoPawnState_t{.IsSelected = false, .Steps = 0}),
+        new Pawn<LudoPawnState_t>(0, Coordinates_t{30, 30}, LudoPawnState_t{.IsSelected = false, .Steps = 0}),
+        new Pawn<LudoPawnState_t>(0, Coordinates_t{30, 30}, LudoPawnState_t{.IsSelected = false, .Steps = 0}),
+        new Pawn<LudoPawnState_t>(0, Coordinates_t{30, 30}, LudoPawnState_t{.IsSelected = false, .Steps = 0})  
+        }, LudoPlayerState_t{.userInputModule = LudoInputModule(0x0A), .HasPawnOnboard = false}),
+        new LudoPlayer<LudoPlayerState_t, LudoPawnState_t>(3, new std::vector<Pawn<LudoPawnState_t>*>{ 
+        new Pawn<LudoPawnState_t>(0, Coordinates_t{40, 40}, LudoPawnState_t{.IsSelected = false, .Steps = 0}),
+        new Pawn<LudoPawnState_t>(0, Coordinates_t{40, 40}, LudoPawnState_t{.IsSelected = false, .Steps = 0}),
+        new Pawn<LudoPawnState_t>(0, Coordinates_t{40, 40}, LudoPawnState_t{.IsSelected = false, .Steps = 0}),
+        new Pawn<LudoPawnState_t>(0, Coordinates_t{40, 40}, LudoPawnState_t{.IsSelected = false, .Steps = 0}) 
+        }, LudoPlayerState_t{.userInputModule = LudoInputModule(0x09), .HasPawnOnboard = false})};
+
+    Serial.println("initialization done, starting game...");
+    this->state = LudoGameStates::Player1;
+    currentPlayer = 0;
+};
+
+void LudoGame::GameLoop()
+{
+    while (this->state != LudoGameStates::stopped || this->state != LudoGameStates::error)
+    {       
+        (*this->players)[currentPlayer]->DoTurn();
         
-        for (int pawnIndex = 0; pawnIndex < PAWN_AMOUNT; pawnIndex++) {
-            board->pawns[i*PAWN_AMOUNT+pawnIndex] = players[i]->pawns[pawnIndex];
-            // println(players[i]->pawns[pawnIndex]->id);
-            // println(board->pawns[i*PAWN_AMOUNT+pawnIndex]->id);
 
-        }
-    }
-    //board->path->updateMap();
-    //board->path->printMap();
-}
-
-
-bool LudoGame::nextTurn(){
-    int diceroll = UIMs[currentPlayer].rollDice();
-    if (diceroll != 6) {
-        bool pawnOnBoard = false;
-        for (int i = 0; i < PAWN_AMOUNT; i++) {
-            if (players[currentPlayer]->pawns[i]->isOnBoard && !players[currentPlayer]->pawns[i]->isFinished) pawnOnBoard = true;
-        }
-        if (!pawnOnBoard) {
-            currentPlayer++;
-            currentPlayer%=playerAmount;
-            return false;
-        }
-    }
-
-    bool AllowedToMove = true;
-    do {
-        // delay(1000);
-        int pawnToMove = UIMs[currentPlayer].selectPawn();
-        AllowedToMove = true;
-
-        // if not on board you have to roll 6 to move this pawn;
-        if (!players[currentPlayer]->pawns[pawnToMove]->isOnBoard) {
-            if (diceroll == 6) {
-                board->movePawn(players[currentPlayer]->pawns[pawnToMove], 0); // move to first tile
-                players[currentPlayer]->pawns[pawnToMove]->isOnBoard = true;
-                println("pawn moved to board");
+        int selectedPawn = 0;
+        for (size_t i = 0; i < (*this->players)[currentPlayer]->Pawns->size(); i++)
+        {
+            if ((*(*this->players)[currentPlayer]->Pawns)[i]->State.IsSelected) 
+            {
+                selectedPawn = i;
                 break;
-            } else {
-                AllowedToMove = false;
-                UIMs[currentPlayer].transmit(UIMCOMMAND_BLINK);
-                println("pawn not allowed to move");
-                continue;
             }
         }
-        println("pawn is on board");
 
-        for (int i = 0; i < PAWN_AMOUNT; i++) {
-            if (players[currentPlayer]->pawns[i]->step == players[currentPlayer]->pawns[pawnToMove]->step + diceroll) {
-                AllowedToMove = false;
-                UIMs[currentPlayer].transmit(UIMCOMMAND_BLINK);
-                println("pawn capturing self");
-                continue;
-            }
+        this->motion->ExecutePath(this->Pathfinding->findPath((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords, Coordinates_t{40, 40}, this->map, (*this->players)[currentPlayer]->Pawns, 5));
+
+        (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State = LudoPawnState_t{.IsSelected = false, .Steps = 0};
+
+        if (this->state == LudoGameStates::Player4) 
+        {
+            this->state = LudoGameStates::Player1;
+            currentPlayer++;
         }
-        println("pawn moved");
-        board->movePawn(players[currentPlayer]->pawns[pawnToMove], diceroll);
-    } while(!AllowedToMove);
-
-    //board->path->updateMap();
-    //board->path->printMap();
-
-    currentPlayer++;
-    currentPlayer%=playerAmount;
-    
-    return true;
+        else 
+        {
+            this->state = (LudoGameStates)((uint8_t)LudoGameStates::Player1 + 1);
+            currentPlayer = 0;
+        }
+    }
 };

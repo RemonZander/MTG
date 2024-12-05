@@ -3,7 +3,6 @@
 #include "Player.hpp"
 #include "LudoUserInput.hpp"
 #include "LudoBoard.hpp"
-#include "logger.h"
 
 class LudoGame{
     public:
@@ -18,7 +17,7 @@ class LudoGame{
             LudoInputModule(0x09)
         };
         ~LudoGame(){
-            println("LudoGame, I say good day");
+            Serial.println("LudoGame, I say good day");
         }
         
         bool nextTurn(); //return false if game is done

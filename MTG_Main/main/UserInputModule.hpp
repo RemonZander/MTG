@@ -1,6 +1,6 @@
 #ifndef USERINPUTMODULE_HPP
 #define USERINPUTMODULE_HPP
-#include "UIMCommand.h"
+#include "UimCommand.h"
 
 class UserInputModule {
     public:

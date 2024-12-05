@@ -1,13 +1,45 @@
 @startuml classDiagram
-abstract GameBase {
+abstract GameBase<T,U> {
     .. Abstract ..
     {abstract} + void GameLoop()
+    {abstract} + void Init()
+
+    .. Protected ..
+    # Player<T> currentPlayer
+    # std::vector<Player<T>*> players
+
+    # BoardMap_s Map
+    # PathFinding pathFinding
+    # BordSize bordSize
 }
 
+class Player<T> {
+    + DoTurn()
+    + uint8_t ID
+    + std::vector<Pawn<U>*> pawns
+    + T state
+}
+
+class Pawns<U> {
+    + uint8_t ID
+    + Cordinates_s squareCords
+    + U State
+}
+
+struct Cordinates_s {
+    + uint8_t y
+    + uint8_t x
+}
+
+struct BordSize {
+    + Cordinates_s size
+    + Cordinates_s squareSize
+}
 
 class LUDO {
     .. Public ..
     + void GameLoop()
+    + void Init()
 }
 
 
@@ -18,26 +50,33 @@ class StorageManager <<static>> {
 }
 
 
-class MotorDriver <<static>> {
+class MotionController {
     .. Public ..
     {static} + void MovePawn()
 }
 
-class PathFinding <<static>> {
-    .. Public ..
-    + GeneratePath()
-    .. Private ..
+class MotorDriver <<static>> {
 
 }
 
+class PathFinding <<static>> {
+    .. Public ..
+    + findPath()
+    .. Private ..
+    - floodFill()
+    - floodFill_Que_add()
+    - floodFill_Que_pop()
+    - floodFill_scanField()
+    - gatherPath()
 
-entity          I2CHAL <<static>>
+}
 
-
-
-GameBase <--           LUDO
-StorageManager ..>     GameBase
-MotorDriver ..>        GameBase
-GameBase <..           PathFinding
-GameBase <..           I2CHAL         
+BordSize -             GameBase
+GameBase -             Player
+Player <-              Pawns
+GameBase <|--           LUDO
+StorageManager --       GameBase
+MotionController --     GameBase
+MotorDriver --          MotionController
+GameBase --             PathFinding       
 @enduml

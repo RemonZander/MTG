@@ -1,9 +1,6 @@
 #include "motorDriver.hpp"
 #include <stdint.h>
 
-#include <Arduino.h>
-#include <AccelStepper.h>
-
 AccelStepper *stepperMotorA = NULL;
 AccelStepper *stepperMotorB = NULL;
 

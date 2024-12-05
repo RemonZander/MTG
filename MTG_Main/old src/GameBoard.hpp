@@ -1,9 +1,7 @@
 #ifndef GAMEBOARD_HPP
 #define GAMEBOARD_HPP
 
-#include <stdint.h>
-
-#include "MotionController.hpp"
+#include "./MoterController.hpp"
 #include "pawn.hpp"
 class PathFinding;
 class GameBoard
@@ -27,13 +25,13 @@ public:
 private:
     void printMap(int *map);
     bool rangeIncrement(int x, int y, int index, int *map);
-    MotionController controller;
+    MoterController controller;
 };
 
 class PathFinding
 {
 private:
-    uint8_t *map;
+    byte *map;
 
 public:
     PathFinding(GameBoard *board);
@@ -50,7 +48,7 @@ private:
     void clearMap();
     int floodfill(int fromX, int fromY, int toX, int toY);
     void findPath(int *instructions, int size, int locX, int locY);
-    void findLocOfNumber(uint8_t number, int *locX, int *LoxY);
+    void findLocOfNumber(byte number, int *locX, int *LoxY);
 };
 
 template <typename T>

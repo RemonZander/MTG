@@ -76,7 +76,7 @@ PathFinding_impoved::~PathFinding_impoved()
     // do nothing??
 }
 
-pathfinding_path_t PathFinding_impoved::findPath(Cordinates_s start, Cordinates_s end, BoardMap_t wightMap, const std::vector<Cordinates_s> *powns, uint8_t pown_wight)
+pathfinding_path_t PathFinding_impoved::findPath(Cordinates_s start, Cordinates_s end, BoardMap_t wightMap, const std::vector<Pawn<LudoPawnState_t>*>* pawns, uint8_t pown_wight)
 {
     #ifdef DEBUG_EXPORT
     printf("{\n");
@@ -111,10 +111,10 @@ pathfinding_path_t PathFinding_impoved::findPath(Cordinates_s start, Cordinates_
     //     return false;
 
     this->wightMap = wightMap;
-    for (int i=0; i<powns->size(); i++)
+    for (int i=0; i< pawns->size(); i++)
     {
-        const Cordinates_s pown = powns->at(i);
-        this->wightMap.map[pown.x][pown.y] = pown_wight;
+        const Cordinates_s pawn = (*pawns)[i]->squareCords;
+        this->wightMap.map[pawn.x][pawn.y] = pown_wight;
     }
 
     BoardMap_t ffMap = floodFill(start, end);
