@@ -1,5 +1,5 @@
-#include "../../src/PathFinding.hpp"
-#include "../../src/typedefs.h"
+#include "../../main/PathFinding.hpp"
+#include "../../main/typedefs.h"
 
 #include <stdio.h>
 #include <stddef.h>

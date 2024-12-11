@@ -1,4 +1,4 @@
-#include "../../src/motorDriver.hpp"
+#include "../../main/motorDriver.hpp"
 #include <stdint.h>
 #include <stdio.h>
 
