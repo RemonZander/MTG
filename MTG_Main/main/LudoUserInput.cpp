@@ -10,7 +10,7 @@ int LudoInputModule:: rollDice(){
     } while (diceroll == 0);
     delay(1000);
     transmit(UIMCOMMAND_ACKNOWLEDGE);
-    Serial.println(diceroll);
+    LOG_D("diceroll: %i", diceroll);
     return diceroll;
 };
 
@@ -26,6 +26,6 @@ int LudoInputModule:: selectPawn(){
     selectedPawn -= 1;              // so we can use this as an index
     delay(100);
     transmit(UIMCOMMAND_ACKNOWLEDGE);
-    Serial.println(selectedPawn);
+    LOG_D("pown %i selected", selectedPawn);
     return selectedPawn;
 };

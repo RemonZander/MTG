@@ -1,10 +1,12 @@
 #include <ludoGame.hpp>
 #include <Arduino.h>
+
 #include <ludoPlayer.hpp>
+#include "logger.h"
 
 void LudoGame::Init()
 {
-    Serial.println("initializing game");
+    LOG_I("initializing game");
     this->state.State = LudoGameStates::init;
 
     this->motion = new MotionController();
@@ -149,7 +151,7 @@ void LudoGame::Init()
         new Pawn<LudoPawnState_t>(0, Coordinates_t{13, 13}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .homePos = Coordinates_t{13, 13}}) 
         }, LudoPlayerState_t{.userInputModule = LudoInputModule(0x09), .HasPawnOnboard = false})};
 
-    Serial.println("initialization done, starting game...");
+    LOG_I("initialization done, starting game...");
     this->state.State = LudoGameStates::Player1;
     currentPlayer = 0;
 };
@@ -157,7 +159,7 @@ void LudoGame::Init()
 void LudoGame::GameLoop()
 {
     while (this->state.State != LudoGameStates::stopped || this->state.State != LudoGameStates::error)
-    {       
+    {
         (*this->players)[currentPlayer]->DoTurn();
         
 
