@@ -1,6 +1,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#define LOGLEVEL "DEBUG" // "DEBUG", "INFO", "WARN", "ERROR", "CRITICAL"
+
 #define BOARD_SIZE_X_MAX 20
 #define BOARD_SIZE_Y_MAX 20
 
