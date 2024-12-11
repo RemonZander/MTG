@@ -12,9 +12,16 @@
 
 LudoGame* game;
 
+#ifdef ARDUINO
+void loop() {}
 void setup()
+#else
+extern "C" void app_main(void)
+#endif
 {
-  Serial.begin(9600);
+#ifdef ARUINO
+  Serial.begin(115200);
+#endif
   
   game->Init();
 

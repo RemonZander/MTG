@@ -1,11 +1,13 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#define LOGLEVEL "DEBUG" // "DEBUG", "INFO", "WARN", "ERROR", "CRITICAL"
+
 #define BOARD_SIZE_X_MAX 20
 #define BOARD_SIZE_Y_MAX 20
 
-#define BOARD_SIZE_X_LUDO 20
-#define BOARD_SIZE_Y_LUDO 20
+#define BOARD_SIZE_X_LUDO 15
+#define BOARD_SIZE_Y_LUDO 15
 
 // path finding
 

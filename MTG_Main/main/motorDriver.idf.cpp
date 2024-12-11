@@ -5,7 +5,8 @@
 #include "freertos/task.h"
 #include "driver/rmt_tx.h"
 #include "driver/gpio.h"
-#include "esp_log.h"
+
+#include "logger.h"
 
 #define CURVE_SAPLES_COUND 500
 
@@ -59,7 +60,7 @@ static float convert_to_smooth_freq(uint32_t freq1, uint32_t freq2, uint32_t fre
 MotorDriver::MotorDriver(motorPins_t pinsMotorA, motorPins_t pinsMotorB, uint32_t endStopXPin, uint32_t endStopYPin)
     : endStopXPin(endStopXPin), endStopYPin(endStopYPin)
 {
-    ESP_LOGI(TAG, "Initialize GPIO");
+    LOG_D("Initialize GPIO");
     gpio_config_t dir_gpio_config = {
         .mode = GPIO_MODE_OUTPUT,
         .intr_type = GPIO_INTR_DISABLE,
@@ -73,7 +74,7 @@ MotorDriver::MotorDriver(motorPins_t pinsMotorA, motorPins_t pinsMotorB, uint32_
     };
     ESP_ERROR_CHECK(gpio_config(&en_dir_gpio_config));
 
-    ESP_LOGI(TAG, "Create RMT TX channel");
+    LOG_D("Create RMT TX channel");
     rmt_tx_channel_config_t tx_chan_config = {
         .clk_src = RMT_CLK_SRC_DEFAULT, // select clock source
         .gpio_num = pinsMotorA.step,
@@ -83,7 +84,7 @@ MotorDriver::MotorDriver(motorPins_t pinsMotorA, motorPins_t pinsMotorB, uint32_
     };
     ESP_ERROR_CHECK(rmt_new_tx_channel(&tx_chan_config, &motor_chan));
 
-    ESP_LOGI(TAG, "Set spin direction");
+    LOG_D("Set spin direction");
     gpio_set_level(pinsMotorA.dir, STEP_MOTOR_SPIN_DIR_CLOCKWISE);
     gpio_set_level(pinsMotorB.dir, STEP_MOTOR_SPIN_DIR_CLOCKWISE);
 }

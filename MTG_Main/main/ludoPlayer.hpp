@@ -8,14 +8,14 @@ class LudoPlayer : public Player<T, U> {
 
         void DoTurn()
         {
-            Serial.println("Player " + String(this->ID) + " turn has started");
+            LOG_I("Player %u turn has started", this->ID);
             uint8_t diceroll = this->State.userInputModule.rollDice();
 
-            Serial.println("Player " + String(this->ID) + " rolls: " + String(diceroll));
+            LOG_I("Player %u rolls: %u", this->ID, diceroll);
 
             uint8_t selectedPawn = this->State.userInputModule.selectPawn();
 
-            Serial.println("Player " + String(this->ID) + " has selected pawn: " + String(selectedPawn));
+            LOG_I("Player %u has selected pawn: %u", this->ID, selectedPawn);
             
             if (this->State.HasPawnOnboard || diceroll == 6) 
             {

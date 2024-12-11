@@ -4,11 +4,6 @@
 #include <MotionController.hpp>
 #include <PathFinding.hpp>
 
-typedef struct BordSize_s {
-    Cordinates_s size;
-    Cordinates_s squareSize;
-} BordSize_t;
-
 template <class T, class U, class V>
 class GameBase {
     public:
@@ -18,7 +13,6 @@ class GameBase {
     protected:
         std::vector<Player<T, U>*>* players;
         BoardMap_t map;
-        BordSize_t bordSize;
         V state;
         MotionController *motion;
         PathFinding_impoved *Pathfinding;

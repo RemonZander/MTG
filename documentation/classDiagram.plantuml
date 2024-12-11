@@ -52,11 +52,30 @@ class StorageManager <<static>> {
 
 class MotionController {
     .. Public ..
-    {static} + void MovePawn()
+    + void SetPins()
+    + void SetStepsPerMM()
+    + void SetPhisicalBoardSize()
+    + bool ExecutePath()
+    + bool MotorToPos()
+    + void SetMagnet()
+
+    .. Private ..
+    - MotorDriver* _driver
+    - Coordinates_t _boardSize
+    - float _phisicalBoardSizeX
+    - float _phisicalBoardSizeY
+    - Coordinates_t _currPos
+    - float _stepsPerMM_A
+    - float _stepsPerMM_B
+    - float _squareSize_x
+    - float _squareSize_y
 }
 
 class MotorDriver <<static>> {
-
+    .. Public ..
+    + void SetSpeeds()
+    + void move()
+    + void home()
 }
 
 class PathFinding <<static>> {
