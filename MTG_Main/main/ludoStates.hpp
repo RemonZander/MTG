@@ -18,7 +18,7 @@ typedef struct LudoPawnState_s {
     bool IsAtStart;
     bool IsInHome;
     bool HasFinished;
-    Coordinates_t homePos;
+    Coordinates_t startPos;
     uint8_t CurrentGamePath;
 
 } LudoPawnState_t;
@@ -27,4 +27,5 @@ typedef struct LudoGameState_s {
     LudoGameStates State;
     std::vector<Coordinates_t> GamePath;
     std::vector<std::vector<Coordinates_t>*> homePositions;
+    std::vector<Pawn<LudoPawnState_t>*> allPawns;
 } LudoGameState_t;

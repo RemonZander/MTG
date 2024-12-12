@@ -18,7 +18,7 @@ class LudoPlayer : public Player<T, U> {
 
             LOG_I("Player %u has selected pawn: %u", this->ID, selectedPawn);
             
-            if (this->State.HasPawnOnboard || diceroll == 6) 
+            if (!(*this->Pawns)[selectedPawn]->State.IsAtStart || diceroll == 6) 
             {
                 (*this->Pawns)[selectedPawn]->State.IsSelected = true;
                 (*this->Pawns)[selectedPawn]->State.Steps = diceroll;
