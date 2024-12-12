@@ -28,7 +28,7 @@ public:
     *
     * @return void
     */
-    void SetPins(motorPins_t pinsMotorA, motorPins_t pinsMotorB, uint32_t endStopXPin, uint32_t endStopYPin);
+    void SetPins(motorPins_t pinsMotorA, motorPins_t pinsMotorB, gpio_num_t endStopXPin, gpio_num_t endStopYPin);
 
     /**
     * @brief Sets the steps per millimeter for both motors.

@@ -1,5 +1,8 @@
 #include <ludoGame.hpp>
+
+#ifdef ARDUONO
 #include <Arduino.h>
+#endif
 
 #include <ludoPlayer.hpp>
 #include "logger.h"
@@ -17,22 +20,22 @@ void LudoGame::Init()
     this->Pathfinding = new PathFinding_impoved();
 
     //init bord map
-    this->map = BoardMap_t{Coordinates_t{.x = BOARD_SIZE_X_LUDO, .y = BOARD_SIZE_Y_LUDO}, .map = {
-        {255, 255, 255, 255, 255, 30, 1, 1, 1, 30, 255, 255, 255, 255, 255},
-        {255, 255, 1, 255, 1, 30, 1, 30, 1, 30, 1, 255, 1, 255, 255},
-        {255, 1, 1, 1, 1, 30, 1, 30, 1, 30, 1, 1, 1, 1, 255},
-        {255, 255, 1, 255, 1, 30, 1, 30, 1, 30, 1, 255, 1, 255, 255},
-        {255, 1, 1, 1, 1, 30, 1, 30, 1, 30, 1, 1, 1, 1, 255},
-        {30, 30, 30, 30, 30, 30, 1, 30, 1, 30, 30, 30, 30, 30, 30},
-        {1, 1, 1, 1, 1, 1, 255, 255, 255, 1, 1, 1, 1, 1, 1},
-        {1, 30, 30, 30, 30, 30, 255, 255, 255, 30, 30, 30, 30, 30, 1},
-        {1, 1, 1, 1, 1, 1, 255, 255, 255, 1, 1, 1, 1, 1, 1},
-        {30, 30, 30, 30, 30, 30, 1, 30, 1, 30, 30, 30, 30, 30, 30},
-        {255, 1, 1, 1, 1, 30, 1, 30, 1, 30, 1, 1, 1, 1, 255},
-        {255, 255, 1, 255, 1, 30, 1, 30, 1, 30, 1, 255, 1, 255, 255},
-        {255, 1, 1, 1, 1, 30, 1, 30, 1, 30, 1, 1, 1, 1, 255},
-        {255, 255, 1, 255, 1, 30, 1, 30, 1, 30, 1, 255, 1, 255, 255},
-        {255, 255, 255, 255, 255, 30, 1, 1, 1, 30, 255, 255, 255, 255, 255}
+    this->map = BoardMap_t{.size = Coordinates_t{.x = BOARD_SIZE_X_LUDO, .y = BOARD_SIZE_Y_LUDO}, .map = {
+        {255, 255, 255, 255, 255,  30,   1,   1,   1,  30, 255, 255, 255, 255, 255},
+        {255, 255,   1, 255,   1,  30,   1,  30,   1,  30,   1, 255,   1, 255, 255},
+        {255,   1,   1,   1,   1,  30,   1,  30,   1,  30,   1,   1,   1,   1, 255},
+        {255, 255,   1, 255,   1,  30,   1,  30,   1,  30,   1, 255,   1, 255, 255},
+        {255,   1,   1,   1,   1,  30,   1,  30,   1,  30,   1,   1,   1,   1, 255},
+        { 30,  30,  30,  30,  30,  30,   1,  30,   1,  30,  30,  30,  30,  30,  30},
+        {  1,   1,   1,   1,   1,   1, 255, 255, 255,   1,   1,   1,   1,   1,   1},
+        {  1,  30,  30,  30,  30,  30, 255, 255, 255,  30,  30,  30,  30,  30,   1},
+        {  1,   1,   1,   1,   1,   1, 255, 255, 255,   1,   1,   1,   1,   1,   1},
+        { 30,  30,  30,  30,  30,  30,   1,  30,   1,  30,  30,  30,  30,  30,  30},
+        {255,   1,   1,   1,   1,  30,   1,  30,   1,  30,   1,   1,   1,   1, 255},
+        {255, 255,   1, 255,   1,  30,   1,  30,   1,  30,   1, 255,   1, 255, 255},
+        {255,   1,   1,   1,   1,  30,   1,  30,   1,  30,   1,   1,   1,   1, 255},
+        {255, 255,   1, 255,   1,  30,   1,  30,   1,  30,   1, 255,   1, 255, 255},
+        {255, 255, 255, 255, 255,  30,   1,   1,   1,  30, 255, 255, 255, 255, 255}
     }};
 
     //init gamepath
@@ -187,7 +190,7 @@ void LudoGame::GameLoop()
                 currentPlayer == 1 ? this->state.GamePath[1] : 
                 currentPlayer == 2 ? this->state.GamePath[14] : this->state.GamePath[27];
 
-                this->motion->ExecutePath(this->Pathfinding->findPath((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords, nextPos, this->map, &allPawns, 255));
+                this->motion->ExecutePath(this->Pathfinding->findPath((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords, nextPos, this->map, &allPawns, 50));
                 (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsAtStart = false;
             }
             
@@ -217,11 +220,11 @@ void LudoGame::GameLoop()
             {
                 if (allPawns[i]->squareCords.x == nextPos.x && allPawns[i]->squareCords.y == nextPos.y)
                 {
-                    this->motion->ExecutePath(this->Pathfinding->findPath(allPawns[i]->squareCords, allPawns[i]->State.homePos, this->map, &allPawns, 255));
+                    this->motion->ExecutePath(this->Pathfinding->findPath(allPawns[i]->squareCords, allPawns[i]->State.homePos, this->map, &allPawns, 50));
                     break;
                 }
             }
-            this->motion->ExecutePath(this->Pathfinding->findPath((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords, nextPos, this->map, &allPawns, 255));
+            this->motion->ExecutePath(this->Pathfinding->findPath((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords, nextPos, this->map, &allPawns, 50));
 
 
             (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsSelected = false;

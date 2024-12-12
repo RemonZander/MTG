@@ -16,21 +16,21 @@
 #endif // ARDUINO
 
 #ifndef LOGLEVEL
-#define LOGLEVEL WARN
+#define LOGLEVEL LOGLEVEL_WARN
 #endif
 
 #define LOG_C(fmt, args...) printf("\n\n\n!!!!!!!!!! CRITICAL ERROR !!!!!!!!!!!!!!\n\n\tfile: %s:%3u\n\tmsg: " fmt "\n\n", __FILE__, __LINE__, ## args)
 
-#if LOGLEVEL != "CRITICAL"
+#if LOGLEVEL != LOGLEVEL_CRITICAL
 #define LOG_E(fmt, args...) printf("ERROR %30s:%3u  " fmt "\n", __FILE__, __LINE__, ## args)
 
-#if LOGLEVEL != "ERROR"
+#if LOGLEVEL != LOGLEVEL_ERROR
 #define LOG_W(fmt, args...) printf("WARN  %30s:%3u  " fmt "\n", __FILE__, __LINE__, ## args)
 
-#if LOGLEVEL != "WARN"
+#if LOGLEVEL != LOGLEVEL_WARN
 #define LOG_I(fmt, args...) printf("INFO  %30s:%3u  " fmt "\n", __FILE__, __LINE__, ## args)
 
-#if LOGLEVEL != "INFO"
+#if LOGLEVEL != LOGLEVEL_INFO
 #define LOG_D(fmt, args...) printf("DEBUG %30s:%3u  " fmt "\n", __FILE__, __LINE__, ## args)
 #else
 #define LOG_D(fmt, args...)

@@ -1,5 +1,6 @@
 #pragma once
 #include <Player.hpp>
+#include "logger.h"
 
 template <class T, class U>
 class LudoPlayer : public Player<T, U> {

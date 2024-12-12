@@ -6,6 +6,12 @@
 #include <stdint.h>
 #include <vector>
 
+#ifdef ARDUINO
+typedef uint8_t gpio_num_t;
+#else
+#include <soc/gpio_num.h>
+#endif
+
 enum class LudoGameStates {
     init = -1,
     Player1 = 0,
