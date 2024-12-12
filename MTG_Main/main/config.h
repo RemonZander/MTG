@@ -22,12 +22,12 @@
 
 #define BUILTIN_LED 13
 
-#define MOTOR_A_PINS {.step = GPIO_NUM_8, .dir = GPIO_NUM_9}
-#define MOTOR_B_PINS {.step = GPIO_NUM_5, .dir = GPIO_NUM_6}
+#define MOTOR_A_PINS {.step = GPIO_NUM_12, .dir = GPIO_NUM_11}
+#define MOTOR_B_PINS {.step = GPIO_NUM_14, .dir = GPIO_NUM_13}
 #define STEPER_DIR_CCW 1
 #define STEPER_DIR_CW 0
 #define STEPS_PER_MM 10
-#define limitY GPIO_NUM_7
+#define limitY GPIO_NUM_9
 #define limitX GPIO_NUM_10
 #define electromagnetPin GPIO_NUM_2
 
@@ -41,5 +41,7 @@
 
 #define MAXBOARD_SIZEX 225.0
 #define MAXBOARD_SIZEY 225.0
+
+#define delay(ms) vTaskDelay(pdMS_TO_TICKS(ms))
 
 #endif

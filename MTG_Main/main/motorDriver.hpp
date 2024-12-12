@@ -32,7 +32,7 @@ public:
      * - accelleration: in steps/sec^2
      * - jurk: start speed without accelaration (not suported)
      */
-    void SetSpeeds(uint32_t maxSpeed, uint32_t acceleration, uint32_t jurk);
+    int SetSpeeds(uint32_t maxSpeed, uint32_t acceleration, uint32_t jurk);
 
     void SetStepsPerMM(int32_t a, int32_t b);
 
@@ -59,6 +59,7 @@ private:
     gpio_num_t endStopXPin, endStopYPin;
     motorPins_t stepperAPins, stepperBPins;
     int32_t stepsPerMMA, stepsPerMMB;
+    uint32_t acceleration_steps;
 
     uint32_t jurk = 0;
 };
