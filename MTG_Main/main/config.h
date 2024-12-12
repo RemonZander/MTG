@@ -1,8 +1,6 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include "typedefs.h"
-
 #define LOGLEVEL_DEBUG 5
 #define LOGLEVEL_INFO 4
 #define LOGLEVEL_WARN 3
