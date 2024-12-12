@@ -16,7 +16,7 @@
 #endif // ARDUINO
 
 #ifndef LOGLEVEL
-#define LOGLEVEL WARN
+#define LOGLEVEL LOGLEVEL_WARN
 #endif
 
 #define LOG_C(fmt, args...) printf("\n\n\n!!!!!!!!!! CRITICAL ERROR !!!!!!!!!!!!!!\n\n\tfile: %s:%3u\n\tmsg: " fmt "\n\n", __FILE__, __LINE__, ## args)

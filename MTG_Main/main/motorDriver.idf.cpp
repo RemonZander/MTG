@@ -58,29 +58,29 @@ static float convert_to_smooth_freq(uint32_t freq1, uint32_t freq2, uint32_t fre
     return smooth_x * (freq2 - freq1) + freq1;
 }
 
-MotorDriver::MotorDriver(motorPins_t pinsMotorA, motorPins_t pinsMotorB, uint32_t endStopXPin, uint32_t endStopYPin)
-    : endStopXPin(endStopXPin), endStopYPin(endStopYPin)
+MotorDriver::MotorDriver(motorPins_t pinsMotorA, motorPins_t pinsMotorB, gpio_num_t endStopXPin, gpio_num_t endStopYPin)
+    : endStopXPin(endStopXPin), endStopYPin(endStopYPin), stepperAPins(pinsMotorA), stepperBPins(pinsMotorB)
 {
     LOG_D("Initialize GPIO");
     gpio_config_t dir_gpio_config = {
-        .mode = GPIO_MODE_OUTPUT,
-        .intr_type = GPIO_INTR_DISABLE,
         .pin_bit_mask = 1ULL << pinsMotorA.dir | 1ULL << pinsMotorB.dir,
+        .mode = GPIO_MODE_OUTPUT,
+        .intr_type = GPIO_INTR_DISABLE
     };
     ESP_ERROR_CHECK(gpio_config(&dir_gpio_config));
     gpio_config_t end_stop_gpio_config = {
-        .mode = GPIO_MODE_INPUT,
-        .intr_type = GPIO_INTR_DISABLE,
         .pin_bit_mask = 1ULL << endStopXPin | 1ULL << endStopYPin,
+        .mode = GPIO_MODE_INPUT,
+        .intr_type = GPIO_INTR_DISABLE
     };
     ESP_ERROR_CHECK(gpio_config(&end_stop_gpio_config));
 
     LOG_D("Create RMT TX channel");
     rmt_tx_channel_config_t tx_chan_config = {
-        .clk_src = RMT_CLK_SRC_DEFAULT, // select clock source
         .gpio_num = pinsMotorA.step,
-        .mem_block_symbols = 64,
+        .clk_src = RMT_CLK_SRC_DEFAULT, // select clock source
         .resolution_hz = STEP_MOTOR_RESOLUTION_HZ,
+        .mem_block_symbols = 64,
         .trans_queue_depth = 10, // set the number of transactions that can be pending in the background
     };
     ESP_ERROR_CHECK(rmt_new_tx_channel(&tx_chan_config, &motor_chan));
@@ -137,7 +137,7 @@ void MotorDriver::SetSpeeds(uint32_t maxSpeed, uint32_t acceleration, uint32_t j
     {
         free(decel_curve);
     }
-    decel_curve = (rmt_stepper_uniform_encoder_t*)rmt_alloc_encoder_mem(sizeof(rmt_stepper_curve_encoder_t) + CURVE_SAPLES_COUND * sizeof(rmt_symbol_word_t));
+    decel_curve = (rmt_stepper_curve_encoder_t*)rmt_alloc_encoder_mem(sizeof(rmt_stepper_curve_encoder_t) + CURVE_SAPLES_COUND * sizeof(rmt_symbol_word_t));
     curve_step = (jurk - maxSpeed) / (CURVE_SAPLES_COUND - 1);
     decel_curve->flags.is_accel_curve = false;
     decel_curve->sample_points = CURVE_SAPLES_COUND;
@@ -163,8 +163,8 @@ void MotorDriver::move(float x, float y, uint32_t speed)
     int32_t stepsA = (-y + x) * stepsPerMMA;
     int32_t stepsB = (-y - x) * stepsPerMMB;
 
-    gpio_set_level(pinsMotorA.dir, (stepsA) ? STEPER_DIR_CW : STEPER_DIR_CCW);
-    gpio_set_level(pinsMotorB.dir, (stepsB) ? STEPER_DIR_CW : STEPER_DIR_CCW);
+    gpio_set_level(stepperAPins.dir, (stepsA) ? STEPER_DIR_CW : STEPER_DIR_CCW);
+    gpio_set_level(stepperBPins.dir, (stepsB) ? STEPER_DIR_CW : STEPER_DIR_CCW);
 
     rmt_transmit_config_t tx_config = {
         .loop_count = 0,
@@ -208,13 +208,13 @@ void MotorDriver::move(float x, float y, uint32_t speed)
     {
         // acceleraton
         curve_samples = CURVE_SAPLES_COUND;
-        rmt_transmit(motor_chan, &accel_curve->base, &CURVE_SAPLES_COUND, sizeof(CURVE_SAPLES_COUND), &tx_config);
+        rmt_transmit(motor_chan, &accel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
         // constant speed
         tx_config.loop_count = stepsB - CURVE_SAPLES_COUND*2;
         rmt_transmit(motor_chan, &constant_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
         // decelaraton
         tx_config.loop_count = 0;
-        rmt_transmit(motor_chan, &decel_curve->base, &CURVE_SAPLES_COUND, sizeof(CURVE_SAPLES_COUND), &tx_config);
+        rmt_transmit(motor_chan, &decel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
     }
 }
 
@@ -224,25 +224,25 @@ void MotorDriver::home(int32_t maxMove, uint32_t speed, float offsetX, float off
         .loop_count = maxMove,
     };
 
-    gpio_set_level(pinsMotorA.dir, STEPER_DIR_CCW);
-    gpio_set_level(pinsMotorB.dir, STEPER_DIR_CW);
+    gpio_set_level(stepperAPins.dir, STEPER_DIR_CCW);
+    gpio_set_level(stepperBPins.dir, STEPER_DIR_CW);
 
     rmt_transmit(motor_chan, &constant_curve->base, &speed, sizeof(uint32_t), &tx_config);
 
     //TODO: check if motors are finished
-    while (true && (digitalRead(endStopXPin) == 1))
+    while (true && (gpio_get_level(endStopXPin) == 1))
     {
         // do nothing?
     }
     //TODO: stop motors
 
-    gpio_set_level(pinsMotorA.dir, STEPER_DIR_CW);
-    gpio_set_level(pinsMotorB.dir, STEPER_DIR_CW);
+    gpio_set_level(stepperAPins.dir, STEPER_DIR_CW);
+    gpio_set_level(stepperBPins.dir, STEPER_DIR_CW);
 
     rmt_transmit(motor_chan, &constant_curve->base, &speed, sizeof(uint32_t), &tx_config);
 
 
-    while (true && (digitalRead(endStopYPin) == 0))
+    while (true && (gpio_get_level(endStopYPin) == 0))
     {
         // do nothing?
     }

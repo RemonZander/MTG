@@ -1,6 +1,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include "typedefs.h"
+
 #define LOGLEVEL_DEBUG 5
 #define LOGLEVEL_INFO 4
 #define LOGLEVEL_WARN 3
@@ -22,14 +24,14 @@
 
 #define BUILTIN_LED 13
 
-#define MOTOR_A_PINS {.step = 8, .dir = 9}
-#define MOTOR_B_PINS {.step = 5, .dir = 6}
+#define MOTOR_A_PINS {.step = GPIO_NUM_8, .dir = GPIO_NUM_9}
+#define MOTOR_B_PINS {.step = GPIO_NUM_5, .dir = GPIO_NUM_6}
 #define STEPER_DIR_CCW 1
 #define STEPER_DIR_CW 0
 #define STEPS_PER_MM 10
-#define limitY 7
-#define limitX 10
-#define electromagnetPin 2
+#define limitY GPIO_NUM_7
+#define limitX GPIO_NUM_10
+#define electromagnetPin GPIO_NUM_2
 
 #define MOTOR_MAX_SPEED 500
 #define MOTOR_ACCELARATION 500

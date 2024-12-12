@@ -7,14 +7,22 @@
 #include <AccelStepper.h>
 #endif
 
+#ifdef ARDUINO
 struct motorPins_t {
     uint16_t step;
     uint16_t dir;
 };
+#else
+#include <soc/gpio_num.h>
+struct motorPins_t {
+    gpio_num_t step;
+    gpio_num_t dir;
+};
+#endif
 
 class MotorDriver {
 public:
-    MotorDriver(motorPins_t pinsMotorA, motorPins_t pinsMotorB, uint32_t endStopXPin, uint32_t endStopYPin);
+    MotorDriver(motorPins_t pinsMotorA, motorPins_t pinsMotorB, gpio_num_t endStopXPin, gpio_num_t endStopYPin);
     ~MotorDriver();
 
     /** SetSpeed
@@ -48,7 +56,8 @@ public:
     void home(int32_t maxMove, uint32_t speed, float offsetX, float offsetY);
 
 private:
-    uint32_t endStopXPin, endStopYPin;
+    gpio_num_t endStopXPin, endStopYPin;
+    motorPins_t stepperAPins, stepperBPins;
     int32_t stepsPerMMA, stepsPerMMB;
 
     uint32_t jurk = 0;

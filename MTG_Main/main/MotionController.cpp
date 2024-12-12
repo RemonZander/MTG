@@ -14,7 +14,7 @@ MotionController::~MotionController()
 	// nothing to do
 }
 
-void MotionController::SetPins(motorPins_t pinsMotorA, motorPins_t pinsMotorB, uint32_t endStopXPin, uint32_t endStopYPin)
+void MotionController::SetPins(motorPins_t pinsMotorA, motorPins_t pinsMotorB, gpio_num_t endStopXPin, gpio_num_t endStopYPin)
 {
 	_driver = new MotorDriver(pinsMotorA, pinsMotorB, endStopXPin, endStopYPin);
 	_driver->SetSpeeds(MOTOR_HOME_SPEED, MOTOR_HOME_ACCELARATION, 0);

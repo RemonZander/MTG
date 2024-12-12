@@ -13,8 +13,8 @@ class Player {
         Player(uint8_t ID, std::vector<Pawn<U>*>* Pawns,T State) : ID(ID), State(State), Pawns(Pawns) {}
 
         uint8_t ID;
-        std::vector<Pawn<U>*>* Pawns;
         T State;
+        std::vector<Pawn<U>*>* Pawns;
 
         virtual void DoTurn();
 };
