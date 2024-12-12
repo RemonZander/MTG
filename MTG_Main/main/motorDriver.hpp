@@ -28,9 +28,9 @@ public:
     /** SetSpeed
      * 
      * args:
-     * - maxspeed: maximum allowed speed in steps/sec
-     * - accelleration: in steps/sec^2
-     * - jurk: start speed without accelaration (not suported)
+     * - maxspeed: maximum allowed speed in mm/sec
+     * - accelleration: avearage acceleration in mm/sec^2 (a smoothening function is applaied over the acceleraton. Thus the max aceleration will be slightly higher)
+     * - jurk: start speed without accelaration in mm/sec
      */
     int SetSpeeds(uint32_t maxSpeed, uint32_t acceleration, uint32_t jurk);
 
