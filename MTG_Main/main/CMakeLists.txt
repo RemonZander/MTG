@@ -2,14 +2,12 @@
 idf_component_register(
 	SRCS
 		"main.cpp"
-		"GameBoard.cpp"
+		"GameBase.cpp"
 		"LudoGame.cpp"
 		"PathFinding.cpp"
 		"Player.cpp"
-		"LudoBoard.cpp"
 		"LudoUserInput.cpp"
-		"Memory.cpp"
-		"pawn.cpp"
+		"Pawns.cpp"
 		"UserInputModule.cpp"
 		"MotionController.cpp"
 		"motorDriver.idf.cpp"

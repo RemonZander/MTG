@@ -9,6 +9,7 @@
 #include "logger.h"
 
 #define CURVE_SAPLES_COUND 500
+#define STEP_MOTOR_RESOLUTION_HZ 1500
 
 typedef struct {
     rmt_encoder_t base;
@@ -66,13 +67,13 @@ MotorDriver::MotorDriver(motorPins_t pinsMotorA, motorPins_t pinsMotorB, uint32_
         .intr_type = GPIO_INTR_DISABLE,
         .pin_bit_mask = 1ULL << pinsMotorA.dir | 1ULL << pinsMotorB.dir,
     };
-    ESP_ERROR_CHECK(gpio_config(&en_dir_gpio_config));
+    ESP_ERROR_CHECK(gpio_config(&dir_gpio_config));
     gpio_config_t end_stop_gpio_config = {
         .mode = GPIO_MODE_INPUT,
         .intr_type = GPIO_INTR_DISABLE,
         .pin_bit_mask = 1ULL << endStopXPin | 1ULL << endStopYPin,
     };
-    ESP_ERROR_CHECK(gpio_config(&en_dir_gpio_config));
+    ESP_ERROR_CHECK(gpio_config(&end_stop_gpio_config));
 
     LOG_D("Create RMT TX channel");
     rmt_tx_channel_config_t tx_chan_config = {
@@ -85,8 +86,8 @@ MotorDriver::MotorDriver(motorPins_t pinsMotorA, motorPins_t pinsMotorB, uint32_
     ESP_ERROR_CHECK(rmt_new_tx_channel(&tx_chan_config, &motor_chan));
 
     LOG_D("Set spin direction");
-    gpio_set_level(pinsMotorA.dir, STEP_MOTOR_SPIN_DIR_CLOCKWISE);
-    gpio_set_level(pinsMotorB.dir, STEP_MOTOR_SPIN_DIR_CLOCKWISE);
+    gpio_set_level(pinsMotorA.dir, STEPER_DIR_CW);
+    gpio_set_level(pinsMotorB.dir, STEPER_DIR_CW);
 }
 
 MotorDriver::~MotorDriver()
@@ -109,14 +110,14 @@ void MotorDriver::SetSpeeds(uint32_t maxSpeed, uint32_t acceleration, uint32_t j
     {
         free(accel_curve);
     }
-    accel_curve = rmt_alloc_encoder_mem(sizeof(rmt_stepper_curve_encoder_t) + CURVE_SAPLES_COUND * sizeof(rmt_symbol_word_t));
+    accel_curve = (rmt_stepper_curve_encoder_t*)rmt_alloc_encoder_mem(sizeof(rmt_stepper_curve_encoder_t) + CURVE_SAPLES_COUND * sizeof(rmt_symbol_word_t));
     float curve_step = (maxSpeed - jurk) / (CURVE_SAPLES_COUND - 1);
     accel_curve->sample_points = CURVE_SAPLES_COUND;
     accel_curve->flags.is_accel_curve = true;
     for (uint32_t i = 0; i < CURVE_SAPLES_COUND; i++)
     {
-        smooth_freq = convert_to_smooth_freq(jurk, maxSpeed, jurk + curve_step * i);
-        symbol_duration = config->resolution / smooth_freq / 2;
+        float smooth_freq = convert_to_smooth_freq(jurk, maxSpeed, jurk + curve_step * i);
+        uint16_t symbol_duration = STEP_MOTOR_RESOLUTION_HZ / smooth_freq / 2;
         accel_curve->curve_table[i].level0 = 0;
         accel_curve->curve_table[i].duration0 = symbol_duration;
         accel_curve->curve_table[i].level1 = 1;
@@ -128,7 +129,7 @@ void MotorDriver::SetSpeeds(uint32_t maxSpeed, uint32_t acceleration, uint32_t j
     {
         free(constant_curve);
     }
-    constant_curve = rmt_alloc_encoder_mem(sizeof(rmt_stepper_uniform_encoder_t));
+    constant_curve = (rmt_stepper_uniform_encoder_t*)rmt_alloc_encoder_mem(sizeof(rmt_stepper_uniform_encoder_t));
     constant_curve->resolution = CURVE_SAPLES_COUND;
 
     // generate decalaration curve
@@ -136,14 +137,14 @@ void MotorDriver::SetSpeeds(uint32_t maxSpeed, uint32_t acceleration, uint32_t j
     {
         free(decel_curve);
     }
-    decel_curve = rmt_alloc_encoder_mem(sizeof(rmt_stepper_curve_encoder_t) + CURVE_SAPLES_COUND * sizeof(rmt_symbol_word_t));
-    float curve_step = (jurk - maxSpeed) / (CURVE_SAPLES_COUND - 1);
+    decel_curve = (rmt_stepper_uniform_encoder_t*)rmt_alloc_encoder_mem(sizeof(rmt_stepper_curve_encoder_t) + CURVE_SAPLES_COUND * sizeof(rmt_symbol_word_t));
+    curve_step = (jurk - maxSpeed) / (CURVE_SAPLES_COUND - 1);
     decel_curve->flags.is_accel_curve = false;
     decel_curve->sample_points = CURVE_SAPLES_COUND;
     for (uint32_t i = 0; i < CURVE_SAPLES_COUND; i++)
     {
-        smooth_freq = convert_to_smooth_freq(maxSpeed, jurk, maxSpeed + curve_step * i);
-        symbol_duration = config->resolution / smooth_freq / 2;
+        float smooth_freq = convert_to_smooth_freq(maxSpeed, jurk, maxSpeed + curve_step * i);
+        uint16_t symbol_duration = STEP_MOTOR_RESOLUTION_HZ / smooth_freq / 2;
         decel_curve->curve_table[CURVE_SAPLES_COUND - i - 1].level0 = 0;
         decel_curve->curve_table[CURVE_SAPLES_COUND - i - 1].duration0 = symbol_duration;
         decel_curve->curve_table[CURVE_SAPLES_COUND - i - 1].level1 = 1;
@@ -184,13 +185,13 @@ void MotorDriver::move(float x, float y, uint32_t speed)
     {
         // acceleraton
         curve_samples = CURVE_SAPLES_COUND;
-        rmt_transmit(motor_chan, &accel_curve->base, &CURVE_SAPLES_COUND, sizeof(CURVE_SAPLES_COUND), &tx_config);
+        rmt_transmit(motor_chan, &accel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
         // constant speed
         tx_config.loop_count = stepsA - CURVE_SAPLES_COUND*2;
         rmt_transmit(motor_chan, &constant_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
         // decelaraton
         tx_config.loop_count = 0;
-        rmt_transmit(motor_chan, &decel_curve->base, &CURVE_SAPLES_COUND, sizeof(CURVE_SAPLES_COUND), &tx_config);
+        rmt_transmit(motor_chan, &decel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
     }
 
     // stepper B

@@ -1,5 +1,8 @@
 #include <ludoGame.hpp>
+
+#ifdef ARDUONO
 #include <Arduino.h>
+#endif
 
 #include <ludoPlayer.hpp>
 #include "logger.h"

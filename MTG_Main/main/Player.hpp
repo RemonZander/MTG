@@ -1,7 +1,11 @@
 #pragma once
+
+#ifdef ARDUONO
+#include <Arduino.h>
+#endif
+
 #include <Pawns.hpp>
 #include <vector>
-#include <Arduino.h>
 
 template <class T, class U>
 class Player {

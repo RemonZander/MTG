@@ -1,7 +1,13 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define LOGLEVEL "DEBUG" // "DEBUG", "INFO", "WARN", "ERROR", "CRITICAL"
+#define LOGLEVEL_DEBUG 5
+#define LOGLEVEL_INFO 4
+#define LOGLEVEL_WARN 3
+#define LOGLEVEL_ERROR 2
+#define LOGLEVEL_CRITICAL 1
+
+#define LOGLEVEL LOGLEVEL_DEBUG
 
 #define BOARD_SIZE_X_MAX 20
 #define BOARD_SIZE_Y_MAX 20
@@ -18,6 +24,8 @@
 
 #define MOTOR_A_PINS {.step = 8, .dir = 9}
 #define MOTOR_B_PINS {.step = 5, .dir = 6}
+#define STEPER_DIR_CCW 1
+#define STEPER_DIR_CW 0
 #define STEPS_PER_MM 10
 #define limitY 7
 #define limitX 10
