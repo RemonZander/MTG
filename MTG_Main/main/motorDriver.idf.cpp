@@ -373,6 +373,7 @@ void MotorDriver::move(float x, float y, uint32_t speed)
         .loop_count = 0,
     };
     uint32_t curve_samples;
+    int ret;
 
     // stepper A
     if (stepsA < this->acceleration_steps * 2)
@@ -381,10 +382,18 @@ void MotorDriver::move(float x, float y, uint32_t speed)
 
         // acceleraton
         curve_samples = stepsA / 2;
-        rmt_transmit(rmt_channel_motor_a, &accel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+        ret = rmt_transmit(rmt_channel_motor_a, &accel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+        if (ret != 0)
+        {
+            LOG_E("move: faild to accelerate motor");
+        }
         // decelaraton
         curve_samples += stepsA & 0x1; // add one if odd
-        rmt_transmit(rmt_channel_motor_a, &decel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+        ret = rmt_transmit(rmt_channel_motor_a, &decel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+        if (ret != 0)
+        {
+            LOG_E("move: faild to decelerate motor");
+        }
     }
     else
     {
@@ -393,13 +402,25 @@ void MotorDriver::move(float x, float y, uint32_t speed)
         // acceleraton
         curve_samples = this->acceleration_steps;
         tx_config.loop_count = 0;
-        rmt_transmit(rmt_channel_motor_a, &accel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+        ret = rmt_transmit(rmt_channel_motor_a, &accel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+        if (ret != 0)
+        {
+            LOG_E("move: faild to accelerate motor");
+        }
         // constant speed
         tx_config.loop_count = stepsA - this->acceleration_steps*2;
-        rmt_transmit(rmt_channel_motor_a, &constant_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+        ret = rmt_transmit(rmt_channel_motor_a, &constant_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+        if (ret != 0)
+        {
+            LOG_E("move: faild to move motor constant");
+        }
         // decelaraton
         tx_config.loop_count = 0;
-        rmt_transmit(rmt_channel_motor_a, &decel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+        ret = rmt_transmit(rmt_channel_motor_a, &decel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+        if (ret != 0)
+        {
+            LOG_E("move: faild to decelerate motor");
+        }
     }
 
     tx_config.loop_count = 0;
@@ -408,22 +429,42 @@ void MotorDriver::move(float x, float y, uint32_t speed)
     {
         // acceleraton
         curve_samples = stepsB / 2;
-        rmt_transmit(rmt_channel_motor_b, &accel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+        ret = rmt_transmit(rmt_channel_motor_b, &accel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+        if (ret != 0)
+        {
+            LOG_E("move: faild to accelerate motor");
+        }
         // decelaraton
         curve_samples += stepsB & 0x1; // add one if odd
-        rmt_transmit(rmt_channel_motor_b, &decel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+        ret = rmt_transmit(rmt_channel_motor_b, &decel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+        if (ret != 0)
+        {
+            LOG_E("move: faild to decelerate motor");
+        }
     }
     else
     {
         // acceleraton
         curve_samples = this->acceleration_steps;
-        rmt_transmit(rmt_channel_motor_b, &accel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+        ret = rmt_transmit(rmt_channel_motor_b, &accel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+        if (ret != 0)
+        {
+            LOG_E("move: faild to accelerate motor");
+        }
         // constant speed
         tx_config.loop_count = stepsB - this->acceleration_steps*2;
-        rmt_transmit(rmt_channel_motor_b, &constant_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+        ret = rmt_transmit(rmt_channel_motor_b, &constant_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+        if (ret != 0)
+        {
+            LOG_E("move: faild to move motor constant");
+        }
         // decelaraton
         tx_config.loop_count = 0;
-        rmt_transmit(rmt_channel_motor_b, &decel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+        ret = rmt_transmit(rmt_channel_motor_b, &decel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+        if (ret != 0)
+        {
+            LOG_E("move: faild to decelerate motor");
+        }
     }
 }
 

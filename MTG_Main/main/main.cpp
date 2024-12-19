@@ -36,7 +36,8 @@ extern "C" void app_main(void)
   MotorDriver *md = new MotorDriver(
     // {.step = GPIO_NUM_12, .dir = GPIO_NUM_11},
     {.step = GPIO_NUM_20, .dir = GPIO_NUM_11},
-    {.step = GPIO_NUM_14, .dir = GPIO_NUM_13},
+    // {.step = GPIO_NUM_14, .dir = GPIO_NUM_13},
+    {.step = GPIO_NUM_19, .dir = GPIO_NUM_13},
     limitY,
     limitX
   );
