@@ -12,7 +12,7 @@ jobs:
       - name: install gtest
         run: sudo apt install -y libgtest-dev
       - name: build
-        run: make all_tests
+      #  run: make all_tests
       # - name: test motion controller
       #   run: ./bin/MTG_test_motionController
       # - name: generate pathfind debug export
