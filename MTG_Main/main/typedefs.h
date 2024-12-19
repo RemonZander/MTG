@@ -6,10 +6,10 @@
 #include <stdint.h>
 #include <vector>
 
-#ifdef ARDUINO
-typedef uint8_t gpio_num_t;
-#else
+#ifdef IDF_VER
 #include <soc/gpio_num.h>
+#else
+typedef uint8_t gpio_num_t;
 #endif
 
 enum class LudoGameStates {
@@ -29,7 +29,7 @@ typedef struct Cordinates_s {
 
 typedef struct BoardMap_s {
     Coordinates_t size;
-    uint8_t map[BOARD_SIZE_X_LUDO][BOARD_SIZE_Y_LUDO];
+    uint8_t map[BOARD_SIZE_X_MAX][BOARD_SIZE_Y_MAX];
 } BoardMap_t;
 
 struct pathfinding_step_t {
