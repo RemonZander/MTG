@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <vector>
 #include "typedefs.h"
+#include "Pawns.hpp" 
 
 typedef struct LudoPlayerState_s {
     // LudoInputModule userInputModule;
