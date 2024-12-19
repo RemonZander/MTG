@@ -4,12 +4,14 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#define GTEST_COUT std::cerr << "[          ] [ INFO ]"
+
 
 TEST(LudoGame, init)
 {
-    printf("initializing test\n");
+    GTEST_COUT << "initializing test" << std::endl;
     LudoGame *game = new LudoGame();
-    printf("created game object\n");
+    GTEST_COUT << "created game object" << std::endl;
     game->Init();
     game->GameLoop();
     delete(game);
