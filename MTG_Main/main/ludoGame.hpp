@@ -1,6 +1,6 @@
 #pragma once
 #include "GameBase.hpp"
-#include "LudoUserInput.hpp'
+#include "LudoUserInput.hpp"
 #include "typedefs.h"
 #include "ludoStates.hpp"
 
