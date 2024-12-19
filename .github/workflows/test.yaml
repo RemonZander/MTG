@@ -18,7 +18,7 @@ jobs:
       # - name: generate pathfind debug export
       #   run: ./bin/MTG_pathfind_debugExport > pathfind.json
       - name: Test LudoGame
-        run: ./bin/ludogame_tests
+        run: ./bin/MTG_test_ludogame
       - name: create artafect for debug export
         uses: actions/upload-artifact@v4
         with:
