@@ -6,10 +6,10 @@
 #include <stdint.h>
 #include <vector>
 
-#ifdef ARDUINO
-typedef uint8_t gpio_num_t;
-#else
+#ifdef IDF_VER
 #include <soc/gpio_num.h>
+#else
+typedef uint8_t gpio_num_t;
 #endif
 
 enum class LudoGameStates {

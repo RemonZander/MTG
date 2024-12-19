@@ -267,7 +267,7 @@ int MotorDriver::SetSpeeds(uint32_t maxSpeed, uint32_t acceleration, uint32_t ju
         LOG_C("failed to create copy encoder for deceleration curve");
         return -2;
     }
-    curve_step = (jurk - maxSpeed) / (this->acceleration_steps - 1);
+    curve_step = (maxSpeed - jurk) / (this->acceleration_steps - 1);
     decel_curve->sample_points = this->acceleration_steps;
     decel_curve->flags.is_accel_curve = false;
     decel_curve->base.del = &rmt_del_stepper_motor_curve_encoder;
@@ -275,7 +275,7 @@ int MotorDriver::SetSpeeds(uint32_t maxSpeed, uint32_t acceleration, uint32_t ju
     decel_curve->base.reset = &rmt_reset_stepper_motor_curve_encoder;
     for (uint32_t i = 0; i < this->acceleration_steps; i++)
     {
-        float smooth_freq = convert_to_smooth_freq(maxSpeed, jurk, maxSpeed + curve_step * i);
+        float smooth_freq = convert_to_smooth_freq(jurk, maxSpeed, jurk + curve_step * i);
         uint16_t symbol_duration = STEP_MOTOR_RESOLUTION_HZ / smooth_freq / 2;
         decel_curve->curve_table[this->acceleration_steps - i - 1].level0 = 0;
         decel_curve->curve_table[this->acceleration_steps - i - 1].duration0 = symbol_duration;
@@ -341,11 +341,9 @@ void MotorDriver::move(float x, float y, uint32_t speed)
 
         // acceleraton
         curve_samples = stepsA / 2;
-        LOG_D("move: accel steps: %lu", curve_samples);
         rmt_transmit(motor_chan, &accel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
         // decelaraton
         curve_samples += stepsA & 0x1; // add one if odd
-        LOG_D("move: decel steps: %lu", curve_samples);
         rmt_transmit(motor_chan, &decel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
     }
     else
