@@ -28,11 +28,11 @@ public:
     /** SetSpeed
      * 
      * args:
-     * - maxspeed: maximum allowed speed in steps/sec
-     * - accelleration: in steps/sec^2
-     * - jurk: start speed without accelaration (not suported)
+     * - maxspeed: maximum allowed speed in mm/sec
+     * - accelleration: avearage acceleration in mm/sec^2 (a smoothening function is applaied over the acceleraton. Thus the max aceleration will be slightly higher)
+     * - jurk: start speed without accelaration in mm/sec
      */
-    void SetSpeeds(uint32_t maxSpeed, uint32_t acceleration, uint32_t jurk);
+    int SetSpeeds(uint32_t maxSpeed, uint32_t acceleration, uint32_t jurk);
 
     void SetStepsPerMM(int32_t a, int32_t b);
 
@@ -59,6 +59,7 @@ private:
     gpio_num_t endStopXPin, endStopYPin;
     motorPins_t stepperAPins, stepperBPins;
     int32_t stepsPerMMA, stepsPerMMB;
+    uint32_t acceleration_steps;
 
     uint32_t jurk = 0;
 };
