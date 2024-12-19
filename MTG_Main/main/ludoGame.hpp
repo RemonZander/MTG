@@ -3,6 +3,7 @@
 #include "LudoUserInput.hpp"
 #include "typedefs.h"
 #include "ludoStates.hpp"
+#include "ludoPlayer.hpp"
 
 class LudoGame : public GameBase<LudoPlayerState_s, LudoPawnState_t, LudoGameState_t> {
     public:
