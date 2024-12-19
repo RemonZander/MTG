@@ -14,9 +14,9 @@ void LudoGame::Init()
     this->state.State = LudoGameStates::init;
 
     this->motion = new MotionController();
-    motion->SetPhisicalBoardSize(240.0, 240.0, {.x = 15, .y = 15});
-    motion->SetStepsPerMM(STEPS_PER_MM, STEPS_PER_MM);
-    motion->SetPins(MOTOR_A_PINS, MOTOR_B_PINS, limitX, limitY);
+    this->motion->SetPhisicalBoardSize(240.0, 240.0, {.x = 15, .y = 15});
+    this->motion->SetStepsPerMM(STEPS_PER_MM, STEPS_PER_MM);
+    this->motion->SetPins(MOTOR_A_PINS, MOTOR_B_PINS, limitX, limitY);
 
     this->Pathfinding = new PathFinding_impoved();
 
