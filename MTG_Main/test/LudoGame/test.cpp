@@ -1,10 +1,11 @@
-//#include <gtest/gtest.h>
+#include <gtest/gtest.h>
 #include "LudoGame.hpp"
 #include "../../main/logger.h"
 #include <stdint.h>
 #include <stdio.h>
 
-int main(int argc, char const *argv[])
+
+TEST(LudoGame, init)
 {
     printf("initializing test\n");
     LudoGame *game = new LudoGame();
@@ -12,16 +13,4 @@ int main(int argc, char const *argv[])
     game->Init();
     game->GameLoop();
     delete(game);
-    return 0;
 }
-
-
-// TEST(LudoGame, init)
-// {
-//     printf("initializing test");
-//     LudoGame *game = new LudoGame();
-//     printf("created game object");
-//     game->Init();
-//     game->GameLoop();
-//     delete(game);
-// }
