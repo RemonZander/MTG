@@ -1,10 +1,10 @@
-#include <ludoGame.hpp>
+#include "../../main/ludoGame.hpp"
 
 #ifdef ARDUONO
 #include <Arduino.h>
 #endif
 
-#include <ludoPlayer.hpp>
+#include "ludoPlayer.hpp"
 #include "logger.h"
 
 void LudoGame::Init()
@@ -180,8 +180,6 @@ void LudoGame::GameLoop()
             }
         }
 
-        LOG_I("Current map: %u", this->map);
-
         //if the user has a selected pawn, move it
         if (selectedPawn != -1)
         {
@@ -195,9 +193,6 @@ void LudoGame::GameLoop()
 
                 this->motion->ExecutePath(this->Pathfinding->findPath((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords, nextPos, this->map, &this->state.allPawns, 50));
                 (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsAtStart = false;
-
-                LOG_I("Moving pawn %u from %p to %s", selectedPawn, (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords, nextPos);
-                LOG_I("Current map: %u", this->map);
             }
             
             //try to move pawn if the pawn has not reached the finish
@@ -214,21 +209,12 @@ void LudoGame::GameLoop()
                     (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath = nextPathPosition - 40;
                     nextPos = this->state.homePositions[currentPlayer]->at((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath);
 
-                    LOG_I("Pawn %u is in the home lane", selectedPawn)
                     //if pawn is in pos 6 of home lane. The pawn has reached the finish
-                    if (nextPathPosition == 6) 
-                    {
-                        (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.HasFinished = true;
-                        LOG_I("Pawn %u has finished", selectedPawn)
-                    }
+                    if (nextPathPosition == 6) (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.HasFinished = true;
 
                     //check if player has all the pawns at the finish. If so set the gamestate to stopped. The game will stop at the end of this turn
                     if ((*(*this->players)[currentPlayer]->Pawns)[0]->State.HasFinished && (*(*this->players)[currentPlayer]->Pawns)[1]->State.HasFinished &&
-                    (*(*this->players)[currentPlayer]->Pawns)[3]->State.HasFinished && (*(*this->players)[currentPlayer]->Pawns)[3]->State.HasFinished) 
-                    {
-                        this->state.State = LudoGameStates::stopped;
-                        LOG_I("Player %u has won. The game will be stopped", currentPlayer)
-                    }
+                    (*(*this->players)[currentPlayer]->Pawns)[3]->State.HasFinished && (*(*this->players)[currentPlayer]->Pawns)[3]->State.HasFinished) this->state.State = LudoGameStates::stopped;
                 }
                 //move pawn normally along the game path
                 else nextPos = this->state.GamePath[(*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath + (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps];
@@ -239,16 +225,12 @@ void LudoGame::GameLoop()
             {
                 if (this->state.allPawns[i]->squareCords.x == nextPos.x && this->state.allPawns[i]->squareCords.y == nextPos.y)
                 {
-                    LOG_I("Two pawns are on the same location. One will be returned to it's start position")
                     this->motion->ExecutePath(this->Pathfinding->findPath(this->state.allPawns[i]->squareCords, this->state.allPawns[i]->State.startPos, this->map, &this->state.allPawns, 50));
-                    LOG_I("Moving pawn %u from %p to %s", this->state.allPawns[i]->ID, this->state.allPawns[i]->squareCords, this->state.allPawns[i]->State.startPos);
-                    LOG_I("Current map: %u", this->map);
                     break;
                 }
             }
             this->motion->ExecutePath(this->Pathfinding->findPath((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords, nextPos, this->map, &this->state.allPawns, 50));
-            LOG_I("Moving pawn %u from %p to %s", selectedPawn, (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords, nextPos);
-            LOG_I("Current map: %u", this->map);
+
 
             (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsSelected = false;
             (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps = 0;
@@ -266,6 +248,4 @@ void LudoGame::GameLoop()
             currentPlayer = 0;
         }
     }
-    LOG_I("Game has been stopped.")
-    LOG_I("Current map: %u", this->map);
 };

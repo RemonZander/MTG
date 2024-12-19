@@ -1,0 +1,14 @@
+#pragma once
+#include "../../main/GameBase.hpp"
+#include "../../main/LudoUserInput.hpp"
+#include "../../main/typedefs.h"
+#include "../../main/ludoStates.hpp"
+
+class LudoGame : public GameBase<LudoPlayerState_s, LudoPawnState_t, LudoGameState_t> {
+    public:
+        void GameLoop();
+        void Init();
+
+    private:
+        uint8_t currentPlayer;
+};
