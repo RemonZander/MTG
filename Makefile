@@ -52,6 +52,10 @@ MTGMain_all_tests: MTGMain_test_MotionController MTGMain_pathFinding_debugExport
 
 ludogame_tests: MTG_test_ludogame
 
+MTG_test_ludogame: prepare_linux
+	cd "$(BUILD_DIR)" && make MTG_test_ludogame
+	cp "$(BUILD_DIR)/MTG_Main/test/LudoGame/MTG_test_ludogame" "$(BIN_DIR)/MTG_test_ludogame"
+
 # build/MTG_Main/test/motionController/MTG_test_motionController
 MTGMain_test_MotionController: prepare_linux
 	cd "$(BUILD_DIR)" && make MTG_test_motionController
