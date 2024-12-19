@@ -27,7 +27,8 @@ typedef struct {
     uint32_t resolution;
 } rmt_stepper_uniform_encoder_t;
 
-rmt_channel_handle_t motor_chan = NULL;
+rmt_channel_handle_t rmt_channel_motor_a = NULL;
+rmt_channel_handle_t rmt_channel_motor_b = NULL;
 rmt_stepper_curve_encoder_t *accel_curve = NULL;
 rmt_stepper_uniform_encoder_t *constant_curve = NULL;
 rmt_stepper_curve_encoder_t *decel_curve = NULL;
@@ -110,29 +111,58 @@ static float convert_to_smooth_freq(uint32_t freq1, uint32_t freq2, uint32_t fre
 MotorDriver::MotorDriver(motorPins_t pinsMotorA, motorPins_t pinsMotorB, gpio_num_t endStopXPin, gpio_num_t endStopYPin)
     : endStopXPin(endStopXPin), endStopYPin(endStopYPin), stepperAPins(pinsMotorA), stepperBPins(pinsMotorB)
 {
+    int ret;
     LOG_D("Initialize GPIO");
     gpio_config_t dir_gpio_config = {
         .pin_bit_mask = 1ULL << pinsMotorA.dir | 1ULL << pinsMotorB.dir,
         .mode = GPIO_MODE_OUTPUT,
         .intr_type = GPIO_INTR_DISABLE
     };
-    ESP_ERROR_CHECK(gpio_config(&dir_gpio_config));
+    ret = gpio_config(&dir_gpio_config);
+    if (ret != 0)
+    {
+        LOG_C("faild to set dir pins as output");
+        return;
+    }
     gpio_config_t end_stop_gpio_config = {
         .pin_bit_mask = 1ULL << endStopXPin | 1ULL << endStopYPin,
         .mode = GPIO_MODE_INPUT,
         .intr_type = GPIO_INTR_DISABLE
     };
-    ESP_ERROR_CHECK(gpio_config(&end_stop_gpio_config));
+    ret = gpio_config(&end_stop_gpio_config);
+    if (ret != 0)
+    {
+        LOG_C("faild to set end stop pins as input");
+        return;
+    }
 
-    LOG_D("Create RMT TX channel");
-    rmt_tx_channel_config_t tx_chan_config = {
+    LOG_D("Create RMT TX channels");
+    rmt_tx_channel_config_t tx_chan_config_a = {
         .gpio_num = pinsMotorA.step,
         .clk_src = RMT_CLK_SRC_DEFAULT, // select clock source
         .resolution_hz = STEP_MOTOR_RESOLUTION_HZ,
         .mem_block_symbols = 64,
         .trans_queue_depth = 10, // set the number of transactions that can be pending in the background
     };
-    ESP_ERROR_CHECK(rmt_new_tx_channel(&tx_chan_config, &motor_chan));
+    ret = rmt_new_tx_channel(&tx_chan_config_a, &rmt_channel_motor_a);
+    if (ret != 0)
+    {
+        LOG_C("faild to create rmt channel for motor a");
+        return;
+    }
+    rmt_tx_channel_config_t tx_chan_config_b = {
+        .gpio_num = pinsMotorB.step,
+        .clk_src = RMT_CLK_SRC_DEFAULT, // select clock source
+        .resolution_hz = STEP_MOTOR_RESOLUTION_HZ,
+        .mem_block_symbols = 64,
+        .trans_queue_depth = 10, // set the number of transactions that can be pending in the background
+    };
+    ret = rmt_new_tx_channel(&tx_chan_config_b, &rmt_channel_motor_b);
+    if (ret != 0)
+    {
+        LOG_C("faild to create rmt channel for motor b");
+        return;
+    }
 
     LOG_D("Set spin direction");
     gpio_set_level(pinsMotorA.dir, STEPER_DIR_CW);
@@ -283,13 +313,23 @@ int MotorDriver::SetSpeeds(uint32_t maxSpeed, uint32_t acceleration, uint32_t ju
         decel_curve->curve_table[this->acceleration_steps - i - 1].duration1 = symbol_duration;
     }
 
-    ret = rmt_enable(motor_chan);
+    ret = rmt_enable(rmt_channel_motor_a);
     if (ret != 0)
     {
         rmt_del_stepper_motor_curve_encoder(&accel_curve->base);
         rmt_del_stepper_motor_uniform_encoder(&constant_curve->base);
         rmt_del_stepper_motor_curve_encoder(&decel_curve->base);
-        LOG_C("failed to enable rmt channel");
+        LOG_C("failed to enable rmt channel a");
+        return -3;
+    }
+
+    ret = rmt_enable(rmt_channel_motor_b);
+    if (ret != 0)
+    {
+        rmt_del_stepper_motor_curve_encoder(&accel_curve->base);
+        rmt_del_stepper_motor_uniform_encoder(&constant_curve->base);
+        rmt_del_stepper_motor_curve_encoder(&decel_curve->base);
+        LOG_C("failed to enable rmt channel b");
         return -3;
     }
     return 0;
@@ -327,7 +367,7 @@ void MotorDriver::move(float x, float y, uint32_t speed)
         stepsB = -stepsB;
         gpio_set_level(stepperBPins.dir, STEPER_DIR_CCW);
     }
-    LOG_D("move: steps (%li, %li)", stepsA, stepsB);
+    LOG_D("move: steps A=%li, B=%li", stepsA, stepsB);
 
     rmt_transmit_config_t tx_config = {
         .loop_count = 0,
@@ -341,10 +381,10 @@ void MotorDriver::move(float x, float y, uint32_t speed)
 
         // acceleraton
         curve_samples = stepsA / 2;
-        rmt_transmit(motor_chan, &accel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+        rmt_transmit(rmt_channel_motor_a, &accel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
         // decelaraton
         curve_samples += stepsA & 0x1; // add one if odd
-        rmt_transmit(motor_chan, &decel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+        rmt_transmit(rmt_channel_motor_a, &decel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
     }
     else
     {
@@ -353,37 +393,38 @@ void MotorDriver::move(float x, float y, uint32_t speed)
         // acceleraton
         curve_samples = this->acceleration_steps;
         tx_config.loop_count = 0;
-        rmt_transmit(motor_chan, &accel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+        rmt_transmit(rmt_channel_motor_a, &accel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
         // constant speed
         tx_config.loop_count = stepsA - this->acceleration_steps*2;
-        rmt_transmit(motor_chan, &constant_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+        rmt_transmit(rmt_channel_motor_a, &constant_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
         // decelaraton
         tx_config.loop_count = 0;
-        rmt_transmit(motor_chan, &decel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+        rmt_transmit(rmt_channel_motor_a, &decel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
     }
 
-    // // stepper B
-    // if (stepsB < this->acceleration_steps * 2)
-    // {
-    //     // acceleraton
-    //     curve_samples = stepsB / 2;
-    //     rmt_transmit(motor_chan, &accel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
-    //     // decelaraton
-    //     curve_samples += stepsB & 0x1; // add one if odd
-    //     rmt_transmit(motor_chan, &decel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
-    // }
-    // else
-    // {
-    //     // acceleraton
-    //     curve_samples = this->acceleration_steps;
-    //     rmt_transmit(motor_chan, &accel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
-    //     // constant speed
-    //     tx_config.loop_count = stepsB - this->acceleration_steps*2;
-    //     rmt_transmit(motor_chan, &constant_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
-    //     // decelaraton
-    //     tx_config.loop_count = 0;
-    //     rmt_transmit(motor_chan, &decel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
-    // }
+    tx_config.loop_count = 0;
+    // stepper B
+    if (stepsB < this->acceleration_steps * 2)
+    {
+        // acceleraton
+        curve_samples = stepsB / 2;
+        rmt_transmit(rmt_channel_motor_b, &accel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+        // decelaraton
+        curve_samples += stepsB & 0x1; // add one if odd
+        rmt_transmit(rmt_channel_motor_b, &decel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+    }
+    else
+    {
+        // acceleraton
+        curve_samples = this->acceleration_steps;
+        rmt_transmit(rmt_channel_motor_b, &accel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+        // constant speed
+        tx_config.loop_count = stepsB - this->acceleration_steps*2;
+        rmt_transmit(rmt_channel_motor_b, &constant_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+        // decelaraton
+        tx_config.loop_count = 0;
+        rmt_transmit(rmt_channel_motor_b, &decel_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+    }
 }
 
 void MotorDriver::home(int32_t maxMove, uint32_t speed, float offsetX, float offsetY)
@@ -395,7 +436,7 @@ void MotorDriver::home(int32_t maxMove, uint32_t speed, float offsetX, float off
     gpio_set_level(stepperAPins.dir, STEPER_DIR_CCW);
     gpio_set_level(stepperBPins.dir, STEPER_DIR_CW);
 
-    rmt_transmit(motor_chan, &constant_curve->base, &speed, sizeof(uint32_t), &tx_config);
+    rmt_transmit(rmt_channel_motor_a, &constant_curve->base, &speed, sizeof(uint32_t), &tx_config);
 
     //TODO: check if motors are finished
     while (true && (gpio_get_level(endStopXPin) == 1))
@@ -407,7 +448,7 @@ void MotorDriver::home(int32_t maxMove, uint32_t speed, float offsetX, float off
     gpio_set_level(stepperAPins.dir, STEPER_DIR_CW);
     gpio_set_level(stepperBPins.dir, STEPER_DIR_CW);
 
-    rmt_transmit(motor_chan, &constant_curve->base, &speed, sizeof(uint32_t), &tx_config);
+    rmt_transmit(rmt_channel_motor_a, &constant_curve->base, &speed, sizeof(uint32_t), &tx_config);
 
 
     while (true && (gpio_get_level(endStopYPin) == 0))
