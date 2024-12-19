@@ -1,6 +1,7 @@
+#include <gtest/gtest.h>
 #include "LudoGame.hpp"
 
-TEST(LudoGame, DOTUNRS)
+TEST(LudoGame, init)
 {
     LudoGame *game = new LudoGame();
     game->Init();
