@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #endif
 
-#include <Pawns.hpp>
+#include "Pawns.hpp"
 #include <vector>
 
 template <class T, class U>
