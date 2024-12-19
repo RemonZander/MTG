@@ -6,6 +6,7 @@
 
 TEST(LudoGame, init)
 {
+    putc('a');
     printf("initializing test");
     LudoGame *game = new LudoGame();
     printf("created game object");
