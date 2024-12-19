@@ -1,8 +1,8 @@
 #pragma once
 #include <stdint.h>
-#include <Player.hpp>
-#include <MotionController.hpp>
-#include <PathFinding.hpp>
+#include "Player.hpp"
+#include "MotionController.hpp"
+#include "PathFinding.hpp"
 
 template <class T, class U, class V>
 class GameBase {
