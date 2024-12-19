@@ -4,6 +4,9 @@
 #include "../../main/motorDriver.hpp"
 #include "../../main/typedefs.h"
 
+#include <stdint.h>
+#include <stdio.h>
+
 MotionController::MotionController()
 {
 	// nothing to do
