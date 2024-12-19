@@ -2,7 +2,7 @@
 #define MOTORDRIVER_H
 
 #include <stdint.h>
-#include <typedefs.h>
+#include "typedefs.h"
 
 #ifdef ARDUINO
 #include <AccelStepper.h>
