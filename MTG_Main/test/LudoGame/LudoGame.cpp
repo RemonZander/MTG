@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #endif
 
-#include "logger.h"
+#include "../../main/logger.h"
 
 void LudoGame::Init()
 {
