@@ -35,6 +35,7 @@ void MotionController::SetPhisicalBoardSize(float x, float y, Coordinates_t boar
 bool MotionController::ExecutePath(pathfinding_path_t path)
 {
 	printf("ExecutePath");
+	return true;
 }
 
 void MotionController::SetMagnet(bool state)
@@ -45,4 +46,5 @@ void MotionController::SetMagnet(bool state)
 bool MotionController::MotorToPos(Coordinates_t pos)
 {
 	printf("MotorToPos");
+	return true;
 }
