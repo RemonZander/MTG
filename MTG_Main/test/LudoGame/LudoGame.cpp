@@ -1,4 +1,6 @@
-#include "../../main/ludoGame.hpp"
+#include "ludoGame.hpp"
+#include "../../main/MotionController.hpp"
+#include <vector>
 
 #ifdef ARDUONO
 #include <Arduino.h>
