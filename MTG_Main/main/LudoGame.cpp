@@ -185,7 +185,7 @@ void LudoGame::GameLoop()
         {
             //if pawn is at start move it
             Coordinates_t nextPos;
-            if ((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsAtStart)
+            if ((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsAtStart || !(*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.HasFinished)
             {
                 nextPos = currentPlayer == 0 ? this->state.GamePath[40] : 
                 currentPlayer == 1 ? this->state.GamePath[1] : 
