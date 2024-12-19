@@ -6,9 +6,9 @@
 
 int main(int argc, char const *argv[])
 {
-    printf("initializing test");
+    printf("initializing test\n");
     LudoGame *game = new LudoGame();
-    printf("created game object");
+    printf("created game object\n");
     game->Init();
     game->GameLoop();
     delete(game);
