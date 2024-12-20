@@ -9,9 +9,7 @@
 
 TEST(LudoGame, init)
 {
-    GTEST_COUT << "initializing test" << std::endl;
     LudoGame *game = new LudoGame();
-    GTEST_COUT << "created game object" << std::endl;
     game->Init();
     game->GameLoop();
     delete(game);

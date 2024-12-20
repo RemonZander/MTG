@@ -1,7 +1,7 @@
 #pragma once
 #include "../../main/Player.hpp"
-#include "logger.h"
-#include <random.hpp>
+#include "../../main/logger.h"
+#include "./random.hpp"
 
 using Random = effolkronium::random_static;
 
@@ -17,16 +17,21 @@ class LudoPlayer : public Player<T, U> {
 
             LOG_I("Player %u rolls: %u", this->ID, diceroll);
 
-            uint8_t selectedPawn = Random::get<uint8_t>(1, 3);
+            uint8_t selectedPawn = Random::get<uint8_t>(0, 3);
 
             LOG_I("Player %u has selected pawn: %u", this->ID, selectedPawn);
             
             while ((*this->Pawns)[selectedPawn]->State.IsAtStart && diceroll != 6)
             {
-                selectedPawn = Random::get<uint8_t>(1, 3);
+                diceroll = Random::get<uint8_t>(1, 6);
+
+                LOG_I("Player %u rolls: %u", this->ID, diceroll);
+
+                selectedPawn = Random::get<uint8_t>(0, 3);
                 LOG_I("Player %u has selected pawn: %u", this->ID, selectedPawn);
             }
             
+            LOG_I("Pawn %u has been selected", selectedPawn);
             (*this->Pawns)[selectedPawn]->State.IsSelected = true;
             (*this->Pawns)[selectedPawn]->State.Steps = diceroll;
         }
