@@ -25,17 +25,6 @@ public:
     MotorDriver(motorPins_t pinsMotorA, motorPins_t pinsMotorB, gpio_num_t endStopXPin, gpio_num_t endStopYPin);
     ~MotorDriver();
 
-    /** SetSpeed
-     * 
-     * args:
-     * - maxspeed: maximum allowed speed in mm/sec
-     * - accelleration: avearage acceleration in mm/sec^2 (a smoothening function is applaied over the acceleraton. Thus the max aceleration will be slightly higher)
-     * - jurk: start speed without accelaration in mm/sec
-     */
-    int SetSpeeds(uint32_t maxSpeed, uint32_t acceleration, uint32_t jurk);
-
-    void SetStepsPerMM(int32_t a, int32_t b);
-
     /** move
      * move the motors relitivly
      * 
@@ -45,6 +34,8 @@ public:
      * - speed: speed of the motors in steps/sec
      */
     void move(float x, float y, uint32_t speed);
+
+    int init();
 
     /** home
      * Move to endstops (home position)
