@@ -112,12 +112,16 @@ public:
     {
         rmt_transmit_config_t tx_config = {
             .loop_count = 0,
+            .flags = {
+                .eot_level = 0,
+                .queue_nonblocking = 0
+            }
         };
         return rmt_transmit(channel, &this->_base, &steps, 4, &tx_config);
     }
 
 private:
-    static size_t _encode(rmt_encoder_t *encoder, rmt_channel_handle_t channel, const void *primary_data, size_t data_size, rmt_encode_state_t *ret_state)
+    size_t _encode(rmt_encoder_t *encoder, rmt_channel_handle_t channel, const void *primary_data, size_t data_size, rmt_encode_state_t *ret_state)
     {
         // stepper_encoder *motor_encoder = __containerof(encoder, stepper_encoder, base);
         rmt_encode_state_t session_state = RMT_ENCODING_RESET;
@@ -137,7 +141,7 @@ private:
         }
         if (step_count == 0)
         {
-            LOG_E("stepper_encoder: a move of zero? what are you doing?", data_size);
+            LOG_E("stepper_encoder: a move of zero? what are you doing?");
             return 0;
         }
         else if (step_count > ACCELARATION_STEP_COUNT)
@@ -162,7 +166,7 @@ private:
             symbol_count = this->_encoder->encode(
                 this->_encoder,
                 channel,
-                &this->curve_table[ACCELARATION_STEP_COUNT - step_count],
+                &this->_curve_table[ACCELARATION_STEP_COUNT - step_count],
                 step_count * sizeof(rmt_symbol_word_t),
                 &session_state
             );
@@ -239,60 +243,76 @@ int MotorDriver::init()
 
     LOG_D("Initialize GPIO");
     gpio_config_t dir_gpio_config = {
-        .pin_bit_mask = 1ULL << pinsMotorA.dir | 1ULL << pinsMotorB.dir,
+        .pin_bit_mask = 1ULL << MOTOR_A_DIR_PIN | 1ULL << MOTOR_B_DIR_PIN,
         .mode = GPIO_MODE_OUTPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
         .intr_type = GPIO_INTR_DISABLE
     };
     ret = gpio_config(&dir_gpio_config);
     if (ret != 0)
     {
         LOG_C("faild to set dir pins as output");
-        return;
+        return -1;
     }
     gpio_config_t end_stop_gpio_config = {
-        .pin_bit_mask = 1ULL << endStopXPin | 1ULL << endStopYPin,
+        .pin_bit_mask = 1ULL << LIMIT_X_PIN | 1ULL << LIMIT_Y_PIN,
         .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
         .intr_type = GPIO_INTR_DISABLE
     };
     ret = gpio_config(&end_stop_gpio_config);
     if (ret != 0)
     {
         LOG_C("faild to set end stop pins as input");
-        return;
+        return -2;
     }
 
     LOG_D("Set spin direction");
-    gpio_set_level(pinsMotorA.dir, STEPER_DIR_CW);
-    gpio_set_level(pinsMotorB.dir, STEPER_DIR_CW);
+    gpio_set_level(MOTOR_A_DIR_PIN, STEPER_DIR_CW);
+    gpio_set_level(MOTOR_B_DIR_PIN, STEPER_DIR_CW);
 
     // === init RMT channels
 
     LOG_D("Create RMT TX channels");
     rmt_tx_channel_config_t tx_chan_config_a = {
-        .gpio_num = pinsMotorA.step,
+        .gpio_num = MOTOR_A_STEP_PIN,
         .clk_src = RMT_CLK_SRC_DEFAULT, // select clock source
         .resolution_hz = STEP_MOTOR_RESOLUTION_HZ,
         .mem_block_symbols = 64,
         .trans_queue_depth = 10, // set the number of transactions that can be pending in the background
+        .flags = {
+            .invert_out = 0,   /*!< Whether to invert the RMT channel signal before output to GPIO pad */
+            .with_dma = 1,     /*!< If set, the driver will allocate an RMT channel with DMA capability */
+            .io_loop_back = 0, /*!< The signal output from the GPIO will be fed to the input path as well */
+            .io_od_mode = 0    /*!< Configure the GPIO as open-drain mode */
+        }
     };
     ret = rmt_new_tx_channel(&tx_chan_config_a, &motor_channel_a);
     if (ret != 0)
     {
         LOG_C("faild to create rmt channel for motor a");
-        return;
+        return -3;
     }
     rmt_tx_channel_config_t tx_chan_config_b = {
-        .gpio_num = pinsMotorB.step,
+        .gpio_num = MOTOR_B_STEP_PIN,
         .clk_src = RMT_CLK_SRC_DEFAULT, // select clock source
         .resolution_hz = STEP_MOTOR_RESOLUTION_HZ,
         .mem_block_symbols = 64,
         .trans_queue_depth = 10, // set the number of transactions that can be pending in the background
+        .flags = {
+            .invert_out = 0,   /*!< Whether to invert the RMT channel signal before output to GPIO pad */
+            .with_dma = 1,     /*!< If set, the driver will allocate an RMT channel with DMA capability */
+            .io_loop_back = 0, /*!< The signal output from the GPIO will be fed to the input path as well */
+            .io_od_mode = 0    /*!< Configure the GPIO as open-drain mode */
+        }
     };
     ret = rmt_new_tx_channel(&tx_chan_config_b, &motor_channel_b);
     if (ret != 0)
     {
         LOG_C("faild to create rmt channel for motor b");
-        return;
+        return -4;
     }
 
     // === init motor encoders
@@ -320,15 +340,15 @@ int MotorDriver::init()
     {
         delete(accel_curve);
         LOG_C("faild to allocate memory for constant curve");
-        return -1;
+        return -5;
     }
-    rmt_encoder_config_t encoder_config_const = {};
-    ret = rmt_new_encoder(&encoder_config_const, &constant_curve->encoder);
+    rmt_copy_encoder_config_t encoder_config_const = {};
+    ret = rmt_new_copy_encoder(&encoder_config_const, &constant_curve->encoder);
     if (ret != ESP_OK)
     {
         delete(accel_curve);
         LOG_C("failed to create copy encoder for constant curve");
-        return -2;
+        return -6;
     }
     constant_curve->resolution = STEP_MOTOR_RESOLUTION_HZ;
     constant_curve->base.del = &rmt_del_stepper_motor_uniform_encoder;
@@ -352,7 +372,7 @@ int MotorDriver::init()
         rmt_del_stepper_motor_uniform_encoder(&constant_curve->base);
         delete(decel_curve);
         LOG_C("failed to enable rmt channel a");
-        return -3;
+        return -7;
     }
 
     ret = rmt_enable(motor_channel_b);
@@ -362,7 +382,7 @@ int MotorDriver::init()
         rmt_del_stepper_motor_uniform_encoder(&constant_curve->base);
         delete(decel_curve);
         LOG_C("failed to enable rmt channel b");
-        return -3;
+        return -8;
     }
     return 0;
 }
@@ -381,13 +401,6 @@ MotorDriver::~MotorDriver()
     {
         delete(decel_curve);
     }
-}
-
-void MotorDriver::SetStepsPerMM(int32_t a, int32_t b)
-{
-    stepsPerMMA = a;
-    stepsPerMMB = b;
-    LOG_D("steps per mm: A=%li, B=%li", stepsPerMMA, stepsPerMMB);
 }
 
 void MotorDriver::move(float x, float y, uint32_t speed)
@@ -419,6 +432,10 @@ void MotorDriver::move(float x, float y, uint32_t speed)
 
     rmt_transmit_config_t tx_config = {
         .loop_count = 0,
+        .flags = {
+            .eot_level = 0,
+            .queue_nonblocking = 0
+        }
     };
     uint32_t curve_samples;
     int ret;
@@ -516,6 +533,10 @@ void MotorDriver::home(int32_t maxMove, uint32_t speed, float offsetX, float off
 {
     rmt_transmit_config_t tx_config = {
         .loop_count = maxMove,
+        .flags = {
+            .eot_level = 0,
+            .queue_nonblocking = 0
+        }
     };
 
     gpio_set_level(stepperAPins.dir, STEPER_DIR_CCW);
