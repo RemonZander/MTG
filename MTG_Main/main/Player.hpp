@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #endif
 
-#include <Pawns.hpp>
+#include "Pawns.hpp"
 #include <vector>
 
 template <class T, class U>
@@ -16,5 +16,5 @@ class Player {
         T State;
         std::vector<Pawn<U>*>* Pawns;
 
-        virtual void DoTurn();
+        virtual void DoTurn() = 0;
 };

@@ -1,9 +1,9 @@
 #pragma once
-#include "GameBase.hpp"
-#include "LudoUserInput.hpp"
-#include "typedefs.h"
-#include "ludoStates.hpp"
-#include "ludoPlayer.hpp"
+#include "../../main/GameBase.hpp"
+#include "../../main/LudoUserInput.hpp"
+#include "../../main/typedefs.h"
+#include "../../main/ludoStates.hpp"
+#include "./ludoPlayer.hpp"
 
 class LudoGame : public GameBase<LudoPlayerState_s, LudoPawnState_t, LudoGameState_t> {
     public:

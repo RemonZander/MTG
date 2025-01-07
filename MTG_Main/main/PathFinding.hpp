@@ -4,8 +4,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <vector>
-#include <ludoStates.hpp>
-#include <Pawns.hpp>
+#include "ludoStates.hpp"
+#include "Pawns.hpp"
 
 #include "config.h"
 #include "typedefs.h"

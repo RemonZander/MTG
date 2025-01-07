@@ -25,7 +25,7 @@ prepare_linux:
 
 install_dependencies_ubuntu:
 	apt-get update
-	apt-get install -y git wget flex bison gperf python3 python3-pip python3-venv cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0
+	apt-get install -y git wget cmake flex bison gperf python3 python3-pip python3-venv ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0
 	apt-get install -y make libgtest-dev
 
 install_ESP_IDF_linux:
@@ -49,6 +49,12 @@ MTGMain_build_full: install_dependencies_ubuntu install_ESP_IDF_linux MTGMain_bu
 all_tests: MTGMain_all_tests
 
 MTGMain_all_tests: MTGMain_test_MotionController MTGMain_pathFinding_debugExport
+
+ludogame_tests: MTG_test_ludogame
+
+MTG_test_ludogame: prepare_linux
+	cd "$(BUILD_DIR)" && make MTG_test_ludogame
+	cp "$(BUILD_DIR)/MTG_Main/test/LudoGame/MTG_test_ludogame" "$(BIN_DIR)/MTG_test_ludogame"
 
 # build/MTG_Main/test/motionController/MTG_test_motionController
 MTGMain_test_MotionController: prepare_linux
