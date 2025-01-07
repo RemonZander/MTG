@@ -2,23 +2,19 @@
 #define MOTORDRIVER_H
 
 #include <stdint.h>
+#include "typedefs.h"
 
 #ifdef ARDUINO
 #include <AccelStepper.h>
 #endif
 
-#ifdef ARDUINO
-struct motorPins_t {
-    uint16_t step;
-    uint16_t dir;
-};
-#else
+#ifdef IDF_VER
 #include <soc/gpio_num.h>
+#endif
 struct motorPins_t {
     gpio_num_t step;
     gpio_num_t dir;
 };
-#endif
 
 class MotorDriver {
 public:

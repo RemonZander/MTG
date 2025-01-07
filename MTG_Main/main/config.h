@@ -1,6 +1,16 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+//temp fix for GPIO pins
+#ifndef IDF_VER
+#define GPIO_NUM_12 0
+#define GPIO_NUM_11 1
+#define GPIO_NUM_14 2
+#define GPIO_NUM_13 3
+#define GPIO_NUM_9 4
+#define GPIO_NUM_10 5
+#endif
+
 #define LOGLEVEL_DEBUG 5
 #define LOGLEVEL_INFO 4
 #define LOGLEVEL_WARN 3
