@@ -25,7 +25,7 @@ prepare_linux:
 
 install_dependencies_ubuntu:
 	apt-get update
-	apt-get install -y git wget flex bison gperf python3 python3-pip python3-venv cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0
+	apt-get install -y git wget cmake flex bison gperf python3 python3-pip python3-venv ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0
 	apt-get install -y make libgtest-dev
 
 install_ESP_IDF_linux:
