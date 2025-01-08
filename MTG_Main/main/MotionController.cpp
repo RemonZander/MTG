@@ -6,7 +6,8 @@
 
 MotionController::MotionController()
 {
-	// nothing to do
+	_driver = new MotorDriver();
+	_driver->init();
 };
 
 MotionController::~MotionController()
@@ -14,17 +15,14 @@ MotionController::~MotionController()
 	// nothing to do
 }
 
-void MotionController::SetPins(motorPins_t pinsMotorA, motorPins_t pinsMotorB, gpio_num_t endStopXPin, gpio_num_t endStopYPin)
+void MotionController::SetPins()
 {
-	_driver = new MotorDriver(pinsMotorA, pinsMotorB, endStopXPin, endStopYPin);
-	_driver->SetSpeeds(MOTOR_HOME_SPEED, MOTOR_HOME_ACCELARATION, 0);
-	_driver->home(2500, 100, _boardOffset_x, _boardOffset_y);
-	_driver->SetSpeeds(MOTOR_MAX_SPEED, MOTOR_ACCELARATION, 0);
+	_driver = new MotorDriver();
+	_driver->init();
 }
 
 void MotionController::SetStepsPerMM(int32_t stepsPerMM_A, int32_t stepsPerMM_B)
 {
-	_driver->SetStepsPerMM(stepsPerMM_A, stepsPerMM_B);
 }
 
 void MotionController::SetPhisicalBoardSize(float x, float y, Coordinates_t boardSize)
