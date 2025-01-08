@@ -9,8 +9,8 @@
 #include "logger.h"
 
 #define CURVE_SAPLES_COUND 500
-#define STEP_MOTOR_RESOLUTION_HZ 1000000
-// #define STEP_MOTOR_RESOLUTION_HZ 100000
+// #define STEP_MOTOR_RESOLUTION_HZ 1000000
+#define STEP_MOTOR_RESOLUTION_HZ 500000
 
 // #if MOTOR_JURK >= MOTOR_MAX_SPEED
 // #error "MOTOR_JURK sould be lower than MOTOR_MAX_SPEED"
@@ -209,7 +209,15 @@ static size_t rmt_encode_stepper_motor_uniform(rmt_encoder_t *encoder, rmt_chann
     rmt_stepper_uniform_encoder_t *motor_encoder = __containerof(encoder, rmt_stepper_uniform_encoder_t, base);
     rmt_encoder_handle_t copy_encoder = motor_encoder->encoder;
     rmt_encode_state_t session_state = RMT_ENCODING_RESET;
-    uint32_t target_freq_hz = *(uint32_t *)primary_data;
+    uint32_t target_freq_hz;
+    if (data_size == 0)
+    {
+        target_freq_hz = MOTOR_MAX_SPEED_STEPS;
+    }
+    else
+    {
+        target_freq_hz = *(uint32_t *)primary_data;
+    }
     uint16_t symbol_duration = STEP_MOTOR_RESOLUTION_HZ / target_freq_hz / 2;
     rmt_symbol_word_t freq_sample = {
         .duration0 = symbol_duration,
@@ -289,7 +297,7 @@ int MotorDriver::init()
         .gpio_num = MOTOR_A_STEP_PIN,
         .clk_src = RMT_CLK_SRC_DEFAULT, // select clock source
         .resolution_hz = STEP_MOTOR_RESOLUTION_HZ,
-        .mem_block_symbols = 64,
+        .mem_block_symbols = 128,
         .trans_queue_depth = 10, // set the number of transactions that can be pending in the background
         .flags = {
             .invert_out = 0,   /*!< Whether to invert the RMT channel signal before output to GPIO pad */
@@ -308,7 +316,7 @@ int MotorDriver::init()
         .gpio_num = MOTOR_B_STEP_PIN,
         .clk_src = RMT_CLK_SRC_DEFAULT, // select clock source
         .resolution_hz = STEP_MOTOR_RESOLUTION_HZ,
-        .mem_block_symbols = 64,
+        .mem_block_symbols = 128,
         .trans_queue_depth = 10, // set the number of transactions that can be pending in the background
         .flags = {
             .invert_out = 0,   /*!< Whether to invert the RMT channel signal before output to GPIO pad */
@@ -488,7 +496,7 @@ void MotorDriver::move(float x, float y, uint32_t speed)
         // LOG_D("move a: full curve 2");
         // constant speed
         tx_config.loop_count = stepsA - (uint32_t)ACCELARATION_STEP_COUNT*2;
-        ret = rmt_transmit(motor_channel_a, &constant_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+        ret = rmt_transmit(motor_channel_a, &constant_curve->base, NULL, 0, &tx_config);
         if (ret != 0)
         {
             LOG_E("move a: faild to move motor constant");
@@ -532,7 +540,7 @@ void MotorDriver::move(float x, float y, uint32_t speed)
         }
         // constant speed
         tx_config.loop_count = stepsB - (uint32_t)ACCELARATION_STEP_COUNT*2;
-        ret = rmt_transmit(motor_channel_b, &constant_curve->base, &curve_samples, sizeof(curve_samples), &tx_config);
+        ret = rmt_transmit(motor_channel_b, &constant_curve->base, NULL, 0, &tx_config);
         if (ret != 0)
         {
             LOG_E("move b: faild to move motor constant");
@@ -551,6 +559,7 @@ void MotorDriver::move(float x, float y, uint32_t speed)
 
 void MotorDriver::home(int32_t maxMove, uint32_t speed, float offsetX, float offsetY)
 {
+    int ret;
     rmt_transmit_config_t tx_config = {
         .loop_count = maxMove,
         .flags = {
@@ -559,28 +568,50 @@ void MotorDriver::home(int32_t maxMove, uint32_t speed, float offsetX, float off
         }
     };
 
-    gpio_set_level(stepperAPins.dir, STEPER_DIR_CCW);
-    gpio_set_level(stepperBPins.dir, STEPER_DIR_CW);
+    gpio_set_level(MOTOR_A_DIR_PIN, STEPER_DIR_CCW);
+    gpio_set_level(MOTOR_B_DIR_PIN, STEPER_DIR_CCW);
 
-    rmt_transmit(motor_channel_a, &constant_curve->base, &speed, sizeof(uint32_t), &tx_config);
+    uint32_t homeSpeed = MOTOR_HOME_SPEED_STEPS;
+
+    ret = rmt_transmit(motor_channel_a, &constant_curve->base, &homeSpeed, sizeof(homeSpeed), &tx_config);
+    if (ret != 0)
+    {
+        LOG_E("home a: move 1: faild to move motor constant");
+    }
+    ret = rmt_transmit(motor_channel_b, &constant_curve->base, &homeSpeed, sizeof(homeSpeed), &tx_config);
+    if (ret != 0)
+    {
+        LOG_E("move b: move 1: faild to move motor constant");
+    }
 
     //TODO: check if motors are finished
-    while (true && (gpio_get_level(endStopXPin) == 1))
+    while (true && (gpio_get_level(LIMIT_X_PIN) == 1))
     {
         // do nothing?
     }
-    //TODO: stop motors
+    // rmt_reset_stepper_motor_uniform(constant_curve);
+    // rmt_reset_stepper_motor_uniform(motor_channel_b);
 
-    gpio_set_level(stepperAPins.dir, STEPER_DIR_CW);
-    gpio_set_level(stepperBPins.dir, STEPER_DIR_CW);
+    gpio_set_level(MOTOR_A_DIR_PIN, STEPER_DIR_CCW);
+    gpio_set_level(MOTOR_B_DIR_PIN, STEPER_DIR_CW);
 
-    rmt_transmit(motor_channel_a, &constant_curve->base, &speed, sizeof(uint32_t), &tx_config);
+    ret = rmt_transmit(motor_channel_a, &constant_curve->base, &homeSpeed, sizeof(homeSpeed), &tx_config);
+    if (ret != 0)
+    {
+        LOG_E("home a: move 2: faild to move motor constant");
+    }
+    ret = rmt_transmit(motor_channel_b, &constant_curve->base, &homeSpeed, sizeof(homeSpeed), &tx_config);
+    if (ret != 0)
+    {
+        LOG_E("move b: move 2: faild to move motor constant");
+    }
 
-    while (true && (gpio_get_level(endStopYPin) == 0))
+    while (true && (gpio_get_level(LIMIT_Y_PIN) == 0))
     {
         // do nothing?
     }
-    //TODO: stop motors
+    // rmt_reset_stepper_motor_uniform(constant_curve);
+    // rmt_reset_stepper_motor_uniform(motor_channel_b);
 
     // move to center of (0,0)
     move(offsetX, offsetY, jurk);

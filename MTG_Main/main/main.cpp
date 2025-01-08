@@ -41,7 +41,7 @@ extern "C" void app_main(void)
   // delay(5000);
   LOG_D("move");
   
-  md->move(10.0, -0.0, 100);
+  md->move(25.0, -0.0, 100);
   LOG_D("bloep");
   while(true);
 }
