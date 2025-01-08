@@ -11,6 +11,19 @@ void LudoGame::Init()
     LOG_I("initializing game");
     this->state.State = LudoGameStates::init;
 
+    err = nvs_flash_init();
+    if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        // NVS partition was truncated and needs to be erased
+        // Retry nvs_flash_init
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        err = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK( err );
+
+    nvs_open("storage", NVS_READWRITE, &this->nvsFlashHandle);
+
+    //if GPOI pin high then read from storage
+
     this->motion = new MotionController();
     motion->SetPhisicalBoardSize(240.0, 240.0, {.x = 15, .y = 15});
     motion->SetStepsPerMM(STEPS_PER_MM, STEPS_PER_MM);
@@ -301,3 +314,61 @@ void LudoGame::GameLoop()
         }
     }
 };
+
+void SaveGame()
+{
+    LOG_I("Saving game...");
+    nvs_set_i32(this->nvsFlashHandle, "LudoGameState", this->state.State);
+    nvs_commit(this->nvsFlashHandle);
+    nvs_set_i32(this->nvsFlashHandle, "currentPlayer", this->currentPlayer);
+    nvs_commit(this->nvsFlashHandle);
+
+    for (size_t i = 0; i < BOARD_SIZE_X_LUDO; i++)
+    {
+        for (size_t j = 0; j < BOARD_SIZE_Y_LUDO; j++)
+        {
+            char snum[5];
+            char snum2[5];
+
+            itoa(i, snum, 10);
+            itoa(j, snum, 10);
+
+            nvs_set_i32(this->nvsFlashHandle, "map[" + snum + "," + snum2 + "]", this->state.State);
+            nvs_commit(this->nvsFlashHandle);
+        }
+    }
+
+    for (size_t i = 0; i < this->players.size(); i++)
+    {
+        char snum[5];
+        itoa(i, snum, 10);
+        nvs_set_i32(this->nvsFlashHandle, "player" + snum, (*this->players)[i]->ID);
+        nvs_commit(this->nvsFlashHandle);
+
+        for (size_t j = 0; j < (*this->players)[i]->Pawns.size(); j++)
+        {
+            char snum2[5];
+            itoa(j, snum2, 10);
+            nvs_set_i32(this->nvsFlashHandle, "player" + snum + "pawn" + snum2, (*(*this->players)[i]->Pawns)[j]->ID);
+            nvs_commit(this->nvsFlashHandle);
+            nvs_set_i32(this->nvsFlashHandle, "player" + snum + "pawn" + snum2 + "IsSelected", (*(*this->players)[i]->Pawns)[j]->IsSelected);
+            nvs_commit(this->nvsFlashHandle);
+            nvs_set_i32(this->nvsFlashHandle, "player" + snum + "pawn" + snum2 + "Steps", (*(*this->players)[i]->Pawns)[j]->Steps);
+            nvs_commit(this->nvsFlashHandle);
+            nvs_set_i32(this->nvsFlashHandle, "player" + snum + "pawn" + snum2 + "IsAtStart", (*(*this->players)[i]->Pawns)[j]->IsAtStart);
+            nvs_commit(this->nvsFlashHandle);
+            nvs_set_i32(this->nvsFlashHandle, "player" + snum + "pawn" + snum2 + "IsInHome", (*(*this->players)[i]->Pawns)[j]->IsInHome);
+            nvs_commit(this->nvsFlashHandle);
+            nvs_set_i32(this->nvsFlashHandle, "player" + snum + "pawn" + snum2 + "HasFinished", (*(*this->players)[i]->Pawns)[j]->HasFinished);
+            nvs_commit(this->nvsFlashHandle);
+            nvs_set_i32(this->nvsFlashHandle, "player" + snum + "pawn" + snum2 + "startPosX", (*(*this->players)[i]->Pawns)[j]->startPos.x);
+            nvs_commit(this->nvsFlashHandle);
+            nvs_set_i32(this->nvsFlashHandle, "player" + snum + "pawn" + snum2 + "startPosY", (*(*this->players)[i]->Pawns)[j]->startPos.y);
+            nvs_commit(this->nvsFlashHandle);
+            nvs_set_i32(this->nvsFlashHandle, "player" + snum + "pawn" + snum2 + "CurrentGamePath", (*(*this->players)[i]->Pawns)[j]->CurrentGamePath);
+            nvs_commit(this->nvsFlashHandle);
+        }
+    }
+
+    LOG_I("Game saved!");
+}
