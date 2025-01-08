@@ -22,8 +22,10 @@ struct motorPins_t {
 
 class MotorDriver {
 public:
-    MotorDriver(motorPins_t pinsMotorA, motorPins_t pinsMotorB, gpio_num_t endStopXPin, gpio_num_t endStopYPin);
+    MotorDriver();
     ~MotorDriver();
+
+    int init();
 
     /** move
      * move the motors relitivly
@@ -34,8 +36,6 @@ public:
      * - speed: speed of the motors in steps/sec
      */
     void move(float x, float y, uint32_t speed);
-
-    int init();
 
     /** home
      * Move to endstops (home position)

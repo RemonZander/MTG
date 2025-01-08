@@ -6,7 +6,8 @@
 
 MotionController::MotionController()
 {
-	// nothing to do
+	_driver = new MotorDriver();
+	_driver->init();
 };
 
 MotionController::~MotionController()
@@ -14,9 +15,9 @@ MotionController::~MotionController()
 	// nothing to do
 }
 
-void MotionController::SetPins(motorPins_t pinsMotorA, motorPins_t pinsMotorB, gpio_num_t endStopXPin, gpio_num_t endStopYPin)
+void MotionController::SetPins()
 {
-	_driver = new MotorDriver(pinsMotorA, pinsMotorB, endStopXPin, endStopYPin);
+	_driver = new MotorDriver();
 	_driver->init();
 }
 
