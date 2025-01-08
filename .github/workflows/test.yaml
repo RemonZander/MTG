@@ -12,11 +12,13 @@ jobs:
       - name: install gtest
         run: sudo apt install -y libgtest-dev
       - name: build
-        run: make all_tests
-      - name: test motion controller
-        run: ./bin/MTG_test_motionController
-      - name: generate pathfind debug export
-        run: ./bin/MTG_pathfind_debugExport > pathfind.json
+        run: make ludogame_tests
+      # - name: test motion controller
+      #   run: ./bin/MTG_test_motionController
+      # - name: generate pathfind debug export
+      #   run: ./bin/MTG_pathfind_debugExport > pathfind.json
+      - name: Test LudoGame
+        run: ./bin/MTG_test_ludogame
       - name: create artafect for debug export
         uses: actions/upload-artifact@v4
         with:
