@@ -9,11 +9,11 @@
 #include "freertos/task.h"
 #endif
 
-// #include <ludoGame.hpp>
-#include <motorDriver.hpp>
+#include <ludoGame.hpp>
+// #include <motorDriver.hpp>
 #include "logger.h"
 
-// LudoGame* game;
+LudoGame* game;
 
 #ifdef ARDUINO
 void loop() {}
@@ -29,19 +29,7 @@ extern "C" void app_main(void)
 	ESP_ERROR_CHECK(esp_task_wdt_deinit());
 #endif
   
-  // game->Init();
+  game->Init();
 
-  // game->GameLoop();
-
-  MotorDriver *md = new MotorDriver();
-  md->init();
-
-  // LOG_D("wait");
-
-  // delay(5000);
-  LOG_D("move");
-  
-  md->move(25.0, -0.0, 100);
-  LOG_D("bloep");
-  while(true);
+  game->GameLoop();
 }
