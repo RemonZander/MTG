@@ -41,7 +41,7 @@
 #define STEPS_PER_MM 10
 #define LIMIT_Y_PIN GPIO_NUM_9
 #define LIMIT_X_PIN GPIO_NUM_10
-#define electromagnetPin GPIO_NUM_2
+#define MAGNET_PIN GPIO_NUM_2
 
 #define MOTOR_MAX_SPEED 20
 #define MOTOR_JURK 0.5

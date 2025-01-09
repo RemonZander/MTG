@@ -343,7 +343,7 @@ pathfinding_path_t PathFinding_impoved::gatherPath(BoardMap_t floodFill_Map)
             }
         }
 
-        if (minWieght_dir != lastDirection && lastDirection != -1)
+        //if (minWieght_dir != lastDirection && lastDirection != -1)
         {
             path->push_back({.target = curPos, .magnetEn = true});
         }

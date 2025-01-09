@@ -260,7 +260,7 @@ int MotorDriver::init()
 
     LOG_D("Initialize GPIO");
     gpio_config_t dir_gpio_config = {
-        .pin_bit_mask = 1ULL << MOTOR_A_DIR_PIN | 1ULL << MOTOR_B_DIR_PIN,
+        .pin_bit_mask = 1ULL << MOTOR_A_DIR_PIN | 1ULL << MOTOR_B_DIR_PIN | 1ULL << MAGNET_PIN,
         .mode = GPIO_MODE_OUTPUT,
         .pull_up_en = GPIO_PULLUP_DISABLE,
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
@@ -615,4 +615,9 @@ void MotorDriver::home(int32_t maxMove, uint32_t speed, float offsetX, float off
 
     // move to center of (0,0)
     move(offsetX, offsetY, jurk);
+}
+
+void MotorDriver::setMagnet(bool state)
+{
+    gpio_set_level(MAGNET_PIN, (stete) ? 0 : 1);
 }

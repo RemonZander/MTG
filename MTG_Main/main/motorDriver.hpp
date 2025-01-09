@@ -41,6 +41,7 @@ public:
      * - speed: speed of the motors in steps/sec
      */
     void home(int32_t maxMove, uint32_t speed, float offsetX, float offsetY);
+    void setMagnet(bool state);
 
 private:
     gpio_num_t endStopXPin, endStopYPin;
