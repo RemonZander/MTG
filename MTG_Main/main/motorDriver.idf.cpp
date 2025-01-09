@@ -619,5 +619,5 @@ void MotorDriver::home(int32_t maxMove, uint32_t speed, float offsetX, float off
 
 void MotorDriver::setMagnet(bool state)
 {
-    gpio_set_level(MAGNET_PIN, (stete) ? 0 : 1);
+    gpio_set_level(MAGNET_PIN, (state) ? 0 : 1);
 }

@@ -48,7 +48,7 @@ bool MotionController::ExecutePath(pathfinding_path_t path)
 
 void MotionController::SetMagnet(bool state)
 {
-	this->_driver.setMagnet(state);
+	this->_driver->setMagnet(state);
 }
 
 bool MotionController::MotorToPos(Coordinates_t pos)
