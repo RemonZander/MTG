@@ -12,4 +12,5 @@ class LudoGame : public GameBase<LudoPlayerState_s, LudoPawnState_t, LudoGameSta
 
     private:
         uint8_t currentPlayer;
+        void SaveGame();
 };
