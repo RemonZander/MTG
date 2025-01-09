@@ -1,6 +1,7 @@
 #include "PathFinding.hpp"
 #include "config.h"
 #include "typedefs.h"
+#include "logger.h"
 
 #include <stdint.h>
 #include <cstring>
@@ -76,8 +77,7 @@ PathFinding_impoved::~PathFinding_impoved()
     // do nothing??
 }
 
-template <typename T>
-pathfinding_path_t PathFinding_impoved::findPath(Cordinates_s start, Cordinates_s end, BoardMap_t wightMap, const std::vector<Pawn<T>*>* pawns, uint8_t pown_wight)
+pathfinding_path_t PathFinding_impoved::findPath(Cordinates_s start, Cordinates_s end, BoardMap_t wightMap, const std::vector<Pawn<LudoPawnState_t>*>* pawns, uint8_t pown_wight)
 {
     #ifdef DEBUG_EXPORT
     printf("{\n");
@@ -346,6 +346,7 @@ pathfinding_path_t PathFinding_impoved::gatherPath(BoardMap_t floodFill_Map)
         //if (minWieght_dir != lastDirection && lastDirection != -1)
         {
             path->push_back({.target = curPos, .magnetEn = true});
+            LOG_D("path: stap %i: (%u, %u)", index, curPos.x, curPos.y);
         }
         lastDirection = minWieght_dir;
         curPos.x = minWieght_pos.x;

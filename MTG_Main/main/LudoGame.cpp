@@ -91,68 +91,83 @@ void LudoGame::Init()
 
 
     //init player home positions
-    this->state.homePositions[0] = new std::vector<Coordinates_t>{
+    this->state.homePositions.push_back(new std::vector<Coordinates_t>{
         Coordinates_t{1,7},
         Coordinates_t{2,7},
         Coordinates_t{3,7},
         Coordinates_t{4,7},
         Coordinates_t{5,7},
         Coordinates_t{6,7}
-        };
-    this->state.homePositions[1] = new std::vector<Coordinates_t>{
+        });
+    this->state.homePositions.push_back(new std::vector<Coordinates_t>{
         Coordinates_t{7,1},
         Coordinates_t{7,2},
         Coordinates_t{7,3},
         Coordinates_t{7,4},
         Coordinates_t{7,5},
         Coordinates_t{7,6}
-        };
-    this->state.homePositions[2] = new std::vector<Coordinates_t>{
+        });
+    this->state.homePositions.push_back(new std::vector<Coordinates_t>{
         Coordinates_t{13,7},
         Coordinates_t{12,7},
         Coordinates_t{11,7},
         Coordinates_t{10,7},
         Coordinates_t{9,7},
         Coordinates_t{8,7}
-        };
-    this->state.homePositions[3] = new std::vector<Coordinates_t>{
+        });
+    this->state.homePositions.push_back(new std::vector<Coordinates_t>{
         Coordinates_t{7,13},
         Coordinates_t{7,12},
         Coordinates_t{7,11},
         Coordinates_t{7,10},
         Coordinates_t{7,9},
         Coordinates_t{7,8}
-        };
+        });
 
     //init players with pawns
     this->players = new std::vector<Player<LudoPlayerState_t, LudoPawnState_t>*>{
-        new LudoPlayer<LudoPlayerState_t,LudoPawnState_t>(0, new std::vector<Pawn<LudoPawnState_t>*>{ 
-        new Pawn<LudoPawnState_t>(0, Coordinates_t{1, 1}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{1, 1}}),
-        new Pawn<LudoPawnState_t>(0, Coordinates_t{3, 1}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{3, 1}}),
-        new Pawn<LudoPawnState_t>(0, Coordinates_t{1, 3}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{1, 3}}),
-        new Pawn<LudoPawnState_t>(0, Coordinates_t{3, 3}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{3, 3}}) 
-        }, LudoPlayerState_t{.userInputModule = LudoInputModule(0x08), .HasPawnOnboard = false}),
-        new LudoPlayer<LudoPlayerState_t, LudoPawnState_t>(1, new std::vector<Pawn<LudoPawnState_t>*>{ 
-        new Pawn<LudoPawnState_t>(0, Coordinates_t{11, 1}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{11, 1}}),
-        new Pawn<LudoPawnState_t>(0, Coordinates_t{13, 1}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{12, 1}}),
-        new Pawn<LudoPawnState_t>(0, Coordinates_t{11, 3}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{11, 3}}),
-        new Pawn<LudoPawnState_t>(0, Coordinates_t{13, 3}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{13, 3}}) 
-        }, LudoPlayerState_t{.userInputModule = LudoInputModule(0x0B), .HasPawnOnboard = false}),
-        new LudoPlayer<LudoPlayerState_t, LudoPawnState_t>(2, new std::vector<Pawn<LudoPawnState_t>*>{ 
-        new Pawn<LudoPawnState_t>(0, Coordinates_t{1, 11}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{1, 11}}),
-        new Pawn<LudoPawnState_t>(0, Coordinates_t{3, 11}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{3, 11}}),
-        new Pawn<LudoPawnState_t>(0, Coordinates_t{1, 13}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{1, 13}}),
-        new Pawn<LudoPawnState_t>(0, Coordinates_t{3, 13}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{3, 13}})  
-        }, LudoPlayerState_t{.userInputModule = LudoInputModule(0x0A), .HasPawnOnboard = false}),
-        new LudoPlayer<LudoPlayerState_t, LudoPawnState_t>(3, new std::vector<Pawn<LudoPawnState_t>*>{ 
-        new Pawn<LudoPawnState_t>(0, Coordinates_t{11, 11}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{11, 11}}),
-        new Pawn<LudoPawnState_t>(0, Coordinates_t{13, 11}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{13, 11}}),
-        new Pawn<LudoPawnState_t>(0, Coordinates_t{11, 13}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{11, 13}}),
-        new Pawn<LudoPawnState_t>(0, Coordinates_t{13, 13}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{13, 13}}) 
-        }, LudoPlayerState_t{.userInputModule = LudoInputModule(0x09), .HasPawnOnboard = false})};
+        new LudoPlayer<LudoPlayerState_t,LudoPawnState_t>(0,
+            new std::vector<Pawn<LudoPawnState_t>*>{ 
+                new Pawn<LudoPawnState_t>(0, Coordinates_t{1, 1}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{1, 1}}),
+                new Pawn<LudoPawnState_t>(0, Coordinates_t{3, 1}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{3, 1}}),
+                new Pawn<LudoPawnState_t>(0, Coordinates_t{1, 3}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{1, 3}}),
+                new Pawn<LudoPawnState_t>(0, Coordinates_t{3, 3}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{3, 3}}) 
+            },
+            LudoPlayerState_t{.userInputModule = LudoInputModule(0x08), .HasPawnOnboard = false}
+        ),
+        new LudoPlayer<LudoPlayerState_t, LudoPawnState_t>(1,
+            new std::vector<Pawn<LudoPawnState_t>*>{ 
+                new Pawn<LudoPawnState_t>(0, Coordinates_t{11, 1}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{11, 1}}),
+                new Pawn<LudoPawnState_t>(0, Coordinates_t{13, 1}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{12, 1}}),
+                new Pawn<LudoPawnState_t>(0, Coordinates_t{11, 3}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{11, 3}}),
+                new Pawn<LudoPawnState_t>(0, Coordinates_t{13, 3}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{13, 3}}) 
+            },
+            LudoPlayerState_t{.userInputModule = LudoInputModule(0x0B), .HasPawnOnboard = false}
+        ),
+        new LudoPlayer<LudoPlayerState_t, LudoPawnState_t>(2,
+            new std::vector<Pawn<LudoPawnState_t>*>{ 
+                new Pawn<LudoPawnState_t>(0, Coordinates_t{1, 11}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{1, 11}}),
+                new Pawn<LudoPawnState_t>(0, Coordinates_t{3, 11}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{3, 11}}),
+                new Pawn<LudoPawnState_t>(0, Coordinates_t{1, 13}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{1, 13}}),
+                new Pawn<LudoPawnState_t>(0, Coordinates_t{3, 13}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{3, 13}})  
+            },
+            LudoPlayerState_t{.userInputModule = LudoInputModule(0x0A), .HasPawnOnboard = false}
+        ),
+        new LudoPlayer<LudoPlayerState_t, LudoPawnState_t>(3,
+            new std::vector<Pawn<LudoPawnState_t>*>{ 
+                new Pawn<LudoPawnState_t>(0, Coordinates_t{11, 11}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{11, 11}}),
+                new Pawn<LudoPawnState_t>(0, Coordinates_t{13, 11}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{13, 11}}),
+                new Pawn<LudoPawnState_t>(0, Coordinates_t{11, 13}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{11, 13}}),
+                new Pawn<LudoPawnState_t>(0, Coordinates_t{13, 13}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{13, 13}}) 
+            },
+            LudoPlayerState_t{.userInputModule = LudoInputModule(0x09), .HasPawnOnboard = false}
+        )
+    };
 
-        //make a list of all pawns in the game. This list is used for the pathfinding
-        for (size_t i = 0; i < this->players->size(); i++) for (size_t j = 0; j < (*this->players)[i]->Pawns->size(); j++) this->state.allPawns.push_back((*(*this->players)[i]->Pawns)[j]);
+    //make a list of all pawns in the game. This list is used for the pathfinding
+    for (size_t i = 0; i < this->players->size(); i++) 
+        for (size_t j = 0; j < (*this->players)[i]->Pawns->size(); j++) 
+            this->state.allPawns.push_back((*(*this->players)[i]->Pawns)[j]);
 
     LOG_I("initialization done, starting game...");
     this->state.State = LudoGameStates::Player1;
@@ -195,7 +210,7 @@ void LudoGame::GameLoop()
         
 
         //get the selected pawn from the user
-        uint8_t selectedPawn = -1;
+        int8_t selectedPawn = -1;
         for (size_t i = 0; i < (*this->players)[currentPlayer]->Pawns->size(); i++)
         {
             if ((*(*this->players)[currentPlayer]->Pawns)[i]->State.IsSelected) 
@@ -290,9 +305,9 @@ void LudoGame::GameLoop()
                 }
             }
 
-            this->motion->ExecutePath(this->Pathfinding->findPath((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords, nextPos, this->map, &this->state.allPawns, 50));
             LOG_I("Moving pawn %u from x: %u y: %u to x: %u y: %u", selectedPawn, (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords.x
             , (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords.y, nextPos.x, nextPos.y);
+            this->motion->ExecutePath(this->Pathfinding->findPath((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords, nextPos, this->map, &this->state.allPawns, 50));
 
             (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsSelected = false;
             (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps = 0;

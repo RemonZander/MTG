@@ -13,7 +13,7 @@
 // #include <motorDriver.hpp>
 #include "logger.h"
 
-LudoGame* game;
+// LudoGame* game;
 
 #ifdef ARDUINO
 void loop() {}
@@ -29,7 +29,13 @@ extern "C" void app_main(void)
 	ESP_ERROR_CHECK(esp_task_wdt_deinit());
 #endif
   
+  LOG_I("init");
+
+  LudoGame *game = new LudoGame();
   game->Init();
 
+  LOG_I("start");
+
   game->GameLoop();
+  // delete(game);
 }

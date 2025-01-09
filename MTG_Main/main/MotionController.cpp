@@ -1,5 +1,6 @@
 #include "MotionController.hpp"
 
+#include "logger.h"
 #include "config.h"
 #include "motorDriver.hpp"
 #include "typedefs.h"
@@ -15,16 +16,6 @@ MotionController::~MotionController()
 	delete(this->_driver);
 }
 
-void MotionController::SetPins()
-{
-	this->_driver = new MotorDriver();
-	this->_driver->init();
-}
-
-void MotionController::SetStepsPerMM(int32_t stepsPerMM_A, int32_t stepsPerMM_B)
-{
-}
-
 void MotionController::SetPhisicalBoardSize(float x, float y, Coordinates_t boardSize)
 {
 	this->_phisicalBoardSizeX = x;
@@ -37,9 +28,11 @@ void MotionController::SetPhisicalBoardSize(float x, float y, Coordinates_t boar
 
 bool MotionController::ExecutePath(pathfinding_path_t path)
 {
-	for (std::size_t i=0; i < path->size(); i++)
+	this->_currPos = path->at(0).target;
+	for (std::size_t i=1; i < path->size(); i++)
 	{
 		pathfinding_step_t step = path->at(i);
+		// LOG_D("stap (%u, %u)", step.target.x, step.target.y);
 		this->SetMagnet(step.magnetEn);
 		this->MotorToPos(step.target);
 	}
