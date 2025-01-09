@@ -22,14 +22,15 @@ void MotionController::SetPhisicalBoardSize(float x, float y, Coordinates_t boar
 	this->_phisicalBoardSizeY = y;
 	this->_squareSize_x = x / boardSize.x;
 	this->_squareSize_y = y / boardSize.y;
-	this->_boardOffset_x = 125.0 - (x/2) + (_squareSize_x/2);
-	this->_boardOffset_y = 118.0 - (y/2) + (_squareSize_y/2);
+	this->_boardOffset_x = 125.0 - (x/2) + (this->_squareSize_x/2);
+	this->_boardOffset_y = 118.0 - (y/2) + (this->_squareSize_y/2);
+	this->_driver->home(_boardOffset_x, _boardOffset_y);
 }
 
 bool MotionController::ExecutePath(pathfinding_path_t path)
 {
-	this->_currPos = path->at(0).target;
-	for (std::size_t i=1; i < path->size(); i++)
+	// this->_currPos = path->at(0).target;
+	for (std::size_t i=0; i < path->size(); i++)
 	{
 		pathfinding_step_t step = path->at(i);
 		// LOG_D("stap (%u, %u)", step.target.x, step.target.y);
