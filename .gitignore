@@ -8,3 +8,5 @@
 build
 bin
 .cache
+result.json
+result2.json
