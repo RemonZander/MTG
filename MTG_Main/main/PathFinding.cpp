@@ -267,8 +267,11 @@ bool PathFinding_impoved::floodFill_scanField(Cordinates_s field, BoardMap_t *re
         switch (result->map[curField.x][curField.y])
         {
             case EMPTY_FIELD:
-                result->map[curField.x][curField.y] = result->map[field.x][field.y] + this->wightMap.map[curField.x][curField.y];
-                floodFill_Que_add(curField, result->map[curField.x][curField.y]);
+                if (this->wightMap.map[curField.x][curField.y] != 255)
+                {
+                    result->map[curField.x][curField.y] = result->map[field.x][field.y] + this->wightMap.map[curField.x][curField.y];
+                    floodFill_Que_add(curField, result->map[curField.x][curField.y]);
+                }
                 break;
             case START_FIELD:
                 targetFound = true;
