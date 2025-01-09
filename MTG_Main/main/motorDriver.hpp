@@ -18,19 +18,10 @@ struct motorPins_t {
 
 class MotorDriver {
 public:
-    MotorDriver(motorPins_t pinsMotorA, motorPins_t pinsMotorB, gpio_num_t endStopXPin, gpio_num_t endStopYPin);
+    MotorDriver();
     ~MotorDriver();
 
-    /** SetSpeed
-     * 
-     * args:
-     * - maxspeed: maximum allowed speed in mm/sec
-     * - accelleration: avearage acceleration in mm/sec^2 (a smoothening function is applaied over the acceleraton. Thus the max aceleration will be slightly higher)
-     * - jurk: start speed without accelaration in mm/sec
-     */
-    int SetSpeeds(uint32_t maxSpeed, uint32_t acceleration, uint32_t jurk);
-
-    void SetStepsPerMM(int32_t a, int32_t b);
+    int init();
 
     /** move
      * move the motors relitivly
