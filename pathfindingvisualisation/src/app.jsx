@@ -45,12 +45,12 @@ function MakeGrid(result)
       let columns = []
       for (let j = 0; j < result.inputs.wightMap.size.x; j++) {
         columns.push(<div id={`${i*result.inputs.wightMap.size.y+j}`} 
-          style={{backgroundColor: `${result.steps[k].map[i][j] > 0 && result.steps[k].map[i][j] < 253 ? `rgb(${255 - result.steps[k].map[i][j] * 8}, 0, 0)` : 
-            result.steps[k].map[i][j] == 0 ? "rgb(0, 230, 0)" : result.steps[k].map[i][j] == 254 ? "rgb(0, 0, 230)" : ""}`}} 
-          className={`relative min-w-[20px] min-h-[20px] border-2 border-solid border-black text-center m-[2px] p-[2px] ${result.steps[k].map[i][j] != 253 ? "text-white" : ""}`}>
-            {result.steps[k].map[i][j]}
+          style={{backgroundColor: `${result.steps[k].map[i][j] > 0 && result.steps[k].map[j][i] < 253 ? `rgb(${255 - result.steps[k].map[j][i] * 8}, 0, 0)` : 
+            result.steps[k].map[j][i] == 0 ? "rgb(0, 230, 0)" : result.steps[k].map[j][i] == 254 ? "rgb(0, 0, 230)" : ""}`}} 
+          className={`relative min-w-[20px] min-h-[20px] border-2 border-solid border-black text-center m-[2px] p-[2px] ${result.steps[k].map[j][i] != 253 ? "text-white" : ""}`}>
+            {result.steps[k].map[j][i]}
             {result.result_path.some(item => 
-             item.target[0] == i && item.target[1] == j) ?
+             item.target[0] == j && item.target[1] == i) ?
             <img className="absolute top-[1px] right-[1px] max-w-[6px] max-h-[6px]" src={pathLED} /> : ""}
             </div>)
       }

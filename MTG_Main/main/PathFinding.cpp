@@ -87,12 +87,12 @@ pathfinding_path_t PathFinding_impoved::findPath(Cordinates_s start, Cordinates_
     printf("    \"wightMap\": ");
     print_map(wightMap, "    ");
     printf(",\n");
-    printf("    \"powns\": [\n");
-    for (int i = 0; i < powns->size(); i++)
+    printf("    \"pawns\": [\n");
+    for (int i = 0; i < pawns->size(); i++)
     {
-        Cordinates_s item = powns->at(i);
+        Cordinates_s item = pawns->at(i)->squareCords;
         printf("      {\"x\": %u, \"y\": %u}", item.x, item.y);
-        if (i == powns->size()-1)
+        if (i == pawns->size()-1)
         {
             printf("\n");
         }
@@ -349,7 +349,7 @@ pathfinding_path_t PathFinding_impoved::gatherPath(BoardMap_t floodFill_Map)
         //if (minWieght_dir != lastDirection && lastDirection != -1)
         {
             path->push_back({.target = curPos, .magnetEn = true});
-            LOG_D("path: stap %i: (%u, %u)", index, curPos.x, curPos.y);
+            //LOG_D("path: stap %i: (%u, %u)", index, curPos.x, curPos.y);
         }
         lastDirection = minWieght_dir;
         curPos.x = minWieght_pos.x;
