@@ -232,9 +232,9 @@ void LudoGame::GameLoop()
             Coordinates_t nextPos;
             if ((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsAtStart)
             {
-                nextPos = currentPlayer == 0 ? this->state.GamePath[40] : 
-                currentPlayer == 1 ? this->state.GamePath[1] : 
-                currentPlayer == 2 ? this->state.GamePath[14] : this->state.GamePath[27];
+                nextPos = currentPlayer == 0 ? this->state.GamePath[51] : 
+                currentPlayer == 1 ? this->state.GamePath[38] : 
+                currentPlayer == 2 ? this->state.GamePath[25] : this->state.GamePath[12];
 
                 (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsAtStart = false;
                 LOG_I("Moving pawn from start to x: %u y: %u", nextPos.x, nextPos.y);
@@ -245,20 +245,20 @@ void LudoGame::GameLoop()
             {
                 //check if pawn will be in home lane
                 uint8_t nextPathPosition = (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath + (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps;
-                if ((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsInHome || (currentPlayer == 0 && nextPathPosition > 40 && (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath < 40) ||
-                (currentPlayer == 1 && nextPathPosition > 51 && (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath < 51) ||
-                (currentPlayer == 2 && nextPathPosition > 14 && (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath < 14) ||
-                (currentPlayer == 3 && nextPathPosition > 27 && (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath < 27))
+                if ((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsInHome || (currentPlayer == 0 && nextPathPosition > 51 && (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath < 51) ||
+                (currentPlayer == 1 && nextPathPosition > 38 && (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath < 38) ||
+                (currentPlayer == 2 && nextPathPosition > 25 && (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath < 25) ||
+                (currentPlayer == 3 && nextPathPosition > 12 && (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath < 12))
                 {
                     LOG_I("Pawn %u is in the home lane", selectedPawn);
                     
                     //move pawn into home lane
                     if (!(*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsInHome)
                     {
-                        (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath = currentPlayer == 0 ? (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps - (40 - (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath) :
-                        currentPlayer == 1 ? (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps - (51 - (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath) :
-                        currentPlayer == 2 ? (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps - (14 - (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath) :
-                        (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps - (27 - (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath);
+                        (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath = currentPlayer == 0 ? (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps - (51 - (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath) :
+                        currentPlayer == 1 ? (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps - (38 - (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath) :
+                        currentPlayer == 2 ? (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps - (25 - (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath) :
+                        (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps - (12 - (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath);
                     }
 
                     //if pawn is in pos 6 of home lane. The pawn has reached the finish
