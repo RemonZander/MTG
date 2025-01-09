@@ -33,8 +33,8 @@ int main(void)
     };
 
 
-    Cordinates_s start = { .x = 13, .y = 1 };
-    Cordinates_s end = { .x = 13, .y = 6 };
+    Cordinates_s start = { .x = 13, .y = 13 };
+    Cordinates_s end = { .x = 0, .y = 0 };
     std::vector<Pawn<LudoPawnState_t>*>* pawns = new std::vector<Pawn<LudoPawnState_t>*>{
         new Pawn<LudoPawnState_t>(0, Coordinates_t{9, 6}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{9, 6}}),
         new Pawn<LudoPawnState_t>(0, Coordinates_t{8, 1}, LudoPawnState_t{.IsSelected = false, .Steps = 0, .IsAtStart = false, .IsInHome = false, .HasFinished = false, .startPos = Coordinates_t{8, 1}}),
