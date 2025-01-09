@@ -198,12 +198,15 @@ void LudoGame::GameLoop()
 
 
         //check if player has all the pawns at the finish. If so set the gamestate to stopped. The game will stop at the end of this turn
-        if ((*(*this->players)[currentPlayer]->Pawns)[0]->State.HasFinished && (*(*this->players)[currentPlayer]->Pawns)[1]->State.HasFinished &&
-        (*(*this->players)[currentPlayer]->Pawns)[3]->State.HasFinished && (*(*this->players)[currentPlayer]->Pawns)[3]->State.HasFinished)
+        for (int i = 0; i < this->players->size(); i++)
         {
-            this->state.State = LudoGameStates::stopped;
-            LOG_I("Player %u has won. The game will be stopped", currentPlayer);
-            continue;
+            if ((*(*this->players)[i]->Pawns)[0]->State.HasFinished && (*(*this->players)[i]->Pawns)[1]->State.HasFinished &&
+            (*(*this->players)[i]->Pawns)[3]->State.HasFinished && (*(*this->players)[i]->Pawns)[3]->State.HasFinished)
+            {
+                this->state.State = LudoGameStates::stopped;
+                LOG_I("Player %u has won. The game will be stopped", i);
+                continue;
+            }
         }
 
         (*this->players)[currentPlayer]->DoTurn();
@@ -233,7 +236,6 @@ void LudoGame::GameLoop()
                 currentPlayer == 1 ? this->state.GamePath[1] : 
                 currentPlayer == 2 ? this->state.GamePath[14] : this->state.GamePath[27];
 
-                //this->motion->ExecutePath(this->Pathfinding->findPath((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords, nextPos, this->map, &this->state.allPawns, 50));
                 (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsAtStart = false;
                 LOG_I("Moving pawn from start to x: %u y: %u", nextPos.x, nextPos.y);
             }
