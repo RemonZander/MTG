@@ -1,6 +1,7 @@
 #include "PathFinding.hpp"
 #include "config.h"
 #include "typedefs.h"
+#include "logger.h"
 
 #include <stdint.h>
 #include <cstring>
@@ -76,8 +77,7 @@ PathFinding_impoved::~PathFinding_impoved()
     // do nothing??
 }
 
-template <typename T>
-pathfinding_path_t PathFinding_impoved::findPath(Cordinates_s start, Cordinates_s end, BoardMap_t wightMap, const std::vector<Pawn<T>*>* pawns, uint8_t pown_wight)
+pathfinding_path_t PathFinding_impoved::findPath(Cordinates_s start, Cordinates_s end, BoardMap_t wightMap, const std::vector<Pawn<LudoPawnState_t>*>* pawns, uint8_t pown_wight)
 {
     #ifdef DEBUG_EXPORT
     printf("{\n");
@@ -87,12 +87,12 @@ pathfinding_path_t PathFinding_impoved::findPath(Cordinates_s start, Cordinates_
     printf("    \"wightMap\": ");
     print_map(wightMap, "    ");
     printf(",\n");
-    printf("    \"powns\": [\n");
-    for (int i = 0; i < powns->size(); i++)
+    printf("    \"pawns\": [\n");
+    for (int i = 0; i < pawns->size(); i++)
     {
-        Cordinates_s item = powns->at(i);
+        Cordinates_s item = pawns->at(i)->squareCords;
         printf("      {\"x\": %u, \"y\": %u}", item.x, item.y);
-        if (i == powns->size()-1)
+        if (i == pawns->size()-1)
         {
             printf("\n");
         }
@@ -267,8 +267,11 @@ bool PathFinding_impoved::floodFill_scanField(Cordinates_s field, BoardMap_t *re
         switch (result->map[curField.x][curField.y])
         {
             case EMPTY_FIELD:
-                result->map[curField.x][curField.y] = result->map[field.x][field.y] + this->wightMap.map[curField.x][curField.y];
-                floodFill_Que_add(curField, result->map[curField.x][curField.y]);
+                if (this->wightMap.map[curField.x][curField.y] != 255)
+                {
+                    result->map[curField.x][curField.y] = result->map[field.x][field.y] + this->wightMap.map[curField.x][curField.y];
+                    floodFill_Que_add(curField, result->map[curField.x][curField.y]);
+                }
                 break;
             case START_FIELD:
                 targetFound = true;
@@ -343,9 +346,10 @@ pathfinding_path_t PathFinding_impoved::gatherPath(BoardMap_t floodFill_Map)
             }
         }
 
-        if (minWieght_dir != lastDirection && lastDirection != -1)
+        //if (minWieght_dir != lastDirection && lastDirection != -1)
         {
             path->push_back({.target = curPos, .magnetEn = true});
+            //LOG_D("path: stap %i: (%u, %u)", index, curPos.x, curPos.y);
         }
         lastDirection = minWieght_dir;
         curPos.x = minWieght_pos.x;

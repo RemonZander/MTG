@@ -84,11 +84,10 @@ public:
             const float smooth_freq = convert_to_smooth_freq(MOTOR_JURK_STEPS, MOTOR_MAX_SPEED_STEPS, curve_freq);
             // calculate pulse time
             const uint16_t symbol_duration = STEP_MOTOR_RESOLUTION_HZ / smooth_freq / 2;
-            uint32_t I = (is_accel) ? i : MOTOR_ACCELARATION_STEPS - i - 1;
-            this->_curve_table[I].level0 = 0;
-            this->_curve_table[I].duration0 = symbol_duration;
-            this->_curve_table[I].level1 = 1;
-            this->_curve_table[I].duration1 = symbol_duration;
+            this->_curve_table[i].level0 = 0;
+            this->_curve_table[i].duration0 = symbol_duration;
+            this->_curve_table[i].level1 = 1;
+            this->_curve_table[i].duration1 = symbol_duration;
             curve_time += 1 / smooth_freq; // update the current time
         }
 
@@ -260,7 +259,7 @@ int MotorDriver::init()
 
     LOG_D("Initialize GPIO");
     gpio_config_t dir_gpio_config = {
-        .pin_bit_mask = 1ULL << MOTOR_A_DIR_PIN | 1ULL << MOTOR_B_DIR_PIN,
+        .pin_bit_mask = 1ULL << MOTOR_A_DIR_PIN | 1ULL << MOTOR_B_DIR_PIN | 1ULL << MAGNET_PIN,
         .mode = GPIO_MODE_OUTPUT,
         .pull_up_en = GPIO_PULLUP_DISABLE,
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
@@ -384,7 +383,7 @@ int MotorDriver::init()
         LOG_W("decel_curve already initilized. removeing old curve");
         delete(decel_curve);
     }
-    decel_curve = new stepper_encoder(true);
+    decel_curve = new stepper_encoder(false);
 
     // === enable rmt channels
 
@@ -429,8 +428,8 @@ MotorDriver::~MotorDriver()
 void MotorDriver::move(float x, float y, uint32_t speed)
 {
     LOG_D("move: mm (%f, %f), speed=%lu", x, y, speed);
-    int32_t stepsA = (-y + x) * STEPS_PER_MM;
-    int32_t stepsB = (-y - x) * STEPS_PER_MM;
+    int32_t stepsA = (x - y) * STEPS_PER_MM;
+    int32_t stepsB = (x + y) * STEPS_PER_MM;
 
     if (stepsA > 0)
     {
@@ -557,16 +556,17 @@ void MotorDriver::move(float x, float y, uint32_t speed)
     rmt_tx_wait_all_done(motor_channel_b, 10000);
 }
 
-void MotorDriver::home(int32_t maxMove, uint32_t speed, float offsetX, float offsetY)
+void MotorDriver::home(float offsetX, float offsetY)
 {
     int ret;
     rmt_transmit_config_t tx_config = {
-        .loop_count = maxMove,
+        .loop_count = (int)(MAXBOARD_SIZEX * STEPS_PER_MM),
         .flags = {
             .eot_level = 0,
             .queue_nonblocking = 0
         }
     };
+    LOG_I("home: offset (%f, %f)", offsetX, offsetY);
 
     gpio_set_level(MOTOR_A_DIR_PIN, STEPER_DIR_CCW);
     gpio_set_level(MOTOR_B_DIR_PIN, STEPER_DIR_CCW);
@@ -592,8 +592,13 @@ void MotorDriver::home(int32_t maxMove, uint32_t speed, float offsetX, float off
     // rmt_reset_stepper_motor_uniform(constant_curve);
     // rmt_reset_stepper_motor_uniform(motor_channel_b);
 
-    gpio_set_level(MOTOR_A_DIR_PIN, STEPER_DIR_CCW);
-    gpio_set_level(MOTOR_B_DIR_PIN, STEPER_DIR_CW);
+    ret = rmt_disable(motor_channel_a);
+    ret = rmt_disable(motor_channel_b);
+    ret = rmt_enable(motor_channel_a);
+    ret = rmt_enable(motor_channel_b);
+
+    gpio_set_level(MOTOR_A_DIR_PIN, STEPER_DIR_CW);
+    gpio_set_level(MOTOR_B_DIR_PIN, STEPER_DIR_CCW);
 
     ret = rmt_transmit(motor_channel_a, &constant_curve->base, &homeSpeed, sizeof(homeSpeed), &tx_config);
     if (ret != 0)
@@ -613,6 +618,26 @@ void MotorDriver::home(int32_t maxMove, uint32_t speed, float offsetX, float off
     // rmt_reset_stepper_motor_uniform(constant_curve);
     // rmt_reset_stepper_motor_uniform(motor_channel_b);
 
+    ret = rmt_disable(motor_channel_a);
+    ret = rmt_disable(motor_channel_b);
+    ret = rmt_enable(motor_channel_a);
+    ret = rmt_enable(motor_channel_b);
+
+    gpio_set_level(MOTOR_A_DIR_PIN, STEPER_DIR_CCW);
+    gpio_set_level(MOTOR_B_DIR_PIN, STEPER_DIR_CW);
+
+    ret = rmt_disable(motor_channel_a);
+    ret = rmt_disable(motor_channel_b);
+    ret = rmt_enable(motor_channel_a);
+    ret = rmt_enable(motor_channel_b);
+
     // move to center of (0,0)
-    move(offsetX, offsetY, jurk);
+    LOG_C("stop");
+    // abort();
+    move(offsetX, offsetY, 100);
+}
+
+void MotorDriver::setMagnet(bool state)
+{
+    gpio_set_level(MAGNET_PIN, (state) ? 0 : 1);
 }

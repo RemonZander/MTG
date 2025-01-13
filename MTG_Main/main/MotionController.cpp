@@ -1,57 +1,48 @@
 #include "MotionController.hpp"
 
+#include "logger.h"
 #include "config.h"
 #include "motorDriver.hpp"
 #include "typedefs.h"
 
 MotionController::MotionController()
 {
-	_driver = new MotorDriver();
-	_driver->init();
+	this->_driver = new MotorDriver();
+	this->_driver->init();
 };
 
 MotionController::~MotionController()
 {
-	// nothing to do
-}
-
-void MotionController::SetPins()
-{
-	_driver = new MotorDriver();
-	_driver->init();
-}
-
-void MotionController::SetStepsPerMM(int32_t stepsPerMM_A, int32_t stepsPerMM_B)
-{
+	delete(this->_driver);
 }
 
 void MotionController::SetPhisicalBoardSize(float x, float y, Coordinates_t boardSize)
 {
-	_phisicalBoardSizeX = x;
-	_phisicalBoardSizeY = y;
-	_squareSize_x = x / boardSize.x;
-	_squareSize_y = y / boardSize.y;
-	_boardOffset_x = 125.0 - (x/2) + (_squareSize_x/2);
-	_boardOffset_y = 118.0 - (y/2) + (_squareSize_y/2);
+	this->_phisicalBoardSizeX = x;
+	this->_phisicalBoardSizeY = y;
+	this->_squareSize_x = x / boardSize.x;
+	this->_squareSize_y = y / boardSize.y;
+	this->_boardOffset_x = 125.0 - (x/2) + (this->_squareSize_x/2);
+	this->_boardOffset_y = 118.0 - (y/2) + (this->_squareSize_y/2);
+	this->_driver->home(_boardOffset_x, _boardOffset_y);
 }
 
 bool MotionController::ExecutePath(pathfinding_path_t path)
 {
+	// this->_currPos = path->at(0).target;
 	for (std::size_t i=0; i < path->size(); i++)
 	{
 		pathfinding_step_t step = path->at(i);
-		SetMagnet(step.magnetEn);
-		MotorToPos(step.target);
+		// LOG_D("stap (%u, %u)", step.target.x, step.target.y);
+		this->SetMagnet(step.magnetEn);
+		this->MotorToPos(step.target);
 	}
 	return true;
 }
 
 void MotionController::SetMagnet(bool state)
 {
-	#ifdef ARDUINO
-	digitalWrite(electromagnetPin, state);
-	digitalWrite(BUILTIN_LED, state);
-	#endif
+	this->_driver->setMagnet(state);
 }
 
 bool MotionController::MotorToPos(Coordinates_t pos)
@@ -64,8 +55,8 @@ bool MotionController::MotorToPos(Coordinates_t pos)
 	float deltaMM_X = ((float)(pos.x - _currPos.x)) * _squareSize_x;
 	float deltaMM_Y = ((float)(pos.y - _currPos.y)) * _squareSize_y;
 
-	_driver->move(deltaMM_X, deltaMM_Y, 100);
+	this->_driver->move(deltaMM_X, deltaMM_Y, 100);
 
-	_currPos = pos;
+	this->_currPos = pos;
 	return true;
 }
