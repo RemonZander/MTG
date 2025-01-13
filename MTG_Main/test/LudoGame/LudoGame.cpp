@@ -310,6 +310,10 @@ void LudoGame::GameLoop()
                     {
                         (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath = (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps - (this->state.GamePath.size() - (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath);
                     }
+                    else 
+                    {
+                        (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath += (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps;
+                    }
                     (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath += (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps;
                     nextPos = this->state.GamePath[(*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath];
                 }
