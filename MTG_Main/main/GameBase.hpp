@@ -23,5 +23,4 @@ class GameBase {
         V state;
         MotionController *motion;
         PathFinding_impoved *Pathfinding;
-        //nvs_handle_t nvsFlashHandle;
 };

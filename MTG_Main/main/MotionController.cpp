@@ -29,11 +29,10 @@ void MotionController::SetPhisicalBoardSize(float x, float y, Coordinates_t boar
 
 bool MotionController::ExecutePath(pathfinding_path_t path)
 {
-	// this->_currPos = path->at(0).target;
 	for (std::size_t i=0; i < path->size(); i++)
 	{
 		pathfinding_step_t step = path->at(i);
-		// LOG_D("stap (%u, %u)", step.target.x, step.target.y);
+		LOG_D("stap (%u, %u)", step.target.x, step.target.y);
 		this->SetMagnet(step.magnetEn);
 		this->MotorToPos(step.target);
 	}

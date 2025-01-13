@@ -189,6 +189,8 @@ void LudoGame::Init()
     LOG_I("initialization done, starting game...");
     this->state.State = LudoGameStates::Player1;
     currentPlayer = 0;
+
+    // this->motion->ExecutePath(this->Pathfinding->findPath({.x = 2, .y = 0}, {.x = 2, .y = 2}, this->map, &this->state.allPawns, 255));
 };
 
 void LudoGame::GameLoop()
