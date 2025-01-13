@@ -32,19 +32,19 @@ void LudoGame::Init()
     //init bord map
     this->map = BoardMap_t{.size = Coordinates_t{.x = BOARD_SIZE_X_LUDO, .y = BOARD_SIZE_Y_LUDO}, .map = {
         {255, 255, 255, 255, 255,  10,   2,   2,   2,  10, 255, 255, 255, 255, 255},
-        {255, 255,   1, 255,  20,  10,   2,  30,   2,  10,  20, 255,   1, 255, 255},
-        {255,   1,   1,   1,  20,  10,   2,  30,   2,  10,  20,   1,   1,   1, 255},
-        {255, 255,   1, 255,  20,  10,   2,  30,   2,  10,  20, 255,   1, 255, 255},
-        {255,  20,  20,  20,  20,  10,   2,  30,   2,  10,  20,  20,  20,  20, 255},
-        { 10,  10,  10,  10,  10,  10,   2,  30,   2,  10,  10,  10,  10,  10,  10},
+        {255, 255,   1, 255,  20,  10,   2,  35,   2,  10,  20, 255,   1, 255, 255},
+        {255,   1,   1,   1,  20,  10,   2,  35,   2,  10,  20,   1,   1,   1, 255},
+        {255, 255,   1, 255,  20,  10,   2,  35,   2,  10,  20, 255,   1, 255, 255},
+        {255,  20,  20,  20,  20,  10,   2,  35,   2,  10,  20,  20,  20,  20, 255},
+        { 10,  10,  10,  10,  10,  10,   2,  35,   2,  10,  10,  10,  10,  10,  10},
         {  2,   2,   2,   2,   2,   2,   2, 255,   2,   2,   2,   2,   2,   2,   2},
-        {  2,  30,  30,  30,  30,  30, 255, 255, 255,  30,  30,  30,  30,  30,   2},
+        {  2,  35,  35,  35,  35,  35, 255, 255, 255,  35,  35,  35,  35,  35,   2},
         {  2,   2,   2,   2,   2,   2,   2, 255,   2,   2,   2,   2,   2,   2,   2},
-        { 10,  10,  10,  10,  10,  10,   2,  30,   2,  10,  10,  10,  10,  10,  10},
-        {255,  20,  20,  20,  20,  10,   2,  30,   2,  10,  20,  20,  20,  20, 255},
-        {255, 255,   1, 255,  20,  10,   2,  30,   2,  10,  20, 255,   1, 255, 255},
-        {255,   1,   1,   1,  20,  10,   2,  30,   2,  10,  20,   1,   1,   1, 255},
-        {255, 255,   1, 255,  20,  10,   2,  30,   2,  10,  20, 255,   1, 255, 255},
+        { 10,  10,  10,  10,  10,  10,   2,  35,   2,  10,  10,  10,  10,  10,  10},
+        {255,  20,  20,  20,  20,  10,   2,  35,   2,  10,  20,  20,  20,  20, 255},
+        {255, 255,   1, 255,  20,  10,   2,  35,   2,  10,  20, 255,   1, 255, 255},
+        {255,   1,   1,   1,  20,  10,   2,  35,   2,  10,  20,   1,   1,   1, 255},
+        {255, 255,   1, 255,  20,  10,   2,  35,   2,  10,  20, 255,   1, 255, 255},
         {255, 255, 255, 255, 255,  10,   2,   2,   2,  10, 255, 255, 255, 255, 255}
     }};
 
@@ -305,6 +305,11 @@ void LudoGame::GameLoop()
                         {
                             (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.HasFinished = true;
                             LOG_I("Pawn %u has finished", selectedPawn);
+                            nextPos = this->state.homePositions[currentPlayer]->at((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath);
+                            LOG_I("Moving pawn %u from x: %u y: %u to x: %u y: %u", selectedPawn, (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords.x
+                            , (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords.y, nextPos.x, nextPos.y);
+                            this->motion->ExecutePath(this->Pathfinding->findPath((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords, nextPos, this->map, &this->state.allPawns, 255));
+                            continue;
                         }
                         else
                         {
@@ -319,6 +324,11 @@ void LudoGame::GameLoop()
                         {
                             (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.HasFinished = true;
                             LOG_I("Pawn %u has finished", selectedPawn);
+                            nextPos = this->state.homePositions[currentPlayer]->at((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath);
+                            LOG_I("Moving pawn %u from x: %u y: %u to x: %u y: %u", selectedPawn, (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords.x
+                            , (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords.y, nextPos.x, nextPos.y);
+                            this->motion->ExecutePath(this->Pathfinding->findPath((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords, nextPos, this->map, &this->state.allPawns, 255));
+                            continue;
                         }
                         //check if pawn cannot move in home lane
                         else if ((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath + (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps > 5)
