@@ -293,34 +293,45 @@ void LudoGame::GameLoop()
                 {
                     LOG_I("Pawn %u is in the home lane", selectedPawn);
                     
-                    //move pawn into home lane
+                    //move pawn into home lane from board
                     if (!(*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsInHome)
                     {
                         (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath = currentPlayer == 0 ? (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps - (55 - (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath) :
                         currentPlayer == 1 ? (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps - (13 - (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath) :
                         currentPlayer == 2 ? (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps - (27 - (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath) :
                         (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps - (41 - (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath);
-                    }
 
-                    //if pawn is in pos 6 of home lane. The pawn has reached the finish
-                    if ((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath > 5)
-                    {
-                        (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.HasFinished = true;
-                        LOG_I("Pawn %u has finished", selectedPawn);
-                    }
-                    //check if pawn cannot move in home lane
-                    else if ((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath + (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps > 5)
-                    {
-                        LOG_I("Pawn %u cannot move further in home lane bacause too many steps: %u", selectedPawn, (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps);
-                        LOG_I("Pawn %u current position in home lane: %u",selectedPawn, (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath);
-                        continue;                 
-                    }
-                    //move pawn in homelane
-                    else
-                    {
+                        if ((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath > 5)
+                        {
+                            (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.HasFinished = true;
+                            LOG_I("Pawn %u has finished", selectedPawn);
+                        }
+
                         (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsInHome = true;
                         nextPos = this->state.homePositions[currentPlayer]->at((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath);
-                    }   
+                    }
+                    else
+                    {
+                        //if pawn is in pos 6 of home lane. The pawn has reached the finish
+                        if ((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath > 5)
+                        {
+                            (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.HasFinished = true;
+                            LOG_I("Pawn %u has finished", selectedPawn);
+                        }
+                        //check if pawn cannot move in home lane
+                        else if ((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath + (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps > 5)
+                        {
+                            LOG_I("Pawn %u cannot move further in home lane bacause too many steps: %u", selectedPawn, (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps);
+                            LOG_I("Pawn %u current position in home lane: %u",selectedPawn, (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath);
+                            continue;                 
+                        }
+                        //move pawn in homelane
+                        else
+                        {
+                            (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsInHome = true;
+                            nextPos = this->state.homePositions[currentPlayer]->at((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath);
+                        } 
+                    }  
                 }
                 //move pawn normally along the game path
                 else 
