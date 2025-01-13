@@ -11,6 +11,19 @@ void LudoGame::Init()
     LOG_I("initializing game");
     this->state.State = LudoGameStates::init;
 
+    err = nvs_flash_init();
+    if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        // NVS partition was truncated and needs to be erased
+        // Retry nvs_flash_init
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        err = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK( err );
+
+    nvs_open("storage", NVS_READWRITE, &this->nvsFlashHandle);
+
+    //if GPOI pin high then read from storage
+
     this->motion = new MotionController();
     motion->SetPhisicalBoardSize(240.0, 240.0, {.x = 15, .y = 15});
 
@@ -234,9 +247,9 @@ void LudoGame::GameLoop()
             Coordinates_t nextPos;
             if ((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsAtStart)
             {
-                nextPos = currentPlayer == 0 ? this->state.GamePath[40] : 
-                currentPlayer == 1 ? this->state.GamePath[1] : 
-                currentPlayer == 2 ? this->state.GamePath[14] : this->state.GamePath[27];
+                nextPos = currentPlayer == 0 ? this->state.GamePath[51] : 
+                currentPlayer == 1 ? this->state.GamePath[38] : 
+                currentPlayer == 2 ? this->state.GamePath[25] : this->state.GamePath[12];
 
                 (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsAtStart = false;
                 LOG_I("Moving pawn from start to x: %u y: %u", nextPos.x, nextPos.y);
@@ -247,20 +260,20 @@ void LudoGame::GameLoop()
             {
                 //check if pawn will be in home lane
                 uint8_t nextPathPosition = (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath + (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps;
-                if ((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsInHome || (currentPlayer == 0 && nextPathPosition > 40 && (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath < 40) ||
-                (currentPlayer == 1 && nextPathPosition > 51 && (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath < 51) ||
-                (currentPlayer == 2 && nextPathPosition > 14 && (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath < 14) ||
-                (currentPlayer == 3 && nextPathPosition > 27 && (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath < 27))
+                if ((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsInHome || (currentPlayer == 0 && nextPathPosition > 51 && (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath < 51) ||
+                (currentPlayer == 1 && nextPathPosition > 38 && (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath < 38) ||
+                (currentPlayer == 2 && nextPathPosition > 25 && (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath < 25) ||
+                (currentPlayer == 3 && nextPathPosition > 12 && (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath < 12))
                 {
                     LOG_I("Pawn %u is in the home lane", selectedPawn);
                     
                     //move pawn into home lane
                     if (!(*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsInHome)
                     {
-                        (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath = currentPlayer == 0 ? (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps - (40 - (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath) :
-                        currentPlayer == 1 ? (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps - (51 - (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath) :
-                        currentPlayer == 2 ? (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps - (14 - (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath) :
-                        (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps - (27 - (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath);
+                        (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath = currentPlayer == 0 ? (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps - (51 - (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath) :
+                        currentPlayer == 1 ? (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps - (38 - (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath) :
+                        currentPlayer == 2 ? (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps - (25 - (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath) :
+                        (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps - (12 - (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath);
                     }
 
                     //if pawn is in pos 6 of home lane. The pawn has reached the finish
@@ -304,17 +317,75 @@ void LudoGame::GameLoop()
                     LOG_I("Two pawns are on the same location. One will be returned to it's start position");
                     LOG_I("Moving pawn %u from x: %u y: %u to x: %u y: %u", this->state.allPawns[i]->ID, this->state.allPawns[i]->squareCords.x,
                     this->state.allPawns[i]->squareCords.y, this->state.allPawns[i]->State.startPos.x, this->state.allPawns[i]->State.startPos.y);
-                    this->motion->ExecutePath(this->Pathfinding->findPath(this->state.allPawns[i]->squareCords, this->state.allPawns[i]->State.startPos, this->map, &this->state.allPawns, 50));
+                    this->motion->ExecutePath(this->Pathfinding->findPath(this->state.allPawns[i]->squareCords, this->state.allPawns[i]->State.startPos, this->map, &this->state.allPawns, 255));
                     break;
                 }
             }
 
             LOG_I("Moving pawn %u from x: %u y: %u to x: %u y: %u", selectedPawn, (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords.x
             , (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords.y, nextPos.x, nextPos.y);
-            this->motion->ExecutePath(this->Pathfinding->findPath((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords, nextPos, this->map, &this->state.allPawns, 50));
+            this->motion->ExecutePath(this->Pathfinding->findPath((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords, nextPos, this->map, &this->state.allPawns, 255));
 
             (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsSelected = false;
             (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps = 0;
         }
     }
 };
+
+void SaveGame()
+{
+    LOG_I("Saving game...");
+    nvs_set_i32(this->nvsFlashHandle, "LudoGameState", this->state.State);
+    nvs_commit(this->nvsFlashHandle);
+    nvs_set_i32(this->nvsFlashHandle, "currentPlayer", this->currentPlayer);
+    nvs_commit(this->nvsFlashHandle);
+
+    for (size_t i = 0; i < BOARD_SIZE_X_LUDO; i++)
+    {
+        for (size_t j = 0; j < BOARD_SIZE_Y_LUDO; j++)
+        {
+            char snum[5];
+            char snum2[5];
+
+            itoa(i, snum, 10);
+            itoa(j, snum, 10);
+
+            nvs_set_i32(this->nvsFlashHandle, "map[" + snum + "," + snum2 + "]", this->state.State);
+            nvs_commit(this->nvsFlashHandle);
+        }
+    }
+
+    for (size_t i = 0; i < this->players.size(); i++)
+    {
+        char snum[5];
+        itoa(i, snum, 10);
+        nvs_set_i32(this->nvsFlashHandle, "player" + snum, (*this->players)[i]->ID);
+        nvs_commit(this->nvsFlashHandle);
+
+        for (size_t j = 0; j < (*this->players)[i]->Pawns.size(); j++)
+        {
+            char snum2[5];
+            itoa(j, snum2, 10);
+            nvs_set_i32(this->nvsFlashHandle, "player" + snum + "pawn" + snum2, (*(*this->players)[i]->Pawns)[j]->ID);
+            nvs_commit(this->nvsFlashHandle);
+            nvs_set_i32(this->nvsFlashHandle, "player" + snum + "pawn" + snum2 + "IsSelected", (*(*this->players)[i]->Pawns)[j]->IsSelected);
+            nvs_commit(this->nvsFlashHandle);
+            nvs_set_i32(this->nvsFlashHandle, "player" + snum + "pawn" + snum2 + "Steps", (*(*this->players)[i]->Pawns)[j]->Steps);
+            nvs_commit(this->nvsFlashHandle);
+            nvs_set_i32(this->nvsFlashHandle, "player" + snum + "pawn" + snum2 + "IsAtStart", (*(*this->players)[i]->Pawns)[j]->IsAtStart);
+            nvs_commit(this->nvsFlashHandle);
+            nvs_set_i32(this->nvsFlashHandle, "player" + snum + "pawn" + snum2 + "IsInHome", (*(*this->players)[i]->Pawns)[j]->IsInHome);
+            nvs_commit(this->nvsFlashHandle);
+            nvs_set_i32(this->nvsFlashHandle, "player" + snum + "pawn" + snum2 + "HasFinished", (*(*this->players)[i]->Pawns)[j]->HasFinished);
+            nvs_commit(this->nvsFlashHandle);
+            nvs_set_i32(this->nvsFlashHandle, "player" + snum + "pawn" + snum2 + "startPosX", (*(*this->players)[i]->Pawns)[j]->startPos.x);
+            nvs_commit(this->nvsFlashHandle);
+            nvs_set_i32(this->nvsFlashHandle, "player" + snum + "pawn" + snum2 + "startPosY", (*(*this->players)[i]->Pawns)[j]->startPos.y);
+            nvs_commit(this->nvsFlashHandle);
+            nvs_set_i32(this->nvsFlashHandle, "player" + snum + "pawn" + snum2 + "CurrentGamePath", (*(*this->players)[i]->Pawns)[j]->CurrentGamePath);
+            nvs_commit(this->nvsFlashHandle);
+        }
+    }
+
+    LOG_I("Game saved!");
+}
