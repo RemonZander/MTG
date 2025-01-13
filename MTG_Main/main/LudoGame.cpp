@@ -315,7 +315,7 @@ void LudoGame::GameLoop()
                     else
                     {
                         //if pawn is in pos 6 of home lane. The pawn has reached the finish
-                        if ((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath > 5)
+                        if ((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath + (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps == 5)
                         {
                             (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.HasFinished = true;
                             LOG_I("Pawn %u has finished", selectedPawn);
@@ -330,6 +330,7 @@ void LudoGame::GameLoop()
                         //move pawn in homelane
                         else
                         {
+                            (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath += (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps;
                             (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsInHome = true;
                             nextPos = this->state.homePositions[currentPlayer]->at((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath);
                         } 
