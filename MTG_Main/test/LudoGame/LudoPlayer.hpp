@@ -13,15 +13,11 @@ class LudoPlayer : public Player<T, U> {
         void DoTurn()
         {
             LOG_I("Player %u turn has started", this->ID);
-            uint8_t diceroll = Random::get<uint8_t>(1, 6) + Random::get<uint8_t>(1, 6);
+            uint8_t diceroll;
 
-            LOG_I("Player %u rolls: %u", this->ID, diceroll);
+            uint8_t selectedPawn;
 
-            uint8_t selectedPawn = Random::get<uint8_t>(0, 3);
-
-            LOG_I("Player %u has selected pawn: %u", this->ID, selectedPawn);
-            
-            while (((*this->Pawns)[selectedPawn]->State.IsAtStart && diceroll != 6) || (*this->Pawns)[selectedPawn]->State.HasFinished)
+            do 
             {
                 diceroll = Random::get<uint8_t>(1, 6) + Random::get<uint8_t>(1, 6);
 
@@ -33,11 +29,9 @@ class LudoPlayer : public Player<T, U> {
                 LOG_I("Pawn %u is in home lane: %u", selectedPawn, (*this->Pawns)[selectedPawn]->State.IsInHome);
                 LOG_I("Pawn %u is finished: %u", selectedPawn, (*this->Pawns)[selectedPawn]->State.HasFinished);
             }
+            while (((*this->Pawns)[selectedPawn]->State.IsAtStart && diceroll != 6) || (*this->Pawns)[selectedPawn]->State.HasFinished);
             
-            LOG_I("Pawn %u has been selected", selectedPawn);
-            LOG_I("Pawn %u is on board: %u", selectedPawn, !(*this->Pawns)[selectedPawn]->State.IsAtStart);
-            LOG_I("Pawn %u is in home lane: %u", selectedPawn, (*this->Pawns)[selectedPawn]->State.IsInHome);
-            LOG_I("Pawn %u is finished: %u", selectedPawn, (*this->Pawns)[selectedPawn]->State.HasFinished);
+            LOG_I("Pawn %u has been selected. Returning back to gameloop", selectedPawn);
             (*this->Pawns)[selectedPawn]->State.IsSelected = true;
             (*this->Pawns)[selectedPawn]->State.Steps = diceroll;
         }
