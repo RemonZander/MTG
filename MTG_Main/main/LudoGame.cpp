@@ -313,7 +313,7 @@ void LudoGame::GameLoop()
                     {
                         LOG_I("Pawn %u cannot move further in home lane bacause too many steps: %u", selectedPawn, (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps);
                         LOG_I("Pawn %u current position in home lane: %u",selectedPawn, (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath);
-                        
+                        continue;                 
                     }
                     //move pawn in homelane
                     else
