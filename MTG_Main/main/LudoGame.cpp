@@ -334,7 +334,9 @@ void LudoGame::GameLoop()
                     {
                         (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath += (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps;
                     }
+                    LOG_I("CurrentGamePath of pawn: %u", (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath);
                     nextPos = this->state.GamePath[(*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath];
+                    LOG_I("nextpos: x: %u, y: %u", nextPos.x, nextPos.y);
                 }
             }
 
