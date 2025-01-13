@@ -32,8 +32,7 @@ public:
     PathFinding_impoved();
     ~PathFinding_impoved();
 
-    template <typename T>
-    pathfinding_path_t findPath(Coordinates_t start, Coordinates_t end, BoardMap_t wightMap, const std::vector<Pawn<T>*>* pawns, uint8_t pown_wight);
+    pathfinding_path_t findPath(Coordinates_t start, Coordinates_t end, BoardMap_t wightMap, const std::vector<Pawn<LudoPawnState_t>*>* pawns, uint8_t pown_wight);
 
 private:
     BoardMap_t wightMap;

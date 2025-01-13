@@ -1,5 +1,5 @@
 #include "./ludoGame.hpp"
-#include "../../main/MotionController.hpp"
+#include "./MotionController.hpp"
 #include <vector>
 
 #ifdef ARDUONO
@@ -14,9 +14,6 @@ void LudoGame::Init()
     this->state.State = LudoGameStates::init;
 
     this->motion = new MotionController();
-    this->motion->SetPhisicalBoardSize(240.0, 240.0, {.x = 15, .y = 15});
-    this->motion->SetStepsPerMM(STEPS_PER_MM, STEPS_PER_MM);
-    this->motion->SetPins(MOTOR_A_PINS, MOTOR_B_PINS, limitX, limitY);
 
     this->Pathfinding = new PathFinding_impoved();
 
@@ -175,6 +172,20 @@ void LudoGame::GameLoop()
 {
     while (this->state.State != LudoGameStates::stopped && this->state.State != LudoGameStates::error)
     {
+        //check if player has all the pawns at the finish. If so set the gamestate to stopped. The game will stop at the end of this turn
+        bool hasWon = false;
+        for (int i = 0; i < this->players->size(); i++)
+        {
+            if ((*(*this->players)[i]->Pawns)[0]->State.HasFinished && (*(*this->players)[i]->Pawns)[1]->State.HasFinished &&
+            (*(*this->players)[i]->Pawns)[2]->State.HasFinished && (*(*this->players)[i]->Pawns)[3]->State.HasFinished)
+            {
+                this->state.State = LudoGameStates::stopped;
+                LOG_I("Player %u has won. The game will be stopped", i);
+                hasWon = true;
+            }
+        }
+        if (hasWon) continue;
+
         //set state to next player
         if (this->state.State == LudoGameStates::Player4)
         {
@@ -193,21 +204,11 @@ void LudoGame::GameLoop()
             this->state.State = LudoGameStates::stopped;
         }
 
-
-        //check if player has all the pawns at the finish. If so set the gamestate to stopped. The game will stop at the end of this turn
-        if ((*(*this->players)[currentPlayer]->Pawns)[0]->State.HasFinished && (*(*this->players)[currentPlayer]->Pawns)[1]->State.HasFinished &&
-        (*(*this->players)[currentPlayer]->Pawns)[3]->State.HasFinished && (*(*this->players)[currentPlayer]->Pawns)[3]->State.HasFinished)
-        {
-            this->state.State = LudoGameStates::stopped;
-            LOG_I("Player %u has won. The game will be stopped", currentPlayer);
-            continue;
-        }
-
         (*this->players)[currentPlayer]->DoTurn();
         
 
         //get the selected pawn from the user
-        uint8_t selectedPawn = -1;
+        int8_t selectedPawn = -1;
         for (size_t i = 0; i < (*this->players)[currentPlayer]->Pawns->size(); i++)
         {
             if ((*(*this->players)[currentPlayer]->Pawns)[i]->State.IsSelected) 
@@ -262,6 +263,7 @@ void LudoGame::GameLoop()
                     {
                         (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.HasFinished = true;
                         LOG_I("Pawn %u has finished", selectedPawn);
+                        continue;
 
                         //(*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsSelected = false;
                         //(*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps = 0;
