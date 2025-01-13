@@ -306,9 +306,11 @@ void LudoGame::GameLoop()
                             (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.HasFinished = true;
                             LOG_I("Pawn %u has finished", selectedPawn);
                         }
-
-                        (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsInHome = true;
-                        nextPos = this->state.homePositions[currentPlayer]->at((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath);
+                        else
+                        {
+                            (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsInHome = true;
+                            nextPos = this->state.homePositions[currentPlayer]->at((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath);
+                        }
                     }
                     else
                     {
