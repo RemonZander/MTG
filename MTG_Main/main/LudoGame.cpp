@@ -324,6 +324,7 @@ void LudoGame::GameLoop()
                         {
                             (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.HasFinished = true;
                             LOG_I("Pawn %u has finished", selectedPawn);
+                            (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath += (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps;
                             nextPos = this->state.homePositions[currentPlayer]->at((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath);
                             LOG_I("Moving pawn %u from x: %u y: %u to x: %u y: %u", selectedPawn, (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords.x
                             , (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords.y, nextPos.x, nextPos.y);
