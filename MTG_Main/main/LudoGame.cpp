@@ -307,9 +307,10 @@ void LudoGame::GameLoop()
                 //move pawn normally along the game path
                 else 
                 {
-                    LOG_I("moving pawn along board");
+                    LOG_I("moving pawn along board with steps: %u", (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps);
                     if ((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath + (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps > this->state.GamePath.size())
                     {
+                        LOG_I("Cycling back to the start of the gamepath");
                         (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath = (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps - (this->state.GamePath.size() - (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath);
                     }
                     else 
