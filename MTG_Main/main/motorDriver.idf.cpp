@@ -140,7 +140,6 @@ public:
 private:
     static size_t _encode(rmt_encoder_t *encoder, rmt_channel_handle_t channel, const void *primary_data, size_t data_size, rmt_encode_state_t *ret_state)
     {
-        // stepper_encoder *motor_encoder = __containerof(encoder, stepper_encoder, base);
         rmt_encode_state_t session_state = RMT_ENCODING_RESET;
         stepper_encoder *stepper = (stepper_encoder *)primary_data;
         uint32_t step_count = stepper->_steps;
@@ -155,27 +154,18 @@ private:
             step_count = ACCELARATION_STEP_COUNT;
         }
 
+        rmt_symbol_word_t *start_step =
+            (stepper->_flags.is_accel_curve == 1) ? &stepper->_curve_table[0]
+                                                  : &stepper->_curve_table[(uint32_t)ACCELARATION_STEP_COUNT - step_count];
+
         size_t symbol_count = 0;
-        if (stepper->_flags.is_accel_curve == 1)
-        {
-            symbol_count = stepper->_encoder->encode(
-                stepper->_encoder,
-                channel,
-                &stepper->_curve_table[0],
-                step_count * sizeof(rmt_symbol_word_t),
-                &session_state
-            );
-        }
-        else
-        {
-            symbol_count = stepper->_encoder->encode(
-                stepper->_encoder,
-                channel,
-                &stepper->_curve_table[(uint32_t)ACCELARATION_STEP_COUNT - step_count],
-                step_count * sizeof(rmt_symbol_word_t),
-                &session_state
-            );
-        }
+        symbol_count = stepper->_encoder->encode(
+            stepper->_encoder,
+            channel,
+            start_step,
+            step_count * sizeof(rmt_symbol_word_t),
+            &session_state
+        );
 
         if (symbol_count != step_count)
         {
@@ -209,7 +199,7 @@ static size_t rmt_encode_stepper_motor_uniform(rmt_encoder_t *encoder, rmt_chann
     rmt_encoder_handle_t copy_encoder = motor_encoder->encoder;
     rmt_encode_state_t session_state = RMT_ENCODING_RESET;
     uint32_t target_freq_hz;
-    if (data_size == 0)
+    if (data_size == 1)
     {
         target_freq_hz = MOTOR_MAX_SPEED_STEPS;
     }
@@ -288,6 +278,7 @@ int MotorDriver::init()
     LOG_D("Set spin direction");
     gpio_set_level(MOTOR_A_DIR_PIN, STEPER_DIR_CW);
     gpio_set_level(MOTOR_B_DIR_PIN, STEPER_DIR_CW);
+    this->setMagnet(false);
 
     // === init RMT channels
 
@@ -430,6 +421,7 @@ void MotorDriver::move(float x, float y, uint32_t speed)
     LOG_D("move: mm (%f, %f), speed=%lu", x, y, speed);
     int32_t stepsA = (x - y) * STEPS_PER_MM;
     int32_t stepsB = (x + y) * STEPS_PER_MM;
+    LOG_D("move: steps A=%li, B=%li", stepsA, stepsB);
 
     if (stepsA > 0)
     {
@@ -450,7 +442,6 @@ void MotorDriver::move(float x, float y, uint32_t speed)
         stepsB = -stepsB;
         gpio_set_level(MOTOR_B_DIR_PIN, STEPER_DIR_CCW);
     }
-    LOG_D("move: steps A=%li, B=%li", stepsA, stepsB);
 
     rmt_transmit_config_t tx_config = {
         .loop_count = 0,
@@ -495,7 +486,7 @@ void MotorDriver::move(float x, float y, uint32_t speed)
         // LOG_D("move a: full curve 2");
         // constant speed
         tx_config.loop_count = stepsA - (uint32_t)ACCELARATION_STEP_COUNT*2;
-        ret = rmt_transmit(motor_channel_a, &constant_curve->base, NULL, 0, &tx_config);
+        ret = rmt_transmit(motor_channel_a, &constant_curve->base, &tx_config, 1, &tx_config);
         if (ret != 0)
         {
             LOG_E("move a: faild to move motor constant");
@@ -514,6 +505,7 @@ void MotorDriver::move(float x, float y, uint32_t speed)
     // stepper B
     if (stepsB < (uint32_t)ACCELARATION_STEP_COUNT * 2)
     {
+        LOG_D("move b: less steps than accel + decel. do parcel accel and decel");
         // acceleraton
         curve_samples = stepsA / 2;
         ret = accel_curve->transmit(motor_channel_b, curve_samples);
@@ -531,6 +523,7 @@ void MotorDriver::move(float x, float y, uint32_t speed)
     }
     else
     {
+        LOG_D("move b: full curve");
         // acceleraton
         ret = accel_curve->transmit(motor_channel_b, (uint32_t)ACCELARATION_STEP_COUNT);
         if (ret != 0)
@@ -539,7 +532,7 @@ void MotorDriver::move(float x, float y, uint32_t speed)
         }
         // constant speed
         tx_config.loop_count = stepsB - (uint32_t)ACCELARATION_STEP_COUNT*2;
-        ret = rmt_transmit(motor_channel_b, &constant_curve->base, NULL, 0, &tx_config);
+        ret = rmt_transmit(motor_channel_b, &constant_curve->base, &tx_config, 1, &tx_config);
         if (ret != 0)
         {
             LOG_E("move b: faild to move motor constant");
@@ -552,8 +545,8 @@ void MotorDriver::move(float x, float y, uint32_t speed)
         }
     }
 
-    rmt_tx_wait_all_done(motor_channel_a, 10000);
-    rmt_tx_wait_all_done(motor_channel_b, 10000);
+    rmt_tx_wait_all_done(motor_channel_a, 30000);
+    rmt_tx_wait_all_done(motor_channel_b, 30000);
 }
 
 void MotorDriver::home(float offsetX, float offsetY)
@@ -631,9 +624,6 @@ void MotorDriver::home(float offsetX, float offsetY)
     ret = rmt_enable(motor_channel_a);
     ret = rmt_enable(motor_channel_b);
 
-    // move to center of (0,0)
-    LOG_C("stop");
-    // abort();
     move(offsetX, offsetY, 100);
 }
 

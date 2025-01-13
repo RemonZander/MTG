@@ -327,7 +327,7 @@ pathfinding_path_t PathFinding_impoved::gatherPath(BoardMap_t floodFill_Map)
     {
         uint8_t minWieght_val = 255;
         Cordinates_s minWieght_pos;
-        int minWieght_dir;
+        int minWieght_dir = -1;
 
         for (int i = 0; i < 4; i++)
         {
@@ -346,7 +346,7 @@ pathfinding_path_t PathFinding_impoved::gatherPath(BoardMap_t floodFill_Map)
             }
         }
 
-        //if (minWieght_dir != lastDirection && lastDirection != -1)
+        if (minWieght_dir != lastDirection && lastDirection != -1)
         {
             path->push_back({.target = curPos, .magnetEn = true});
             //LOG_D("path: stap %i: (%u, %u)", index, curPos.x, curPos.y);
