@@ -158,22 +158,27 @@ private:
             (stepper->_flags.is_accel_curve == 1) ? &stepper->_curve_table[0]
                                                   : &stepper->_curve_table[(uint32_t)ACCELARATION_STEP_COUNT - step_count];
 
-        size_t symbol_count = 0;
-        symbol_count = stepper->_encoder->encode(
-            stepper->_encoder,
-            channel,
-            start_step,
-            step_count * sizeof(rmt_symbol_word_t),
-            &session_state
-        );
+        size_t symbol_count = 0, total_staps = 0;
+        // do {
+            symbol_count = stepper->_encoder->encode(
+                stepper->_encoder,
+                channel,
+                start_step,
+                step_count * sizeof(rmt_symbol_word_t),
+                &session_state
+            );
+            total_staps += symbol_count;
+        //     start_step += symbol_count;
+        // }
+        // while (total_staps < step_count);
 
-        if (symbol_count != step_count)
+        if (total_staps != step_count)
         {
-            LOG_E("stepper_encoder: symbol_count != step_count (%u != %lu)", symbol_count, step_count);
+            LOG_E("stepper_encoder: total_staps != step_count (%u != %lu)", total_staps, step_count);
         }
 
         *ret_state = session_state;
-        return symbol_count;
+        return total_staps;
     }
 
 private:
@@ -247,7 +252,7 @@ int MotorDriver::init()
 
     // === init GPIO
 
-    LOG_D("Initialize GPIO");
+    // LOG_D("Initialize GPIO");
     gpio_config_t dir_gpio_config = {
         .pin_bit_mask = 1ULL << MOTOR_A_DIR_PIN | 1ULL << MOTOR_B_DIR_PIN | 1ULL << MAGNET_PIN,
         .mode = GPIO_MODE_OUTPUT,
@@ -275,14 +280,14 @@ int MotorDriver::init()
         return -2;
     }
 
-    LOG_D("Set spin direction");
+    // LOG_D("Set spin direction");
     gpio_set_level(MOTOR_A_DIR_PIN, STEPER_DIR_CW);
     gpio_set_level(MOTOR_B_DIR_PIN, STEPER_DIR_CW);
     this->setMagnet(false);
 
     // === init RMT channels
 
-    LOG_D("Create RMT TX channels");
+    // LOG_D("Create RMT TX channels");
     rmt_tx_channel_config_t tx_chan_config_a = {
         .gpio_num = MOTOR_A_STEP_PIN,
         .clk_src = RMT_CLK_SRC_DEFAULT, // select clock source
@@ -418,10 +423,10 @@ MotorDriver::~MotorDriver()
 
 void MotorDriver::move(float x, float y, uint32_t speed)
 {
-    LOG_D("move: mm (%f, %f), speed=%lu", x, y, speed);
+    // LOG_D("move: mm (%f, %f), speed=%lu", x, y, speed);
     int32_t stepsA = (x - y) * STEPS_PER_MM;
     int32_t stepsB = (x + y) * STEPS_PER_MM;
-    LOG_D("move: steps A=%li, B=%li", stepsA, stepsB);
+    // LOG_D("move: steps A=%li, B=%li", stepsA, stepsB);
 
     if (stepsA > 0)
     {
@@ -456,7 +461,7 @@ void MotorDriver::move(float x, float y, uint32_t speed)
     // stepper A
     if (stepsA < (uint32_t)ACCELARATION_STEP_COUNT * 2)
     {
-        LOG_D("move a: less steps than accel + decel. do parcel accel and decel");
+        // LOG_D("move a: less steps than accel + decel. do parcel accel and decel");
 
         // acceleraton
         curve_samples = stepsA / 2;
@@ -475,7 +480,7 @@ void MotorDriver::move(float x, float y, uint32_t speed)
     }
     else
     {
-        LOG_D("move a: full curve");
+        // LOG_D("move a: full curve");
 
         // acceleraton
         ret = accel_curve->transmit(motor_channel_a, (uint32_t)ACCELARATION_STEP_COUNT);
@@ -505,7 +510,7 @@ void MotorDriver::move(float x, float y, uint32_t speed)
     // stepper B
     if (stepsB < (uint32_t)ACCELARATION_STEP_COUNT * 2)
     {
-        LOG_D("move b: less steps than accel + decel. do parcel accel and decel");
+        // LOG_D("move b: less steps than accel + decel. do parcel accel and decel");
         // acceleraton
         curve_samples = stepsA / 2;
         ret = accel_curve->transmit(motor_channel_b, curve_samples);
@@ -523,7 +528,7 @@ void MotorDriver::move(float x, float y, uint32_t speed)
     }
     else
     {
-        LOG_D("move b: full curve");
+        // LOG_D("move b: full curve");
         // acceleraton
         ret = accel_curve->transmit(motor_channel_b, (uint32_t)ACCELARATION_STEP_COUNT);
         if (ret != 0)
