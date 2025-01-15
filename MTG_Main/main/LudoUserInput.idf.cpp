@@ -47,8 +47,6 @@ LudoInputModule::LudoInputModule(uint8_t slaveAddr){
 }
 
 int LudoInputModule::rollDice(){
-    //transmit(UIMCOMMAND_ENABLE_DICE_2);
-
     uint8_t write_buf[2] = {this->slaveAddr, UIMCOMMAND_ENABLE_DICE_2};
     int ret = i2c_master_transmit(this->dev_handle, &write_buf[0], 2, 1000 / portTICK_PERIOD_MS);
     if (ret != 0)
@@ -57,15 +55,12 @@ int LudoInputModule::rollDice(){
         return -1;
     }
 
-
     int diceroll = 0;
     do {
         uint16_t state = requestState(this->dev_handle);
-        // int state = 0;
         diceroll = state >> 8;
     } while (diceroll == 0);
-    // delay(1000);
-    //transmit(UIMCOMMAND_ACKNOWLEDGE);
+    delay(1000);
 
     write_buf[1] = UIMCOMMAND_ACKNOWLEDGE;
     ret = i2c_master_transmit(this->dev_handle, &write_buf[0], 2, 1000 / portTICK_PERIOD_MS);
@@ -75,14 +70,10 @@ int LudoInputModule::rollDice(){
     }
 
     LOG_D("diceroll: %i", diceroll);
-
-    // delete[] write_buf;
     return diceroll;
 };
 
 int LudoInputModule::selectPawn(){
-    //transmit(UIMCOMMAND_ENABLE_PAWN_SELECTION);
-
     uint8_t write_buf[2] = {this->slaveAddr, UIMCOMMAND_ENABLE_PAWN_SELECTION};
     int ret = i2c_master_transmit(this->dev_handle, &write_buf[0], 2, 1000 / portTICK_PERIOD_MS);
     if (ret != 0)
@@ -99,8 +90,6 @@ int LudoInputModule::selectPawn(){
         if (selectedPawn == 8) selectedPawn = 4;            /// maurice bedenk ff comment voor dit
     } while (selectedPawn == 0);
     selectedPawn -= 1;              // so we can use this as an index
-    // delay(100);
-    //transmit(UIMCOMMAND_ACKNOWLEDGE);
 
     write_buf[1] = UIMCOMMAND_ACKNOWLEDGE;
     ret = i2c_master_transmit(this->dev_handle, &write_buf[0], 2, 1000 / portTICK_PERIOD_MS);

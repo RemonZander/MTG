@@ -12,7 +12,7 @@ public:
     MotionController();
     ~MotionController();
 
-    void SetPhisicalBoardSize(float x, float y, Coordinates_t boardSize);
+    void SetPhisicalBoardSize(float x, float y, float offsetX, float offsetY, Coordinates_t boardSize);
 
     bool ExecutePath(pathfinding_path_t path);
 

@@ -16,14 +16,14 @@ MotionController::~MotionController()
 	delete(this->_driver);
 }
 
-void MotionController::SetPhisicalBoardSize(float x, float y, Coordinates_t boardSize)
+void MotionController::SetPhisicalBoardSize(float x, float y, float offsetX, float offsetY, Coordinates_t boardSize)
 {
 	this->_phisicalBoardSizeX = x;
 	this->_phisicalBoardSizeY = y;
 	this->_squareSize_x = x / boardSize.x;
 	this->_squareSize_y = y / boardSize.y;
-	this->_boardOffset_x = 125.0 - (x/2) + (this->_squareSize_x/2);
-	this->_boardOffset_y = 118.0 - (y/2) + (this->_squareSize_y/2);
+	this->_boardOffset_x = 125.0 - (x/2) + (this->_squareSize_x/2) + offsetX;
+	this->_boardOffset_y = 118.0 - (y/2) + (this->_squareSize_y/2) + offsetY;
 	this->_driver->home(_boardOffset_x, _boardOffset_y);
 }
 
