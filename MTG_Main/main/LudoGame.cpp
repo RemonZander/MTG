@@ -117,7 +117,7 @@ void LudoGame::Init()
         Coordinates_t{4,7},
         Coordinates_t{5,7},
         Coordinates_t{6,7}
-        });
+    });
     this->state.homePositions.push_back(new std::vector<Coordinates_t>{
         Coordinates_t{7,1},
         Coordinates_t{7,2},
@@ -125,7 +125,7 @@ void LudoGame::Init()
         Coordinates_t{7,4},
         Coordinates_t{7,5},
         Coordinates_t{7,6}
-        });
+    });
     this->state.homePositions.push_back(new std::vector<Coordinates_t>{
         Coordinates_t{13,7},
         Coordinates_t{12,7},
@@ -133,7 +133,7 @@ void LudoGame::Init()
         Coordinates_t{10,7},
         Coordinates_t{9,7},
         Coordinates_t{8,7}
-        });
+    });
     this->state.homePositions.push_back(new std::vector<Coordinates_t>{
         Coordinates_t{7,13},
         Coordinates_t{7,12},
@@ -141,7 +141,7 @@ void LudoGame::Init()
         Coordinates_t{7,10},
         Coordinates_t{7,9},
         Coordinates_t{7,8}
-        });
+    });
 
     //init players with pawns
     this->players = new std::vector<Player<LudoPlayerState_t, LudoPawnState_t>*>{
@@ -222,8 +222,10 @@ void LudoGame::GameLoop()
         //check if player has all the pawns at the finish. If so set the gamestate to stopped. The game will stop at the end of this turn
         for (int i = 0; i < this->players->size(); i++)
         {
-            if ((*(*this->players)[i]->Pawns)[0]->State.HasFinished && (*(*this->players)[i]->Pawns)[1]->State.HasFinished &&
-            (*(*this->players)[i]->Pawns)[3]->State.HasFinished && (*(*this->players)[i]->Pawns)[3]->State.HasFinished)
+            if (   (*(*this->players)[i]->Pawns)[0]->State.HasFinished 
+                && (*(*this->players)[i]->Pawns)[1]->State.HasFinished 
+                && (*(*this->players)[i]->Pawns)[3]->State.HasFinished 
+                && (*(*this->players)[i]->Pawns)[3]->State.HasFinished)
             {
                 this->state.State = LudoGameStates::stopped;
                 LOG_I("Player %u has won. The game will be stopped", i);
@@ -248,110 +250,137 @@ void LudoGame::GameLoop()
         }
 
         LOG_I("Selected pawn: %i", selectedPawn);
+        LudoPawnState_t selectedPawnObj = *(*(*this->players)[currentPlayer]->Pawns)[selectedPawn]
 
         //if the user has a selected pawn, move it
         if (selectedPawn != -1)
         {
             //if pawn is at start move it
             Coordinates_t nextPos;
-            if ((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsAtStart)
+            if (selectedPawnObj.State.IsAtStart)
             {
-                nextPos = currentPlayer == 0 ? this->state.GamePath[1] : 
-                currentPlayer == 1 ? this->state.GamePath[15] : 
-                currentPlayer == 2 ? this->state.GamePath[29] : this->state.GamePath[43];
+                switch (currentPlayer)
+                {
+                    case 0:
+                        nextPos = this->state.GamePath[1];
+                        selectedPawnObj.State.CurrentGamePath = 1;
+                        break;
+                    case 1:
+                        nextPos = this->state.GamePath[15];
+                        selectedPawnObj.State.CurrentGamePath = 15;
+                        break;
+                    case 2:
+                        nextPos = this->state.GamePath[29];
+                        selectedPawnObj.State.CurrentGamePath = 29;
+                        break;
+                    case 3:
+                        nextPos = this->state.GamePath[43];
+                        selectedPawnObj.State.CurrentGamePath = 43;
+                        break;
+                }
 
-                (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsAtStart = false;
+                selectedPawnObj.State.IsAtStart = false;
                 (*this->players)[currentPlayer]->State.HasPawnOnboard = true;
-
-                if (currentPlayer == 0)
-                {
-                    (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath = 1;
-                }
-                else if (currentPlayer == 1)
-                {
-                    (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath = 15;
-                }
-                else if (currentPlayer == 2)
-                {
-                    (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath = 29;
-                }
-                else
-                {
-                    (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath = 43;
-                }
 
                 LOG_I("Moving pawn from start to x: %u y: %u", nextPos.x, nextPos.y);
             }
             
             //try to move pawn if the pawn has not reached the finish
-            else if (!(*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.HasFinished)
+            else if (!selectedPawnObj.State.HasFinished)
             {
                 //check if pawn will be in home lane
-                uint8_t nextPathPosition = (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath + (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps;
-                if ((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsInHome || (currentPlayer == 0 && nextPathPosition > 55 && (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath < 55) ||
-                (currentPlayer == 1 && nextPathPosition > 13 && (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath < 13) ||
-                (currentPlayer == 2 && nextPathPosition > 27 && (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath < 27) ||
-                (currentPlayer == 3 && nextPathPosition > 41 && (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath < 41))
-                {
+                uint8_t nextPathPosition = selectedPawnObj.State.CurrentGamePath + selectedPawnObj.State.Steps;
+
+                if (   selectedPawnObj.State.IsInHome 
+                    || (
+                        currentPlayer == 0
+                        && nextPathPosition > 55
+                        && selectedPawnObj.State.CurrentGamePath < 55
+                    )
+                    || (
+                        currentPlayer == 1
+                        && nextPathPosition > 13
+                        && selectedPawnObj.State.CurrentGamePath < 13
+                    )
+                    || (
+                        currentPlayer == 2
+                        && nextPathPosition > 27
+                        && selectedPawnObj.State.CurrentGamePath < 27
+                    )
+                    || (
+                        currentPlayer == 3
+                        && nextPathPosition > 41
+                        && selectedPawnObj.State.CurrentGamePath < 41
+                    )
+                ) {
                     LOG_I("Pawn %u is in the home lane", selectedPawn);
                     
                     //move pawn into home lane from board
-                    if (!(*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsInHome)
+                    if (!selectedPawnObj.State.IsInHome)
                     {
-                        (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath = currentPlayer == 0 ? (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps - (55 - (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath) :
-                        currentPlayer == 1 ? (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps - (13 - (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath) :
-                        currentPlayer == 2 ? (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps - (27 - (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath) :
-                        (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps - (41 - (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath);
-
-                        if ((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath == 5)
+                        switch (currentPlayer)
                         {
-                            (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.HasFinished = true;
+                            case 0:
+                                selectedPawnObj.State.CurrentGamePath = selectedPawnObj.State.Steps - (55 - selectedPawnObj.State.CurrentGamePath);
+                                break;
+                            case 1:
+                                selectedPawnObj.State.CurrentGamePath = selectedPawnObj.State.Steps - (13 - selectedPawnObj.State.CurrentGamePath);
+                                break;
+                            case 2:
+                                selectedPawnObj.State.CurrentGamePath = selectedPawnObj.State.Steps - (27 - selectedPawnObj.State.CurrentGamePath);
+                                break;
+                            case 3:
+                                selectedPawnObj.State.CurrentGamePath = selectedPawnObj.State.Steps - (41 - selectedPawnObj.State.CurrentGamePath);
+                                break;
+                        }
+
+                        if (selectedPawnObj.State.CurrentGamePath == 5)
+                        {
+                            selectedPawnObj.State.HasFinished = true;
                             LOG_I("Pawn %u has finished", selectedPawn);
-                            nextPos = this->state.homePositions[currentPlayer]->at((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath);
-                            LOG_I("Moving pawn %u from x: %u y: %u to x: %u y: %u", selectedPawn, (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords.x
-                            , (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords.y, nextPos.x, nextPos.y);
-                            this->motion->ExecutePath(this->Pathfinding->findPath((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords, nextPos, this->map, &this->state.allPawns, 255));
+                            nextPos = this->state.homePositions[currentPlayer]->at(selectedPawnObj.State.CurrentGamePath);
+                            // LOG_I("Moving pawn %u from x: %u y: %u to x: %u y: %u", selectedPawn, selectedPawnObj.squareCords.x, selectedPawnObj.squareCords.y, nextPos.x, nextPos.y);
+                            // this->motion->ExecutePath(this->Pathfinding->findPath(selectedPawnObj.squareCords, nextPos, this->map, &this->state.allPawns, 255));
                             continue;
                         }
                         //check if pawn cannot move in home lane
-                        else if ((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath + (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps > 5)
+                        else if (selectedPawnObj.State.CurrentGamePath + selectedPawnObj.State.Steps > 5)
                         {
-                            LOG_I("Pawn %u cannot move into home lane bacause too many steps: %u", selectedPawn, (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps);
+                            LOG_I("Pawn %u cannot move into home lane bacause too many steps: %u", selectedPawn, selectedPawnObj.State.Steps);
                             continue;                 
                         }
                         else
                         {
-                            (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsInHome = true;
-                            nextPos = this->state.homePositions[currentPlayer]->at((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath);
+                            selectedPawnObj.State.IsInHome = true;
+                            nextPos = this->state.homePositions[currentPlayer]->at(selectedPawnObj.State.CurrentGamePath);
                         }
                     }
                     else
                     {
                         //if pawn is in pos 6 of home lane. The pawn has reached the finish
-                        if ((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath + (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps == 5)
+                        if (selectedPawnObj.State.CurrentGamePath + selectedPawnObj.State.Steps == 5)
                         {
-                            (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.HasFinished = true;
+                            selectedPawnObj.State.HasFinished = true;
                             LOG_I("Pawn %u has finished", selectedPawn);
-                            (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath += (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps;
-                            nextPos = this->state.homePositions[currentPlayer]->at((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath);
-                            LOG_I("Moving pawn %u from x: %u y: %u to x: %u y: %u", selectedPawn, (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords.x
-                            , (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords.y, nextPos.x, nextPos.y);
-                            this->motion->ExecutePath(this->Pathfinding->findPath((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords, nextPos, this->map, &this->state.allPawns, 255));
+                            selectedPawnObj.State.CurrentGamePath += selectedPawnObj.State.Steps;
+                            nextPos = this->state.homePositions[currentPlayer]->at(selectedPawnObj.State.CurrentGamePath);
+                            LOG_I("Moving pawn %u from x: %u y: %u to x: %u y: %u", selectedPawn, selectedPawnObj.squareCords.x, selectedPawnObj.squareCords.y, nextPos.x, nextPos.y);
+                            this->motion->ExecutePath(this->Pathfinding->findPath(selectedPawnObj.squareCords, nextPos, this->map, &this->state.allPawns, 255));
                             continue;
                         }
                         //check if pawn cannot move in home lane
-                        else if ((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath + (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps > 5)
+                        else if (selectedPawnObj.State.CurrentGamePath + selectedPawnObj.State.Steps > 5)
                         {
-                            LOG_I("Pawn %u cannot move further in home lane bacause too many steps: %u", selectedPawn, (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps);
-                            LOG_I("Pawn %u current position in home lane: %u",selectedPawn, (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath);
+                            LOG_I("Pawn %u cannot move further in home lane bacause too many steps: %u", selectedPawn, selectedPawnObj.State.Steps);
+                            LOG_I("Pawn %u current position in home lane: %u",selectedPawn, selectedPawnObj.State.CurrentGamePath);
                             continue;                 
                         }
                         //move pawn in homelane
                         else
                         {
-                            (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath += (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps;
-                            (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsInHome = true;
-                            nextPos = this->state.homePositions[currentPlayer]->at((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath);
+                            selectedPawnObj.State.CurrentGamePath += selectedPawnObj.State.Steps;
+                            selectedPawnObj.State.IsInHome = true;
+                            nextPos = this->state.homePositions[currentPlayer]->at(selectedPawnObj.State.CurrentGamePath);
                         } 
                     }  
                 }
@@ -359,18 +388,18 @@ void LudoGame::GameLoop()
                 else 
                 {
                     LOG_I("Moving pawn along board normally");
-                    LOG_I("CurrentGamePath of pawn: %u", (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath);
-                    if ((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath + (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps >= this->state.GamePath.size())
+                    LOG_I("CurrentGamePath of pawn: %u", selectedPawnObj.State.CurrentGamePath);
+                    if (selectedPawnObj.State.CurrentGamePath + selectedPawnObj.State.Steps >= this->state.GamePath.size())
                     {
                         LOG_I("Player rolles over the end of the gamepath");
-                        (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath = (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps - (this->state.GamePath.size() - (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath - 1);
+                        selectedPawnObj.State.CurrentGamePath = selectedPawnObj.State.Steps - (this->state.GamePath.size() - selectedPawnObj.State.CurrentGamePath - 1);
                     }
                     else 
                     {
-                        (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath += (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps;
+                        selectedPawnObj.State.CurrentGamePath += selectedPawnObj.State.Steps;
                     }
-                    LOG_I("CurrentGamePath of pawn: %u", (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath);
-                    nextPos = this->state.GamePath[(*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.CurrentGamePath];
+                    LOG_I("CurrentGamePath of pawn: %u", selectedPawnObj.State.CurrentGamePath);
+                    nextPos = this->state.GamePath[selectedPawnObj.State.CurrentGamePath];
                     LOG_I("nextpos: x: %u, y: %u", nextPos.x, nextPos.y);
                 }
             }
@@ -391,13 +420,12 @@ void LudoGame::GameLoop()
                 }
             }
 
-            LOG_I("Moving pawn %u from x: %u y: %u to x: %u y: %u", selectedPawn, (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords.x
-            , (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords.y, nextPos.x, nextPos.y);
-            this->motion->ExecutePath(this->Pathfinding->findPath((*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords, nextPos, this->map, &this->state.allPawns, 255));
+            LOG_I("Moving pawn %u from x: %u y: %u to x: %u y: %u", selectedPawn, selectedPawnObj.squareCords.x, selectedPawnObj.squareCords.y, nextPos.x, nextPos.y);
+            this->motion->ExecutePath(this->Pathfinding->findPath(selectedPawnObj.squareCords, nextPos, this->map, &this->state.allPawns, 255));
 
-            (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->squareCords = nextPos;
-            (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.IsSelected = false;
-            (*(*this->players)[currentPlayer]->Pawns)[selectedPawn]->State.Steps = 0;
+            selectedPawnObj.squareCords = nextPos;
+            selectedPawnObj.State.IsSelected = false;
+            selectedPawnObj.State.Steps = 0;
         }
     }
 };

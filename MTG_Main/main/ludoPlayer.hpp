@@ -24,10 +24,22 @@ class LudoPlayer : public Player<T, U> {
             if (diceroll != 6 && !this->State.HasPawnOnboard) return;
 
             //can player do anything. if not return
-            if (diceroll != 6 && ((*this->Pawns)[0]->State.HasFinished || (*this->Pawns)[0]->State.IsAtStart) && 
-            ((*this->Pawns)[1]->State.HasFinished || (*this->Pawns)[1]->State.IsAtStart) &&
-            ((*this->Pawns)[2]->State.HasFinished || (*this->Pawns)[2]->State.IsAtStart) &&
-            ((*this->Pawns)[3]->State.HasFinished || (*this->Pawns)[3]->State.IsAtStart)) return;
+            if (diceroll != 6 
+                && (   (*this->Pawns)[0]->State.HasFinished 
+                    || (*this->Pawns)[0]->State.IsAtStart
+                )
+                && (   (*this->Pawns)[1]->State.HasFinished 
+                    || (*this->Pawns)[1]->State.IsAtStart
+                )
+                && (   (*this->Pawns)[2]->State.HasFinished 
+                    || (*this->Pawns)[2]->State.IsAtStart
+                )
+                && (   (*this->Pawns)[3]->State.HasFinished 
+                    || (*this->Pawns)[3]->State.IsAtStart
+                )
+            ) {
+                return;
+            }
 
             //The player can do a move. Let the player choose until the player has chosen a correct pawn
             do 
