@@ -190,7 +190,7 @@ void LudoGame::Init()
     this->state.State = LudoGameStates::Player1;
     currentPlayer = 0;
 
-    // this->motion->ExecutePath(this->Pathfinding->findPath({.x = 2, .y = 0}, {.x = 2, .y = 2}, this->map, &this->state.allPawns, 255));
+    // this->motion->ExecutePath(this->Pathfinding->findPath({.x = 8, .y = 6}, {.x = 12, .y = 6}, this->map, &this->state.allPawns, 255));
 };
 
 void LudoGame::GameLoop()

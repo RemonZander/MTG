@@ -4,7 +4,7 @@ idf_component_register(
 		"main.cpp"
 		"LudoGame.cpp"
 		"PathFinding.cpp"
-		"LudoUserInput.cpp"
+		"LudoUserInput.idf.cpp"
 		"UserInputModule.cpp"
 		"MotionController.cpp"
 		"motorDriver.idf.cpp"
