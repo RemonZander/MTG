@@ -459,7 +459,8 @@ void MotorDriver::move(float x, float y, uint32_t speed)
     int ret;
 
     // stepper A
-    if (stepsA < (uint32_t)ACCELARATION_STEP_COUNT * 2)
+    if (stepsA == 0) {}
+    else if (stepsA < (uint32_t)ACCELARATION_STEP_COUNT * 2)
     {
         // LOG_D("move a: less steps than accel + decel. do parcel accel and decel");
 
@@ -508,7 +509,8 @@ void MotorDriver::move(float x, float y, uint32_t speed)
 
     tx_config.loop_count = 0;
     // stepper B
-    if (stepsB < (uint32_t)ACCELARATION_STEP_COUNT * 2)
+    if (stepsB == 0) {}
+    else if (stepsB < (uint32_t)ACCELARATION_STEP_COUNT * 2)
     {
         // LOG_D("move b: less steps than accel + decel. do parcel accel and decel");
         // acceleraton
