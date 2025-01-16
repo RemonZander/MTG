@@ -192,7 +192,12 @@ void LudoGame::Init()
     this->state.State = LudoGameStates::Player1;
     currentPlayer = 0;
 
-    // this->motion->ExecutePath(this->Pathfinding->findPath({.x = 8, .y = 6}, {.x = 12, .y = 6}, this->map, &this->state.allPawns, 255));
+    this->motion->ExecutePath(this->Pathfinding->findPath({.x = 11, .y = 11}, {.x = 9, .y = 7}, this->map, &this->state.allPawns, 255));
+    (*(*this->players)[2]->Pawns)[2]->Pawns[3]->State.IsAtStart = false;
+    (*(*this->players)[2]->Pawns)[3]->State.IsInHome = true;
+    (*(*this->players)[2]->Pawns)[3]->State.CurrentGamePath = 4;
+    (*(*this->players)[2]->Pawns)[3]->squareCords = {.x = 9, .y = 7};
+
 };
 
 void LudoGame::GameLoop()
