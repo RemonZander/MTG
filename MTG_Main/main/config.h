@@ -73,4 +73,7 @@
 #define MAXBOARD_SIZEX 240.0
 #define MAXBOARD_SIZEY 240.0
 
+#define MODE_SW_PIN GPIO_NUM_41
+#define MODE_JP_PIN GPIO_NUM_42
+
 #endif

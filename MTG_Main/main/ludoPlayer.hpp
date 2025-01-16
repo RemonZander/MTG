@@ -1,10 +1,11 @@
 #pragma once
 #include "Player.hpp"
 #include "logger.h"
-// #include "./random.hpp"
+#include "./random.hpp"
 #include "LudoUserInput.idf.hpp"
+#include "driver/gpio.h"
 
-// using Random = effolkronium::random_static;
+using Random = effolkronium::random_static;
 
 template <class T, class U>
 class LudoPlayer : public Player<T, U> {
@@ -14,8 +15,15 @@ class LudoPlayer : public Player<T, U> {
         void DoTurn()
         {
             LOG_I("Player %u turn has started", this->ID);
-            // uint8_t diceroll = Random::get<uint8_t>(1, 6) + Random::get<uint8_t>(1, 6);
-            uint8_t diceroll = this->State.userInputModule.rollDice();
+            uint8_t diceroll;
+            if (gpio_get_level(MODE_JP_PIN) == 0)
+            {
+                diceroll = Random::get<uint8_t>(1, 6) + Random::get<uint8_t>(1, 6);
+            }
+            else
+            {
+                diceroll = this->State.userInputModule.rollDice();
+            }
             LOG_I("Player %u rolls: %u", this->ID, diceroll);
 
             int selectedPawn = -1;
@@ -44,8 +52,14 @@ class LudoPlayer : public Player<T, U> {
             //The player can do a move. Let the player choose until the player has chosen a correct pawn
             do 
             {
-                // selectedPawn = Random::get<uint8_t>(0, 3);
-                selectedPawn = this->State.userInputModule.selectPawn();
+                if (gpio_get_level(MODE_JP_PIN) == 0)
+                {
+                    selectedPawn = Random::get<uint8_t>(0, 3);
+                }
+                else
+                {
+                    selectedPawn = this->State.userInputModule.selectPawn();
+                }
                 LOG_I("Player %u has selected pawn: %u", this->ID, selectedPawn);
                 LOG_I("Pawn %u is on board: %u", selectedPawn, !(*this->Pawns)[selectedPawn]->State.IsAtStart);
                 LOG_I("Pawn %u is in home lane: %u", selectedPawn, (*this->Pawns)[selectedPawn]->State.IsInHome);

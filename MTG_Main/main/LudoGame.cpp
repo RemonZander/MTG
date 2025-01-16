@@ -4,6 +4,8 @@
 #include <Arduino.h>
 #else
 #include "nvs_flash.h"
+#include "nvs.h"
+#include "driver/gpio.h"
 #endif
 
 #include "logger.h"
@@ -21,6 +23,24 @@ void LudoGame::Init()
         err = nvs_flash_init();
     }
     ESP_ERROR_CHECK( err );
+
+    gpio_config_t dir_gpio_config = {
+        .pin_bit_mask = 1ULL << 2,
+        .mode = GPIO_MODE_OUTPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE
+    };
+    err = gpio_config(&dir_gpio_config);
+    gpio_set_level(GPIO_NUM_2, 0);
+    gpio_config_t end_stop_gpio_config = {
+        .pin_bit_mask = 1ULL << MODE_SW_PIN | 1ULL << MODE_JP_PIN,
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_ENABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE
+    };
+    err = gpio_config(&end_stop_gpio_config);
 
     // nvs_open("storage", NVS_READWRITE, &this->nvsFlashHandle);
 
@@ -188,15 +208,26 @@ void LudoGame::Init()
         for (size_t j = 0; j < (*this->players)[i]->Pawns->size(); j++) 
             this->state.allPawns.push_back((*(*this->players)[i]->Pawns)[j]);
 
+    if (gpio_get_level(MODE_SW_PIN) == 0)
+    {
+        this->RestoreGame();
+    }
+    else
+    {
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        err = nvs_flash_init();
+    }
+
     LOG_I("initialization done, starting game...");
     this->state.State = LudoGameStates::Player1;
     currentPlayer = 0;
 
-    this->motion->ExecutePath(this->Pathfinding->findPath({.x = 11, .y = 11}, {.x = 9, .y = 7}, this->map, &this->state.allPawns, 255));
-    (*(*this->players)[2]->Pawns)[2]->Pawns[3]->State.IsAtStart = false;
-    (*(*this->players)[2]->Pawns)[3]->State.IsInHome = true;
-    (*(*this->players)[2]->Pawns)[3]->State.CurrentGamePath = 4;
-    (*(*this->players)[2]->Pawns)[3]->squareCords = {.x = 9, .y = 7};
+    // this->motion->ExecutePath(this->Pathfinding->findPath({.x = 11, .y = 11}, {.x = 9, .y = 7}, this->map, &this->state.allPawns, 255));
+    // ((*this->players)[2])->State.HasPawnOnboard = true;
+    // (*(*this->players)[2]->Pawns)[3]->State.IsAtStart = false;
+    // (*(*this->players)[2]->Pawns)[3]->State.IsInHome = true;
+    // (*(*this->players)[2]->Pawns)[3]->State.CurrentGamePath = 4;
+    // (*(*this->players)[2]->Pawns)[3]->squareCords = {.x = 9, .y = 7};
 
 };
 
@@ -436,6 +467,7 @@ void LudoGame::GameLoop()
 
             selectedPawnObj->State.IsSelected = false;
             selectedPawnObj->State.Steps = 0;
+            this->SaveGame();
         }
     }
 };
@@ -444,62 +476,239 @@ void LudoGame::SaveGame()
 {
     LOG_I("Saving game...");
     nvs_handle_t nvsFlashHandle;
+    size_t size = 1;
     int err = nvs_open("storage", NVS_READWRITE, &nvsFlashHandle);
-    nvs_set_i32(nvsFlashHandle, "LudoGameState", (int32_t)this->state.State);
+    if (err != 0){
+        printf("faild to open vns (%i)\n", err);
+    }
+    err = nvs_set_blob(nvsFlashHandle, "LudoGameState", (void*)&this->state.State, size);
+    if (err != 0){
+        printf("LudoGameState = error %i\n", err);
+    }
     nvs_commit(nvsFlashHandle);
-    nvs_set_i32(nvsFlashHandle, "currentPlayer", (int32_t)this->currentPlayer);
+    err = nvs_set_blob(nvsFlashHandle, "currentPlayer", (void*)&this->currentPlayer, size);
+    if (err != 0){
+        printf("currentPlayer = error %i\n", err);
+    }
     nvs_commit(nvsFlashHandle);
 
     char str[128];
 
-    for (size_t i = 0; i < BOARD_SIZE_X_LUDO; i++)
-    {
-        for (size_t j = 0; j < BOARD_SIZE_Y_LUDO; j++)
-        {
-            snprintf(&str[0], 128, "map[%u,%u]", i, j);
-            nvs_set_i32(nvsFlashHandle, &str[0], (int32_t)this->state.State);
-            nvs_commit(nvsFlashHandle);
-        }
-    }
-
     for (size_t i = 0; i < this->players->size(); i++)
     {
         snprintf(&str[0], 128, "player%u", i);
-        nvs_set_i32(nvsFlashHandle, &str[0], (*this->players)[i]->ID);
-        // nvs_commit(nvsFlashHandle);
+        err = nvs_set_blob(nvsFlashHandle, &str[0], (void*)&(*this->players)[i]->ID, size);
+        if (err != 0){
+            printf("%s = error %i\n", &str[0], err);
+        }
+        nvs_commit(nvsFlashHandle);
+        snprintf(&str[0], 128, "player%uHasP", i);
+        err = nvs_set_blob(nvsFlashHandle, &str[0], (void*)&(*this->players)[i]->State.HasPawnOnboard, size);
+        if (err != 0){
+            printf("%s = error %i\n", &str[0], err);
+        }
+        nvs_commit(nvsFlashHandle);
 
         for (size_t j = 0; j < (*this->players)[i]->Pawns->size(); j++)
         {
             // snprintf(&str[0], 128, "player%upawn%u", i, j);
             // nvs_set_i32(nvsFlashHandle, &str[0], (int32_t)(*(*this->players)[i]->Pawns)[j]->State.ID);
             // nvs_commit(nvsFlashHandle);
-            snprintf(&str[0], 128, "player%upawn%uIsSelected", i, j);
-            nvs_set_i32(nvsFlashHandle, &str[0], (int32_t)(*(*this->players)[i]->Pawns)[j]->State.IsSelected);
-            // nvs_commit(nvsFlashHandle);
-            snprintf(&str[0], 128, "player%upawn%uSteps", i, j);
-            nvs_set_i32(nvsFlashHandle, &str[0], (int32_t)(*(*this->players)[i]->Pawns)[j]->State.Steps);
-            // nvs_commit(nvsFlashHandle);
-            snprintf(&str[0], 128, "player%upawn%uIsAtStart", i, j);
-            nvs_set_i32(nvsFlashHandle, &str[0], (int32_t)(*(*this->players)[i]->Pawns)[j]->State.IsAtStart);
-            // nvs_commit(nvsFlashHandle);
-            snprintf(&str[0], 128, "player%upawn%uIsInHome", i, j);
-            nvs_set_i32(nvsFlashHandle, &str[0], (int32_t)(*(*this->players)[i]->Pawns)[j]->State.IsInHome);
-            // nvs_commit(nvsFlashHandle);
-            snprintf(&str[0], 128, "player%upawn%uHasFinished", i, j);
-            nvs_set_i32(nvsFlashHandle, &str[0], (int32_t)(*(*this->players)[i]->Pawns)[j]->State.HasFinished);
-            // nvs_commit(nvsFlashHandle);
-            snprintf(&str[0], 128, "player%upawn%ustartPosX", i, j);
-            nvs_set_i32(nvsFlashHandle, &str[0], (int32_t)(*(*this->players)[i]->Pawns)[j]->State.startPos.x);
-            // nvs_commit(nvsFlashHandle);
-            snprintf(&str[0], 128, "player%upawn%ustartPosY", i, j);
-            nvs_set_i32(nvsFlashHandle, &str[0], (int32_t)(*(*this->players)[i]->Pawns)[j]->State.startPos.y);
-            // nvs_commit(nvsFlashHandle);
-            snprintf(&str[0], 128, "player%upawn%uCurrentGamePath", i, j);
-            nvs_set_i32(nvsFlashHandle, &str[0], (int32_t)(*(*this->players)[i]->Pawns)[j]->State.CurrentGamePath);
-            // nvs_commit(nvsFlashHandle);
+            snprintf(&str[0], 128, "p%upn%usCords.x", i, j);
+            err = nvs_set_blob(nvsFlashHandle, &str[0], (void*)&(*(*this->players)[i]->Pawns)[j]->squareCords.x, size);
+            if (err != 0){
+                printf("%s = error %i\n", &str[0], err);
+            }
+            snprintf(&str[0], 128, "p%upn%usCords.y", i, j);
+            err = nvs_set_blob(nvsFlashHandle, &str[0], (void*)&(*(*this->players)[i]->Pawns)[j]->squareCords.y, size);
+            if (err != 0){
+                printf("%s = error %i\n", &str[0], err);
+            }
+            snprintf(&str[0], 128, "p%upn%uIsSelected", i, j);
+            err = nvs_set_blob(nvsFlashHandle, &str[0], (void*)&(*(*this->players)[i]->Pawns)[j]->State.IsSelected, size);
+            if (err != 0){
+                printf("%s = error %i\n", &str[0], err);
+            }
+            nvs_commit(nvsFlashHandle);
+            snprintf(&str[0], 128, "p%upn%uSteps", i, j);
+            err = nvs_set_blob(nvsFlashHandle, &str[0], (void*)&(*(*this->players)[i]->Pawns)[j]->State.Steps, size);
+            if (err != 0){
+                printf("%s = error %i\n", &str[0], err);
+            }
+            nvs_commit(nvsFlashHandle);
+            snprintf(&str[0], 128, "p%upn%uIsAtStart", i, j);
+            err = nvs_set_blob(nvsFlashHandle, &str[0], (void*)&(*(*this->players)[i]->Pawns)[j]->State.IsAtStart, size);
+            if (err != 0){
+                printf("%s = error %i\n", &str[0], err);
+            }
+            nvs_commit(nvsFlashHandle);
+            snprintf(&str[0], 128, "p%upn%uIsInHome", i, j);
+            err = nvs_set_blob(nvsFlashHandle, &str[0], (void*)&(*(*this->players)[i]->Pawns)[j]->State.IsInHome, size);
+            if (err != 0){
+                printf("%s = error %i\n", &str[0], err);
+            }
+            nvs_commit(nvsFlashHandle);
+            snprintf(&str[0], 128, "p%upn%uFinished", i, j);
+            err = nvs_set_blob(nvsFlashHandle, &str[0], (void*)&(*(*this->players)[i]->Pawns)[j]->State.HasFinished, size);
+            if (err != 0){
+                printf("%s = error %i\n", &str[0], err);
+            }
+            nvs_commit(nvsFlashHandle);
+            snprintf(&str[0], 128, "p%upn%ustartPosX", i, j);
+            err = nvs_set_blob(nvsFlashHandle, &str[0], (void*)&(*(*this->players)[i]->Pawns)[j]->State.startPos.x, size);
+            if (err != 0){
+                printf("%s = error %i\n", &str[0], err);
+            }
+            nvs_commit(nvsFlashHandle);
+            snprintf(&str[0], 128, "p%upn%ustartPosY", i, j);
+            err = nvs_set_blob(nvsFlashHandle, &str[0], (void*)&(*(*this->players)[i]->Pawns)[j]->State.startPos.y, size);
+            if (err != 0){
+                printf("%s = error %i\n", &str[0], err);
+            }
+            nvs_commit(nvsFlashHandle);
+            snprintf(&str[0], 128, "p%upn%uCGP", i, j);
+            err = nvs_set_blob(nvsFlashHandle, &str[0], (void*)&(*(*this->players)[i]->Pawns)[j]->State.CurrentGamePath, size);
+            if (err != 0){
+                printf("%s = error %i\n", &str[0], err);
+            }
+            nvs_commit(nvsFlashHandle);
         }
     }
 
     nvs_commit(nvsFlashHandle);
+    nvs_close(nvsFlashHandle);
     LOG_I("Game saved!");
+}
+
+void LudoGame::RestoreGame()
+{
+    LOG_I("Restoring game...");
+    nvs_handle_t nvsFlashHandle;
+    size_t size = 1;
+    int err = nvs_open("storage", NVS_READWRITE, &nvsFlashHandle);
+    if (err != 0){
+        printf("faild to open vns (%i)\n", err);
+    }
+    err = nvs_get_blob(nvsFlashHandle, "LudoGameState", (void*)&this->state.State, &size);
+    if (err != 0){
+        printf("LudoGameState = error %i\n", err);
+    } else {
+        printf("LudoGameState = %i\n", (int8_t)this->state.State);
+    }
+    err = nvs_get_blob(nvsFlashHandle, "currentPlayer", (void*)&this->currentPlayer, &size);
+    if (err != 0){
+        printf("currentPlayer = error %i\n", err);
+    } else {
+        printf("currentPlayer = %u\n", (uint8_t)this->currentPlayer);
+    }
+
+    char str[128];
+
+    for (size_t i = 0; i < this->players->size(); i++)
+    {
+        snprintf(&str[0], 128, "player%u", i);
+        err = nvs_get_blob(nvsFlashHandle, &str[0], (void*)&(*this->players)[i]->ID, &size);
+        if (err != 0){
+            printf("%s = error %i\n", &str[0], err);
+        } else {
+            printf("%s = %u\n", &str[0], (uint8_t)(*this->players)[i]->ID);
+        }
+        snprintf(&str[0], 128, "player%uHasP", i);
+        err = nvs_get_blob(nvsFlashHandle, &str[0], (void*)&(*this->players)[i]->State.HasPawnOnboard, &size);
+        if (err != 0){
+            printf("%s = error %i\n", &str[0], err);
+        }
+        nvs_commit(nvsFlashHandle);
+
+        for (size_t j = 0; j < (*this->players)[i]->Pawns->size(); j++)
+        {
+            // snprintf(&str[0], 128, "player%upawn%u", i, j);
+            // err = nvs_get_blob(nvsFlashHandle, &str[0], (void*)&(*(*this->players)[i]->Pawns)[j]->State.ID, &size);
+            snprintf(&str[0], 128, "p%upn%usCords.x", i, j);
+            err = nvs_get_blob(nvsFlashHandle, &str[0], (void*)&(*(*this->players)[i]->Pawns)[j]->squareCords.x, &size);
+            if (err != 0){
+                printf("%s = error %i\n", &str[0], err);
+            } else {
+                printf("%s = %u\n", &str[0], (uint8_t)(*(*this->players)[i]->Pawns)[j]->squareCords.x);
+            }
+            snprintf(&str[0], 128, "p%upn%usCords.y", i, j);
+            err = nvs_get_blob(nvsFlashHandle, &str[0], (void*)&(*(*this->players)[i]->Pawns)[j]->squareCords.y, &size);
+            if (err != 0){
+                printf("%s = error %i\n", &str[0], err);
+            } else {
+                printf("%s = %u\n", &str[0], (uint8_t)(*(*this->players)[i]->Pawns)[j]->squareCords.y);
+            }
+            snprintf(&str[0], 128, "p%upn%uIsSelected", i, j);
+            err = nvs_get_blob(nvsFlashHandle, &str[0], (void*)&(*(*this->players)[i]->Pawns)[j]->State.IsSelected, &size);
+            if (err != 0){
+                printf("%s = error %i\n", &str[0], err);
+            } else {
+                printf("%s = %u\n", &str[0], (uint8_t)(*(*this->players)[i]->Pawns)[j]->State.IsSelected);
+            }
+            snprintf(&str[0], 128, "p%upn%uSteps", i, j);
+            err = nvs_get_blob(nvsFlashHandle, &str[0], (void*)&(*(*this->players)[i]->Pawns)[j]->State.Steps, &size);
+            if (err != 0){
+                printf("%s = error %i\n", &str[0], err);
+            } else {
+                printf("%s = %u\n", &str[0], (uint8_t)(*(*this->players)[i]->Pawns)[j]->State.Steps);
+            }
+            snprintf(&str[0], 128, "p%upn%uIsAtStart", i, j);
+            err = nvs_get_blob(nvsFlashHandle, &str[0], (void*)&(*(*this->players)[i]->Pawns)[j]->State.IsAtStart, &size);
+            if (err != 0){
+                printf("%s = error %i\n", &str[0], err);
+            } else {
+                printf("%s = %u\n", &str[0], (uint8_t)(*(*this->players)[i]->Pawns)[j]->State.IsAtStart);
+            }
+            snprintf(&str[0], 128, "p%upn%uIsInHome", i, j);
+            err = nvs_get_blob(nvsFlashHandle, &str[0], (void*)&(*(*this->players)[i]->Pawns)[j]->State.IsInHome, &size);
+            if (err != 0){
+                printf("%s = error %i\n", &str[0], err);
+            } else {
+                printf("%s = %u\n", &str[0], (uint8_t)(*(*this->players)[i]->Pawns)[j]->State.IsInHome);
+            }
+            snprintf(&str[0], 128, "p%upn%uFinished", i, j);
+            err = nvs_get_blob(nvsFlashHandle, &str[0], (void*)&(*(*this->players)[i]->Pawns)[j]->State.HasFinished, &size);
+            if (err != 0){
+                printf("%s = error %i\n", &str[0], err);
+            } else {
+                printf("%s = %u\n", &str[0], (uint8_t)(*(*this->players)[i]->Pawns)[j]->State.HasFinished);
+            }
+            snprintf(&str[0], 128, "p%upn%ustartPosX", i, j);
+            err = nvs_get_blob(nvsFlashHandle, &str[0], (void*)&(*(*this->players)[i]->Pawns)[j]->State.startPos.x, &size);
+            if (err != 0){
+                printf("%s = error %i\n", &str[0], err);
+            } else {
+                printf("%s = %u\n", &str[0], (uint8_t)(*(*this->players)[i]->Pawns)[j]->State.startPos.x);
+            }
+            snprintf(&str[0], 128, "p%upn%ustartPosY", i, j);
+            err = nvs_get_blob(nvsFlashHandle, &str[0], (void*)&(*(*this->players)[i]->Pawns)[j]->State.startPos.y, &size);
+            if (err != 0){
+                printf("%s = error %i\n", &str[0], err);
+            } else {
+                printf("%s = %u\n", &str[0], (uint8_t)(*(*this->players)[i]->Pawns)[j]->State.startPos.y);
+            }
+            snprintf(&str[0], 128, "p%upn%uCGP", i, j);
+            err = nvs_get_blob(nvsFlashHandle, &str[0], (void*)&(*(*this->players)[i]->Pawns)[j]->State.CurrentGamePath, &size);
+            if (err != 0){
+                printf("%s = error %i\n", &str[0], err);
+            } else {
+                printf("%s = %u\n", &str[0], (uint8_t)(*(*this->players)[i]->Pawns)[j]->State.CurrentGamePath);
+            }
+        }
+    }
+
+    for (int i = 0; i <  this->state.allPawns.size(); i++)
+    {
+        if (this->state.allPawns[i]->squareCords.x != this->state.allPawns[i]->State.startPos.x
+            || this->state.allPawns[i]->squareCords.y != this->state.allPawns[i]->State.startPos.y)
+        {
+            LOG_I("Moving pawn %u from x: %u y: %u to x: %u y: %u", i, 
+                this->state.allPawns[i]->State.startPos.x, this->state.allPawns[i]->State.startPos.y, 
+                this->state.allPawns[i]->squareCords.x, this->state.allPawns[i]->squareCords.y);
+            this->motion->ExecutePath(this->Pathfinding->findPath(this->state.allPawns[i]->State.startPos, this->state.allPawns[i]->squareCords, this->map, &this->state.allPawns, 255));
+        }
+    }
+
+    nvs_close(nvsFlashHandle);
+    LOG_I("Game restored!");
 }
