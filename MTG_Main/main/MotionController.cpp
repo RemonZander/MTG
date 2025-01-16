@@ -54,7 +54,7 @@ bool MotionController::MotorToPos(Coordinates_t pos)
 	float deltaMM_X = ((float)(pos.x - _currPos.x)) * _squareSize_x;
 	float deltaMM_Y = ((float)(pos.y - _currPos.y)) * _squareSize_y;
 
-	this->_driver->move(deltaMM_X, deltaMM_Y, 100);
+	this->_driver->move(deltaMM_X, deltaMM_Y);
 
 	this->_currPos = pos;
 	return true;

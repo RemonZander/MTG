@@ -281,8 +281,8 @@ int MotorDriver::init()
     }
 
     // LOG_D("Set spin direction");
-    gpio_set_level(MOTOR_A_DIR_PIN, STEPER_DIR_CW);
-    gpio_set_level(MOTOR_B_DIR_PIN, STEPER_DIR_CW);
+    gpio_set_level(MOTOR_A_DIR_PIN, 0);
+    gpio_set_level(MOTOR_B_DIR_PIN, 0);
     this->setMagnet(false);
 
     // === init RMT channels
@@ -421,31 +421,32 @@ MotorDriver::~MotorDriver()
     }
 }
 
-void MotorDriver::move(float x, float y, uint32_t speed)
+void MotorDriver::move(float x, float y)
 {
-    // LOG_D("move: mm (%f, %f), speed=%lu", x, y, speed);
-    int32_t stepsA = (x - y) * STEPS_PER_MM;
-    int32_t stepsB = (x + y) * STEPS_PER_MM;
+    // LOG_D("move: mm (%f, %f)", x, y);
+    int32_t stepsA = (x - y) * STEPS_PER_MM * ((MOTOR_A_REVERSE == 0) ? 1 : -1);
+    int32_t stepsB = (x + y) * STEPS_PER_MM * ((MOTOR_B_REVERSE == 0) ? 1 : -1);
+    
     // LOG_D("move: steps A=%li, B=%li", stepsA, stepsB);
 
     if (stepsA > 0)
     {
-        gpio_set_level(MOTOR_A_DIR_PIN, STEPER_DIR_CW);
+        gpio_set_level(MOTOR_A_DIR_PIN, 0);
     }
     else
     {
         stepsA = -stepsA;
-        gpio_set_level(MOTOR_A_DIR_PIN, STEPER_DIR_CCW);
+        gpio_set_level(MOTOR_A_DIR_PIN, 1);
     }
     
     if (stepsB > 0)
     {
-        gpio_set_level(MOTOR_B_DIR_PIN, STEPER_DIR_CW);
+        gpio_set_level(MOTOR_B_DIR_PIN, 0);
     }
     else
     {
         stepsB = -stepsB;
-        gpio_set_level(MOTOR_B_DIR_PIN, STEPER_DIR_CCW);
+        gpio_set_level(MOTOR_B_DIR_PIN, 1);
     }
 
     rmt_transmit_config_t tx_config = {
@@ -568,8 +569,8 @@ void MotorDriver::home(float offsetX, float offsetY)
     };
     LOG_I("home: offset (%f, %f)", offsetX, offsetY);
 
-    gpio_set_level(MOTOR_A_DIR_PIN, STEPER_DIR_CCW);
-    gpio_set_level(MOTOR_B_DIR_PIN, STEPER_DIR_CCW);
+    gpio_set_level(MOTOR_A_DIR_PIN, 1);
+    gpio_set_level(MOTOR_B_DIR_PIN, 1);
 
     uint32_t homeSpeed = MOTOR_HOME_SPEED_STEPS;
 
@@ -597,8 +598,8 @@ void MotorDriver::home(float offsetX, float offsetY)
     ret = rmt_enable(motor_channel_a);
     ret = rmt_enable(motor_channel_b);
 
-    gpio_set_level(MOTOR_A_DIR_PIN, STEPER_DIR_CW);
-    gpio_set_level(MOTOR_B_DIR_PIN, STEPER_DIR_CCW);
+    gpio_set_level(MOTOR_A_DIR_PIN, 0);
+    gpio_set_level(MOTOR_B_DIR_PIN, 1);
 
     ret = rmt_transmit(motor_channel_a, &constant_curve->base, &homeSpeed, sizeof(homeSpeed), &tx_config);
     if (ret != 0)
@@ -623,15 +624,15 @@ void MotorDriver::home(float offsetX, float offsetY)
     ret = rmt_enable(motor_channel_a);
     ret = rmt_enable(motor_channel_b);
 
-    gpio_set_level(MOTOR_A_DIR_PIN, STEPER_DIR_CCW);
-    gpio_set_level(MOTOR_B_DIR_PIN, STEPER_DIR_CW);
+    gpio_set_level(MOTOR_A_DIR_PIN, 1);
+    gpio_set_level(MOTOR_B_DIR_PIN, 0);
 
     ret = rmt_disable(motor_channel_a);
     ret = rmt_disable(motor_channel_b);
     ret = rmt_enable(motor_channel_a);
     ret = rmt_enable(motor_channel_b);
 
-    move(offsetX, offsetY, 100);
+    move(offsetX, offsetY);
 }
 
 void MotorDriver::setMagnet(bool state)

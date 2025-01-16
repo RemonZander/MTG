@@ -261,7 +261,7 @@ bool PathFinding_impoved::floodFill_scanField(Cordinates_s field, BoardMap_t *re
             .y = (uint8_t)(field.y + cordModifiers[i][1])
         };
 
-        if (curField.y < 0 || curField.y >= result->size.y || curField.x < 0 || curField.x >= result->size.x)
+        if (curField.y >= result->size.y || curField.x >= result->size.x)
             continue;
 
         switch (result->map[curField.x][curField.y])

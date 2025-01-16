@@ -21,35 +21,36 @@ public:
     MotorDriver();
     ~MotorDriver();
 
+    /** MotorDriver::init()
+     * initilizes the hardware modules
+     */
     int init();
 
     /** move
      * move the motors relitivly
      * 
      * args:
-     * - deltaA: number of steps to move in A motor
-     * - deltaB: number of steps to move in B motor
-     * - speed: speed of the motors in steps/sec
+     * - x: distance to move in mm in the x direction
+     * - y: distance to move in mm in the y direction
      */
-    void move(float x, float y, uint32_t speed);
+    void move(float x, float y);
 
     /** home
      * Move to endstops (home position)
      * 
      * args:
-     * - maxMove: max number of steps to set during homeing
-     * - speed: speed of the motors in steps/sec
+     * - offsetX: x axes distande in mm from home to coordinats (0, 0)
+     * - offsetY: y axes distande in mm from home to coordinats (0, 0)
      */
     void home(float offsetX, float offsetY);
+
+    /** setMagnet
+     * enable or disable electromagnet
+     * 
+     * args:
+     * - state: true: magnet on, false: magnet off
+     */
     void setMagnet(bool state);
-
-private:
-    gpio_num_t endStopXPin, endStopYPin;
-    motorPins_t stepperAPins, stepperBPins;
-    int32_t stepsPerMMA, stepsPerMMB;
-    uint32_t acceleration_steps;
-
-    uint32_t jurk = 0;
 };
 
 #endif
