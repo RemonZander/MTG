@@ -356,12 +356,16 @@ void LudoGame::GameLoop()
                     else
                     {
                         //if pawn is in pos 6 of home lane. The pawn has reached the finish
-                        if (selectedPawnObj->State.CurrentGamePath + selectedPawnObj->State.Steps == 5)
+                        //selectedPawnObj->State.CurrentGamePath == 4 << this check is needed because if a pawn lands on pos 4 in the homelane the pawn cannot ever move again.
+                        //this will make the game unwinnable for that player.
+                        //The ludo approved fix would be to send the pawn back and forth inside the homelane. We did not have enough time to implement that.
+                        //This current fix will make it so that if the pawn lands on pos 4 in the homelane the user can with any roll of the dice mvoe the pawn to the finish.
+                        if (selectedPawnObj->State.CurrentGamePath + selectedPawnObj->State.Steps == 5 || selectedPawnObj->State.CurrentGamePath == 4)
                         {
                             selectedPawnObj->State.HasFinished = true;
                             LOG_I("Pawn %u has finished", selectedPawn);
-                            selectedPawnObj->State.CurrentGamePath += selectedPawnObj->State.Steps;
-                            nextPos = this->state.homePositions[currentPlayer]->at(selectedPawnObj->State.CurrentGamePath);
+                            selectedPawnObj->State.CurrentGamePath = 5;
+                            nextPos = this->state.homePositions[currentPlayer]->at(5);
                         }
                         //check if pawn cannot move in home lane
                         else if (selectedPawnObj->State.CurrentGamePath + selectedPawnObj->State.Steps > 5)
@@ -408,7 +412,10 @@ void LudoGame::GameLoop()
                         LOG_I("Two pawns are on the same location. One will be returned to it's start position");
                         LOG_I("Moving pawn %u from x: %u y: %u to x: %u y: %u", this->state.allPawns[i]->ID, this->state.allPawns[i]->squareCords.x,
                         this->state.allPawns[i]->squareCords.y, this->state.allPawns[i]->State.startPos.x, this->state.allPawns[i]->State.startPos.y);
-                        this->motion->ExecutePath(this->Pathfinding->findPath(this->state.allPawns[i]->squareCords, this->state.allPawns[i]->State.startPos, this->map, &this->state.allPawns, 255));
+                        this->motion->ExecutePath(
+                            this->Pathfinding->findPath(
+                                this->state.allPawns[i]->squareCords, this->state.allPawns[i]->State.startPos, this->map, &this->state.allPawns, 255
+                                ));
                         this->state.allPawns[i]->squareCords = this->state.allPawns[i]->State.startPos;
                         this->state.allPawns[i]->State.IsAtStart = true;
                         this->state.allPawns[i]->State.IsInHome = false;

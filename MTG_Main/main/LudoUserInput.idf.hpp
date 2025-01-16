@@ -16,8 +16,6 @@ class LudoInputModule {
         int selectPawn();
     
     private:
-        // i2c_master_bus_config_t bus_config;
-        // i2c_device_config_t dev_config;
         i2c_master_dev_handle_t dev_handle;
         uint8_t slaveAddr;
 };

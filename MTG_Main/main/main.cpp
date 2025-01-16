@@ -10,10 +10,7 @@
 #endif
 
 #include <ludoGame.hpp>
-// #include <motorDriver.hpp>
 #include "logger.h"
-
-// LudoGame* game;
 
 #ifdef ARDUINO
 void loop() {}
@@ -37,5 +34,4 @@ extern "C" void app_main(void)
   LOG_I("start");
 
   game->GameLoop();
-  // delete(game);
 }
