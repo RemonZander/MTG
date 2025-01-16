@@ -209,7 +209,7 @@ void LudoGame::GameLoop()
         else if (this->state.State != LudoGameStates::stopped && this->state.State != LudoGameStates::error)
         {
             this->state.State = (LudoGameStates)((uint8_t)this->state.State + 1);
-            currentPlayer +=1;
+            currentPlayer += 1;
             LOG_I("Switching to next player %u", currentPlayer);
         }
         else
@@ -224,8 +224,8 @@ void LudoGame::GameLoop()
         {
             if (   (*(*this->players)[i]->Pawns)[0]->State.HasFinished 
                 && (*(*this->players)[i]->Pawns)[1]->State.HasFinished 
-                && (*(*this->players)[i]->Pawns)[3]->State.HasFinished 
-                && (*(*this->players)[i]->Pawns)[4]->State.HasFinished)
+                && (*(*this->players)[i]->Pawns)[2]->State.HasFinished 
+                && (*(*this->players)[i]->Pawns)[3]->State.HasFinished)
             {
                 this->state.State = LudoGameStates::stopped;
                 LOG_I("Player %u has won. The game will be stopped", i);
@@ -291,26 +291,26 @@ void LudoGame::GameLoop()
                 //check if pawn will be in home lane
                 uint8_t nextPathPosition = selectedPawnObj->State.CurrentGamePath + selectedPawnObj->State.Steps;
 
-                if (   selectedPawnObj->State.IsInHome 
+                if (selectedPawnObj->State.IsInHome 
                     || (
                         currentPlayer == 0
                         && nextPathPosition > 55
-                        && selectedPawnObj->State.CurrentGamePath < 55
+                        && selectedPawnObj->State.CurrentGamePath <= 55
                     )
                     || (
                         currentPlayer == 1
                         && nextPathPosition > 13
-                        && selectedPawnObj->State.CurrentGamePath < 13
+                        && selectedPawnObj->State.CurrentGamePath <= 13
                     )
                     || (
                         currentPlayer == 2
                         && nextPathPosition > 27
-                        && selectedPawnObj->State.CurrentGamePath < 27
+                        && selectedPawnObj->State.CurrentGamePath <= 27
                     )
                     || (
                         currentPlayer == 3
                         && nextPathPosition > 41
-                        && selectedPawnObj->State.CurrentGamePath < 41
+                        && selectedPawnObj->State.CurrentGamePath <= 41
                     )
                 ) {
                     LOG_I("Pawn %u is in the home lane", selectedPawn);
@@ -321,36 +321,34 @@ void LudoGame::GameLoop()
                         switch (currentPlayer)
                         {
                             case 0:
-                                selectedPawnObj->State.CurrentGamePath = selectedPawnObj->State.Steps - (56 - selectedPawnObj->State.CurrentGamePath);
+                                nextPathPosition = selectedPawnObj->State.Steps - (56 - selectedPawnObj->State.CurrentGamePath);
                                 break;
                             case 1:
-                                selectedPawnObj->State.CurrentGamePath = selectedPawnObj->State.Steps - (14 - selectedPawnObj->State.CurrentGamePath);
+                                nextPathPosition = selectedPawnObj->State.Steps - (14 - selectedPawnObj->State.CurrentGamePath);
                                 break;
                             case 2:
-                                selectedPawnObj->State.CurrentGamePath = selectedPawnObj->State.Steps - (28 - selectedPawnObj->State.CurrentGamePath);
+                                nextPathPosition = selectedPawnObj->State.Steps - (28 - selectedPawnObj->State.CurrentGamePath);
                                 break;
                             case 3:
-                                selectedPawnObj->State.CurrentGamePath = selectedPawnObj->State.Steps - (42 - selectedPawnObj->State.CurrentGamePath);
+                                nextPathPosition = selectedPawnObj->State.Steps - (42 - selectedPawnObj->State.CurrentGamePath);
                                 break;
                         }
 
-                        if (selectedPawnObj->State.CurrentGamePath == 5)
+                        if (nextPathPosition == 5)
                         {
+                            selectedPawnObj->State.CurrentGamePath = nextPathPosition;
                             selectedPawnObj->State.HasFinished = true;
                             LOG_I("Pawn %u has finished", selectedPawn);
                             nextPos = this->state.homePositions[currentPlayer]->at(selectedPawnObj->State.CurrentGamePath);
-                            // LOG_I("Moving pawn %u from x: %u y: %u to x: %u y: %u", selectedPawn, selectedPawnObj->squareCords.x, selectedPawnObj->squareCords.y, nextPos.x, nextPos.y);
-                            // this->motion->ExecutePath(this->Pathfinding->findPath(selectedPawnObj->squareCords, nextPos, this->map, &this->state.allPawns, 255));
-                            continue;
                         }
                         //check if pawn cannot move in home lane
-                        else if (selectedPawnObj->State.CurrentGamePath + selectedPawnObj->State.Steps > 5)
+                        else if (nextPathPosition > 5)
                         {
                             LOG_I("Pawn %u cannot move into home lane bacause too many steps: %u", selectedPawn, selectedPawnObj->State.Steps);
-                            continue;                 
                         }
                         else
                         {
+                            selectedPawnObj->State.CurrentGamePath = nextPathPosition;
                             selectedPawnObj->State.IsInHome = true;
                             nextPos = this->state.homePositions[currentPlayer]->at(selectedPawnObj->State.CurrentGamePath);
                         }
@@ -364,16 +362,12 @@ void LudoGame::GameLoop()
                             LOG_I("Pawn %u has finished", selectedPawn);
                             selectedPawnObj->State.CurrentGamePath += selectedPawnObj->State.Steps;
                             nextPos = this->state.homePositions[currentPlayer]->at(selectedPawnObj->State.CurrentGamePath);
-                            // LOG_I("Moving pawn %u from x: %u y: %u to x: %u y: %u", selectedPawn, selectedPawnObj->squareCords.x, selectedPawnObj->squareCords.y, nextPos.x, nextPos.y);
-                            // this->motion->ExecutePath(this->Pathfinding->findPath(selectedPawnObj->squareCords, nextPos, this->map, &this->state.allPawns, 255));
-                            continue;
                         }
                         //check if pawn cannot move in home lane
                         else if (selectedPawnObj->State.CurrentGamePath + selectedPawnObj->State.Steps > 5)
                         {
                             LOG_I("Pawn %u cannot move further in home lane bacause too many steps: %u", selectedPawn, selectedPawnObj->State.Steps);
-                            LOG_I("Pawn %u current position in home lane: %u",selectedPawn, selectedPawnObj->State.CurrentGamePath);
-                            continue;                 
+                            LOG_I("Pawn %u current position in home lane: %u", selectedPawn, selectedPawnObj->State.CurrentGamePath);               
                         }
                         //move pawn in homelane
                         else
@@ -404,7 +398,7 @@ void LudoGame::GameLoop()
                 }
             }
 
-            if (nextPos.x == 0 && nextPos.y == 0)
+            if (nextPos.x != 0 || nextPos.y != 0)
             {
                 //check if the next position already has a pawn on it. If so move that pawn back to it's home pos and then continue to move the other pawn
                 for (size_t i = 0; i < this->state.allPawns.size(); i++)
@@ -460,7 +454,7 @@ void LudoGame::SaveGame()
     {
         snprintf(&str[0], 128, "player%u", i);
         nvs_set_i32(nvsFlashHandle, &str[0], (*this->players)[i]->ID);
-        nvs_commit(nvsFlashHandle);
+        // nvs_commit(nvsFlashHandle);
 
         for (size_t j = 0; j < (*this->players)[i]->Pawns->size(); j++)
         {
@@ -469,30 +463,31 @@ void LudoGame::SaveGame()
             // nvs_commit(nvsFlashHandle);
             snprintf(&str[0], 128, "player%upawn%uIsSelected", i, j);
             nvs_set_i32(nvsFlashHandle, &str[0], (int32_t)(*(*this->players)[i]->Pawns)[j]->State.IsSelected);
-            nvs_commit(nvsFlashHandle);
+            // nvs_commit(nvsFlashHandle);
             snprintf(&str[0], 128, "player%upawn%uSteps", i, j);
             nvs_set_i32(nvsFlashHandle, &str[0], (int32_t)(*(*this->players)[i]->Pawns)[j]->State.Steps);
-            nvs_commit(nvsFlashHandle);
+            // nvs_commit(nvsFlashHandle);
             snprintf(&str[0], 128, "player%upawn%uIsAtStart", i, j);
             nvs_set_i32(nvsFlashHandle, &str[0], (int32_t)(*(*this->players)[i]->Pawns)[j]->State.IsAtStart);
-            nvs_commit(nvsFlashHandle);
+            // nvs_commit(nvsFlashHandle);
             snprintf(&str[0], 128, "player%upawn%uIsInHome", i, j);
             nvs_set_i32(nvsFlashHandle, &str[0], (int32_t)(*(*this->players)[i]->Pawns)[j]->State.IsInHome);
-            nvs_commit(nvsFlashHandle);
+            // nvs_commit(nvsFlashHandle);
             snprintf(&str[0], 128, "player%upawn%uHasFinished", i, j);
             nvs_set_i32(nvsFlashHandle, &str[0], (int32_t)(*(*this->players)[i]->Pawns)[j]->State.HasFinished);
-            nvs_commit(nvsFlashHandle);
+            // nvs_commit(nvsFlashHandle);
             snprintf(&str[0], 128, "player%upawn%ustartPosX", i, j);
             nvs_set_i32(nvsFlashHandle, &str[0], (int32_t)(*(*this->players)[i]->Pawns)[j]->State.startPos.x);
-            nvs_commit(nvsFlashHandle);
+            // nvs_commit(nvsFlashHandle);
             snprintf(&str[0], 128, "player%upawn%ustartPosY", i, j);
             nvs_set_i32(nvsFlashHandle, &str[0], (int32_t)(*(*this->players)[i]->Pawns)[j]->State.startPos.y);
-            nvs_commit(nvsFlashHandle);
+            // nvs_commit(nvsFlashHandle);
             snprintf(&str[0], 128, "player%upawn%uCurrentGamePath", i, j);
             nvs_set_i32(nvsFlashHandle, &str[0], (int32_t)(*(*this->players)[i]->Pawns)[j]->State.CurrentGamePath);
-            nvs_commit(nvsFlashHandle);
+            // nvs_commit(nvsFlashHandle);
         }
     }
 
+    nvs_commit(nvsFlashHandle);
     LOG_I("Game saved!");
 }
