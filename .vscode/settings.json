@@ -77,6 +77,22 @@
         "ostream_helpers": "cpp",
         "serstream": "cpp",
         "string_iostream": "cpp",
-        "array": "cpp"
+        "array": "cpp",
+        "charconv": "cpp",
+        "chrono": "cpp",
+        "format": "cpp",
+        "forward_list": "cpp",
+        "mutex": "cpp",
+        "optional": "cpp",
+        "random": "cpp",
+        "ratio": "cpp",
+        "regex": "cpp",
+        "stop_token": "cpp",
+        "thread": "cpp",
+        "condition_variable": "cpp",
+        "future": "cpp",
+        "memory_resource": "cpp",
+        "ranges": "cpp",
+        "span": "cpp"
     }
 }

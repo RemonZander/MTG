@@ -1,59 +1,65 @@
 @startuml classDiagram
-abstract GameBase<T,U> {
+abstract GameBase<T,U,V> {
     .. Abstract ..
     {abstract} + void GameLoop()
     {abstract} + void Init()
 
     .. Protected ..
-    # Player<T> currentPlayer
-    # std::vector<Player<T>*> players
+    # std::vector<Player<T, U>*>* players
 
-    # BoardMap_s Map
-    # PathFinding pathFinding
-    # BordSize bordSize
+    # BoardMap_t Map
+    # V state
+    # MotionController *motion
+    # PathFinding_impoved *Pathfinding
 }
 
-class Player<T> {
+class Player<T,U> {
+    .. Public ..
     + DoTurn()
     + uint8_t ID
-    + std::vector<Pawn<U>*> pawns
+    + std::vector<Pawn<U>*>* pawns
     + T state
 }
 
-class Pawns<U> {
+class Pawns<T> {
+    .. Public ..
     + uint8_t ID
-    + Cordinates_s squareCords
-    + U State
+    + Coordinates_t squareCords
+    + T State
 }
 
-struct Cordinates_s {
+struct Cordinates_t {
     + uint8_t y
     + uint8_t x
 }
 
-struct BordSize {
-    + Cordinates_s size
-    + Cordinates_s squareSize
+struct BoardMap_t {
+    + Coordinates_t size
+    + uint8_t map
 }
 
-class LUDO {
+struct pathfinding_step_t {
+    + Coordinates_t target
+    + bool magnetEn
+}
+
+struct PF_ffQue_item_t {
+    + Coordinates_t field
+    + uint8_t pathWight
+}
+
+class LudoGame {
     .. Public ..
     + void GameLoop()
     + void Init()
+    .. private ..
+    - uint8_t currentPlayer
+    - void SaveGame()
+    - void RestoreGame()
 }
-
-
-class StorageManager <<static>> {
-    .. Public ..
-    {static} + void SaveGameState()
-    + LoadGameState()
-}
-
 
 class MotionController {
     .. Public ..
-    + void SetPins()
-    + void SetStepsPerMM()
     + void SetPhisicalBoardSize()
     + bool ExecutePath()
     + bool MotorToPos()
@@ -65,37 +71,40 @@ class MotionController {
     - float _phisicalBoardSizeX
     - float _phisicalBoardSizeY
     - Coordinates_t _currPos
-    - float _stepsPerMM_A
-    - float _stepsPerMM_B
     - float _squareSize_x
     - float _squareSize_y
+    - float _boardOffset_x
+    - float _boardOffset_y
 }
 
-class MotorDriver <<static>> {
+class MotorDriver {
     .. Public ..
-    + void SetSpeeds()
+    + int init()
     + void move()
     + void home()
+    + void setMagnet()
 }
 
-class PathFinding <<static>> {
+class PathFinding {
     .. Public ..
-    + findPath()
+    + std::vector<pathfinding_step_t>* findPath()
     .. Private ..
-    - floodFill()
-    - floodFill_Que_add()
-    - floodFill_Que_pop()
-    - floodFill_scanField()
-    - gatherPath()
-
+    - BoardMap_t wightMap
+    - std::vector<PF_ffQue_item_t>* floodFill_Que
+    - BoardMap_t floodFill()
+    - void floodFill_Que_add()
+    - Coordinates_t floodFill_Que_pop()
+    - bool floodFill_scanField()
+    - pathfinding_path_t gatherPath()
 }
 
-BordSize -             GameBase
+BoardMap_t -             GameBase
 GameBase -             Player
 Player <-              Pawns
-GameBase <|--           LUDO
-StorageManager --       GameBase
+GameBase <|--           LudoGame
 MotionController --     GameBase
 MotorDriver --          MotionController
-GameBase --             PathFinding       
+GameBase --             PathFinding
+PathFinding <--         PF_ffQue_item_t
+PathFinding <-         pathfinding_step_t       
 @enduml
