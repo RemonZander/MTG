@@ -41,11 +41,11 @@ function MakeGrid(result)
   let content = []
   for (let k = 0; k < result.steps.length; k++) {
     let map = []
-    for (let i = 0; i < result.inputs.wightMap.size.y; i++) {
+    for (let i = result.inputs.wightMap.size.y - 1; i >= 0; i--) {
       let columns = []
       for (let j = 0; j < result.inputs.wightMap.size.x; j++) {
         columns.push(<div id={`${i*result.inputs.wightMap.size.y+j}`} 
-          style={{backgroundColor: `${result.steps[k].map[i][j] > 0 && result.steps[k].map[j][i] < 253 ? `rgb(${255 - result.steps[k].map[j][i] * 8}, 0, 0)` : 
+          style={{backgroundColor: `${result.steps[k].map[j][i] > 0 && result.steps[k].map[j][i] < 253 ? `rgb(${255 - result.steps[k].map[j][i] * 8}, 0, 0)` : 
             result.steps[k].map[j][i] == 0 ? "rgb(0, 230, 0)" : result.steps[k].map[j][i] == 254 ? "rgb(0, 0, 230)" : ""}`}} 
           className={`relative min-w-[20px] min-h-[20px] border-2 border-solid border-black text-center m-[2px] p-[2px] ${result.steps[k].map[j][i] != 253 ? "text-white" : ""}`}>
             {result.steps[k].map[j][i]}

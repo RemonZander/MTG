@@ -181,18 +181,20 @@ void LudoGame::Init()
 
 void LudoGame::GameLoop()
 {
-    (*this->players)[currentPlayer]->DoTurn();
-
-    //get the selected pawn from the user
     int selectedPawn = -1;
-    for (size_t i = 0; i < (*this->players)[currentPlayer]->Pawns->size(); i++)
+    do
     {
-        if ((*(*this->players)[currentPlayer]->Pawns)[i]->State.IsSelected) 
+        (*this->players)[currentPlayer]->DoTurn();
+
+        for (size_t i = 0; i < (*this->players)[currentPlayer]->Pawns->size(); i++)
         {
-            selectedPawn = i;
-            break;
+            if ((*(*this->players)[currentPlayer]->Pawns)[i]->State.IsSelected) 
+            {
+                selectedPawn = i;
+                break;
+            }
         }
-    }
+    } while (selectedPawn == -1);
 
     LOG_I("Selected pawn: %i", selectedPawn);
 
@@ -228,8 +230,11 @@ void LudoGame::GameLoop()
             (*this->players)[currentPlayer]->State.HasPawnOnboard = true;
 
             this->Pathfinding->findPath(selectedPawnObj->squareCords, nextPos, this->map, &this->state.allPawns, 255);
+            LOG_I("Moving pawn %u from x: %u y: %u to x: %u y: %u", selectedPawn, selectedPawnObj->squareCords.x, selectedPawnObj->squareCords.y, nextPos.x, nextPos.y);
 
             selectedPawnObj->squareCords = nextPos;
+
+
         }
 
         selectedPawnObj->State.IsSelected = false;
