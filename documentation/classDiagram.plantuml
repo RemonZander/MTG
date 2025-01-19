@@ -28,6 +28,47 @@ class Pawns<T> {
     + T State
 }
 
+struct LudoPlayerState_t {
+    + LudoInputModule userInputModule
+    + bool HasPawnOnboard
+}
+
+struct LudoPawnState_t {
+    + bool IsSelected
+    + uint8_t Steps
+    + bool IsAtStart
+    + bool IsInHome
+    + bool HasFinished
+    + Coordinates_t startPos
+    + uint8_t CurrentGamePath
+}
+
+struct LudoGameState_t {
+    + LudoGameStates State
+    + std::vector<Coordinates_t> GamePath
+    + std::vector<std::vector<Coordinates_t>*> homePositions
+    + std::vector<Pawn<LudoPawnState_t>*> allPawns
+}
+
+enum LudoGameStates {
+    init = -1
+    Player1 = 0
+    Player2 = 1
+    Player3 = 2
+    Player4 = 3
+    stopped = 4
+    error = 5
+}
+
+class LudoInputModule {
+    .. Public ..
+    + int rollDice()
+    + int selectPawn()
+    .. private ..
+    - i2c_master_dev_handle_t dev_handle
+    - uint8_t slaveAddr
+}
+
 struct Cordinates_t {
     + uint8_t y
     + uint8_t x
@@ -56,6 +97,14 @@ class LudoGame {
     - uint8_t currentPlayer
     - void SaveGame()
     - void RestoreGame()
+}
+
+class LudoPlayer<T,U> {
+    .. Public ..
+    + DoTurn()
+    + uint8_t ID
+    + std::vector<Pawn<U>*>* pawns
+    + T state
 }
 
 class MotionController {
@@ -102,9 +151,12 @@ BoardMap_t -             GameBase
 GameBase -             Player
 Player <-              Pawns
 GameBase <|--           LudoGame
+Player <|--           LudoPlayer
 MotionController --     GameBase
 MotorDriver --          MotionController
 GameBase --             PathFinding
 PathFinding <--         PF_ffQue_item_t
-PathFinding <-         pathfinding_step_t       
+PathFinding <-         pathfinding_step_t   
+LudoPlayerState_t <-   LudoInputModule  
+LudoGameState_t <--      LudoGameStates
 @enduml
