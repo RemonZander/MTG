@@ -13,7 +13,8 @@ public:
     ~MotionController();
 
     /** SetPhisicalBoardSize
-     * define the size of the game board.
+     * define the size of the game board. This should be called
+     * before any other of the methods in this class.
      * 
      * args:
      * - x: x dimantion in mm of the playing field

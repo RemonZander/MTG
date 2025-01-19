@@ -426,25 +426,19 @@ void MotorDriver::move(float x, float y)
     // LOG_D("move: mm (%f, %f)", x, y);
     int32_t stepsA = (x - y) * STEPS_PER_MM * ((MOTOR_A_REVERSE == 0) ? 1 : -1);
     int32_t stepsB = (x + y) * STEPS_PER_MM * ((MOTOR_B_REVERSE == 0) ? 1 : -1);
-    
+
     // LOG_D("move: steps A=%li, B=%li", stepsA, stepsB);
 
-    if (stepsA > 0)
-    {
+    if (stepsA > 0) {
         gpio_set_level(MOTOR_A_DIR_PIN, 0);
-    }
-    else
-    {
+    } else {
         stepsA = -stepsA;
         gpio_set_level(MOTOR_A_DIR_PIN, 1);
     }
-    
-    if (stepsB > 0)
-    {
+
+    if (stepsB > 0) {
         gpio_set_level(MOTOR_B_DIR_PIN, 0);
-    }
-    else
-    {
+    } else {
         stepsB = -stepsB;
         gpio_set_level(MOTOR_B_DIR_PIN, 1);
     }
@@ -490,7 +484,6 @@ void MotorDriver::move(float x, float y)
         {
             LOG_E("move a: faild to accelerate motor");
         }
-        // LOG_D("move a: full curve 2");
         // constant speed
         tx_config.loop_count = stepsA - (uint32_t)ACCELARATION_STEP_COUNT*2;
         ret = rmt_transmit(motor_channel_a, &constant_curve->base, &tx_config, 1, &tx_config);
@@ -498,7 +491,6 @@ void MotorDriver::move(float x, float y)
         {
             LOG_E("move a: faild to move motor constant");
         }
-        // LOG_D("move a: full curve 3");
         // decelaraton
         tx_config.loop_count = 0;
         ret = decel_curve->transmit(motor_channel_a, (uint32_t)ACCELARATION_STEP_COUNT);
@@ -590,8 +582,6 @@ void MotorDriver::home(float offsetX, float offsetY)
     {
         // do nothing?
     }
-    // rmt_reset_stepper_motor_uniform(constant_curve);
-    // rmt_reset_stepper_motor_uniform(motor_channel_b);
 
     ret = rmt_disable(motor_channel_a);
     ret = rmt_disable(motor_channel_b);

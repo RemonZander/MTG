@@ -11,10 +11,6 @@
 #ifdef IDF_VER
 #include <soc/gpio_num.h>
 #endif
-struct motorPins_t {
-    gpio_num_t step;
-    gpio_num_t dir;
-};
 
 class MotorDriver {
 public:
