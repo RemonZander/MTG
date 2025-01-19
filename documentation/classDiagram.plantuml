@@ -147,6 +147,7 @@ class PathFinding {
     - pathfinding_path_t gatherPath()
 }
 
+LudoPlayerState_t <--   LudoInputModule  
 BoardMap_t -             GameBase
 GameBase -             Player
 Player <-              Pawns
@@ -157,6 +158,5 @@ MotorDriver --          MotionController
 GameBase --             PathFinding
 PathFinding <--         PF_ffQue_item_t
 PathFinding <-         pathfinding_step_t   
-LudoPlayerState_t <-   LudoInputModule  
 LudoGameState_t <--      LudoGameStates
 @enduml
