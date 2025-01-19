@@ -48,18 +48,21 @@ MTGMain_build_full: install_dependencies_ubuntu install_ESP_IDF_linux MTGMain_bu
 
 all_tests: MTGMain_all_tests
 
-MTGMain_all_tests: MTGMain_test_MotionController MTGMain_pathFinding_debugExport
+MTGMain_all_tests: MTGMain_pathFinding_debugExport MTG_test_ludogame_init MTG_test_move_pawn MTG_test_ludogame_logic
 
-ludogame_tests: MTG_test_ludogame
+ludogame_tests: MTG_test_ludogame_init MTG_test_ludogame_logic
 
-MTG_test_ludogame: prepare_linux
-	cd "$(BUILD_DIR)" && make MTG_test_ludogame
-	cp "$(BUILD_DIR)/MTG_Main/test/LudoGame/MTG_test_ludogame" "$(BIN_DIR)/MTG_test_ludogame"
+MTG_test_ludogame_init: prepare_linux
+	cd "$(BUILD_DIR)" && make MTG_test_ludogame_init
+	cp "$(BUILD_DIR)/MTG_Main/test/ludoGame_init/MTG_test_ludogame_init" "$(BIN_DIR)/MTG_test_ludogame_init"
 
-# build/MTG_Main/test/motionController/MTG_test_motionController
-MTGMain_test_MotionController: prepare_linux
-	cd "$(BUILD_DIR)" && make MTG_test_motionController
-	cp "$(BUILD_DIR)/MTG_Main/test/motionController/MTG_test_motionController" "$(BIN_DIR)/MTG_test_motionController"
+MTG_test_ludogame_logic: prepare_linux
+	cd "$(BUILD_DIR)" && make MTG_test_ludogame_logic
+	cp "$(BUILD_DIR)/MTG_Main/test/ludoGame_logic/MTG_test_ludogame_logic" "$(BIN_DIR)/MTG_test_ludogame_logic"
+
+MTG_test_move_pawn: prepare_linux
+	cd "$(BUILD_DIR)" && make MTG_test_move_pawn
+	cp "$(BUILD_DIR)/MTG_Main/test/move_pawn/MTG_test_move_pawn" "$(BIN_DIR)/MTG_test_move_pawn"
 
 MTGMain_pathFinding_debugExport: prepare_linux
 	cd "$(BUILD_DIR)" && make MTG_pathfind_debugExport

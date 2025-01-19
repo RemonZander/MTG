@@ -1,8 +1,8 @@
 #pragma once
-#include "../../main/GameBase.hpp"
-#include "../../main/LudoUserInput.hpp"
+#include "./GameBase.hpp"
+#include "./LudoUserInput.hpp"
 #include "../../main/typedefs.h"
-#include "../../main/ludoStates.hpp"
+#include "./ludoStates.hpp"
 #include "./ludoPlayer.hpp"
 
 class LudoGame : public GameBase<LudoPlayerState_s, LudoPawnState_t, LudoGameState_t> {
@@ -12,5 +12,6 @@ class LudoGame : public GameBase<LudoPlayerState_s, LudoPawnState_t, LudoGameSta
 
     private:
         uint8_t currentPlayer;
-        //void SaveGame();
+        void SaveGame();
+        void RestoreGame();
 };

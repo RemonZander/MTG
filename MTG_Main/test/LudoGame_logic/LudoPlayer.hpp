@@ -10,10 +10,11 @@ class LudoPlayer : public Player<T, U> {
     public:
         LudoPlayer(uint8_t ID, std::vector<Pawn<U>*>* Pawns, T State) : Player<T,U>(ID, Pawns, State) {}
 
-        void DoTurn()
+         void DoTurn()
         {
             LOG_I("Player %u turn has started", this->ID);
-            uint8_t diceroll = Random::get<uint8_t>(1, 6) + Random::get<uint8_t>(1, 6);
+            uint8_t diceroll;
+            diceroll = Random::get<uint8_t>(1, 6) + Random::get<uint8_t>(1, 6);
             LOG_I("Player %u rolls: %u", this->ID, diceroll);
 
             int selectedPawn = -1;
@@ -22,10 +23,22 @@ class LudoPlayer : public Player<T, U> {
             if (diceroll != 6 && !this->State.HasPawnOnboard) return;
 
             //can player do anything. if not return
-            if (diceroll != 6 && ((*this->Pawns)[0]->State.HasFinished || (*this->Pawns)[0]->State.IsAtStart) && 
-            ((*this->Pawns)[1]->State.HasFinished || (*this->Pawns)[1]->State.IsAtStart) &&
-            ((*this->Pawns)[2]->State.HasFinished || (*this->Pawns)[2]->State.IsAtStart) &&
-            ((*this->Pawns)[3]->State.HasFinished || (*this->Pawns)[3]->State.IsAtStart)) return;
+            if (diceroll != 6 
+                && (   (*this->Pawns)[0]->State.HasFinished 
+                    || (*this->Pawns)[0]->State.IsAtStart
+                )
+                && (   (*this->Pawns)[1]->State.HasFinished 
+                    || (*this->Pawns)[1]->State.IsAtStart
+                )
+                && (   (*this->Pawns)[2]->State.HasFinished 
+                    || (*this->Pawns)[2]->State.IsAtStart
+                )
+                && (   (*this->Pawns)[3]->State.HasFinished 
+                    || (*this->Pawns)[3]->State.IsAtStart
+                )
+            ) {
+                return;
+            }
 
             //The player can do a move. Let the player choose until the player has chosen a correct pawn
             do 
