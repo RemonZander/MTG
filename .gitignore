@@ -1,6 +1,12 @@
-﻿################################################################################
-# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
-################################################################################
-
+﻿
 /.vs
 /MTG/.vs/MTG
+/MTG UIM/.vs/MTG UIM
+*.code-workspace
+.vscode
+
+build
+bin
+.cache
+result.json
+result2.json

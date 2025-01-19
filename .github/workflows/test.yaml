@@ -1,0 +1,38 @@
+name: run tests
+on:
+  - push
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: install gtest
+        run: sudo apt install -y libgtest-dev
+
+      - name: build MTGMain_pathFinding_debugExport
+        run: make MTGMain_pathFinding_debugExport
+      - name: generate pathfind debug export
+        run: ./bin/MTG_pathfind_debugExport > pathfind.json
+      - name: create artafect for debug export
+        uses: actions/upload-artifact@v4
+        with:
+          name: pathfind_export
+          path: pathfind.json
+
+      - name: build MTG_test_ludogame_init
+        run: make MTG_test_ludogame_init
+      - name: Test MTG_test_ludogame_init
+        run: ./bin/MTG_test_ludogame_init
+
+      - name: build MTG_test_ludogame_logic
+        run: make MTG_test_ludogame_logic
+      - name: Test MTG_test_ludogame_logic
+        run: ./bin/MTG_test_ludogame_logic
+
+      - name: build MTG_test_move_pawn
+        run: make MTG_test_move_pawn
+      - name: Test MTG_test_move_pawn
+        run: ./bin/MTG_test_move_pawn

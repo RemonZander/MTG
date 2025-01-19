@@ -1,0 +1,162 @@
+@startuml classDiagram
+abstract GameBase<T,U,V> {
+    .. Abstract ..
+    {abstract} + void GameLoop()
+    {abstract} + void Init()
+
+    .. Protected ..
+    # std::vector<Player<T, U>*>* players
+
+    # BoardMap_t Map
+    # V state
+    # MotionController *motion
+    # PathFinding_impoved *Pathfinding
+}
+
+class Player<T,U> {
+    .. Public ..
+    + DoTurn()
+    + uint8_t ID
+    + std::vector<Pawn<U>*>* pawns
+    + T state
+}
+
+class Pawns<T> {
+    .. Public ..
+    + uint8_t ID
+    + Coordinates_t squareCords
+    + T State
+}
+
+struct LudoPlayerState_t {
+    + LudoInputModule userInputModule
+    + bool HasPawnOnboard
+}
+
+struct LudoPawnState_t {
+    + bool IsSelected
+    + uint8_t Steps
+    + bool IsAtStart
+    + bool IsInHome
+    + bool HasFinished
+    + Coordinates_t startPos
+    + uint8_t CurrentGamePath
+}
+
+struct LudoGameState_t {
+    + LudoGameStates State
+    + std::vector<Coordinates_t> GamePath
+    + std::vector<std::vector<Coordinates_t>*> homePositions
+    + std::vector<Pawn<LudoPawnState_t>*> allPawns
+}
+
+enum LudoGameStates {
+    init = -1
+    Player1 = 0
+    Player2 = 1
+    Player3 = 2
+    Player4 = 3
+    stopped = 4
+    error = 5
+}
+
+class LudoInputModule {
+    .. Public ..
+    + int rollDice()
+    + int selectPawn()
+    .. private ..
+    - i2c_master_dev_handle_t dev_handle
+    - uint8_t slaveAddr
+}
+
+struct Cordinates_t {
+    + uint8_t y
+    + uint8_t x
+}
+
+struct BoardMap_t {
+    + Coordinates_t size
+    + uint8_t map
+}
+
+struct pathfinding_step_t {
+    + Coordinates_t target
+    + bool magnetEn
+}
+
+struct PF_ffQue_item_t {
+    + Coordinates_t field
+    + uint8_t pathWight
+}
+
+class LudoGame {
+    .. Public ..
+    + void GameLoop()
+    + void Init()
+    .. private ..
+    - uint8_t currentPlayer
+    - void SaveGame()
+    - void RestoreGame()
+}
+
+class LudoPlayer<T,U> {
+    .. Public ..
+    + DoTurn()
+    + uint8_t ID
+    + std::vector<Pawn<U>*>* pawns
+    + T state
+}
+
+class MotionController {
+    .. Public ..
+    + void SetPhisicalBoardSize()
+    + bool ExecutePath()
+    + bool MotorToPos()
+    + void SetMagnet()
+
+    .. Private ..
+    - MotorDriver* _driver
+    - Coordinates_t _boardSize
+    - float _phisicalBoardSizeX
+    - float _phisicalBoardSizeY
+    - Coordinates_t _currPos
+    - float _squareSize_x
+    - float _squareSize_y
+    - float _boardOffset_x
+    - float _boardOffset_y
+}
+
+class MotorDriver {
+    .. Public ..
+    + int init()
+    + void move()
+    + void home()
+    + void setMagnet()
+}
+
+class PathFinding {
+    .. Public ..
+    + std::vector<pathfinding_step_t>* findPath()
+    .. Private ..
+    - BoardMap_t wightMap
+    - std::vector<PF_ffQue_item_t>* floodFill_Que
+    - BoardMap_t floodFill()
+    - void floodFill_Que_add()
+    - Coordinates_t floodFill_Que_pop()
+    - bool floodFill_scanField()
+    - pathfinding_path_t gatherPath()
+}
+
+LudoPlayerState_t <--   LudoInputModule  
+BoardMap_t -             GameBase
+GameBase -             Player
+Player <-              Pawns
+GameBase <|--           LudoGame
+Player <|--           LudoPlayer
+MotionController --     GameBase
+MotorDriver --          MotionController
+GameBase --             PathFinding
+PathFinding <--         PF_ffQue_item_t
+PathFinding <-         pathfinding_step_t   
+LudoGameState_t <--      LudoGameStates
+@enduml

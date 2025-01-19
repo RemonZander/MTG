@@ -1,0 +1,12 @@
+
+idf_component_register(
+	SRCS
+		"main.cpp"
+		"LudoGame.cpp"
+		"PathFinding.cpp"
+		"LudoUserInput.idf.cpp"
+		"UserInputModule.cpp"
+		"MotionController.cpp"
+		"motorDriver.idf.cpp"
+   INCLUDE_DIRS .)
+target_compile_options(${COMPONENT_LIB} PRIVATE -std=gnu++23)
