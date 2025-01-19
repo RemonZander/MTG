@@ -54,11 +54,11 @@ ludogame_tests: MTG_test_ludogame_init MTG_test_ludogame_logic
 
 MTG_test_ludogame_init: prepare_linux
 	cd "$(BUILD_DIR)" && make MTG_test_ludogame_init
-	cp "$(BUILD_DIR)/MTG_Main/test/ludoGame_init/MTG_test_ludogame_init" "$(BIN_DIR)/MTG_test_ludogame_init"
+	cp "$(BUILD_DIR)/MTG_Main/test/LudoGame_init/MTG_test_ludogame_init" "$(BIN_DIR)/MTG_test_ludogame_init"
 
 MTG_test_ludogame_logic: prepare_linux
 	cd "$(BUILD_DIR)" && make MTG_test_ludogame_logic
-	cp "$(BUILD_DIR)/MTG_Main/test/ludoGame_logic/MTG_test_ludogame_logic" "$(BIN_DIR)/MTG_test_ludogame_logic"
+	cp "$(BUILD_DIR)/MTG_Main/test/LudoGame_logic/MTG_test_ludogame_logic" "$(BIN_DIR)/MTG_test_ludogame_logic"
 
 MTG_test_move_pawn: prepare_linux
 	cd "$(BUILD_DIR)" && make MTG_test_move_pawn

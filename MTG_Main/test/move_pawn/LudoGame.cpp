@@ -1,4 +1,4 @@
-#include "./ludoGame.hpp"
+#include "./LudoGame.hpp"
 
 #include "../../main/logger.h"
 
