@@ -1,4 +1,4 @@
-#include "LudoUserInput.aruino.hpp"
+#include "LudoUserInput.arduino.hpp"
 
 #ifdef ARDUINO
 #include <Arduino.h>

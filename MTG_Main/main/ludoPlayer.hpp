@@ -2,8 +2,12 @@
 #include "Player.hpp"
 #include "logger.h"
 #include "./random.hpp"
+#ifdef IDF_VER
 #include "LudoUserInput.idf.hpp"
 #include "driver/gpio.h"
+#else
+#include "ludoUserInput.arduino.hpp"
+#endif
 
 using Random = effolkronium::random_static;
 

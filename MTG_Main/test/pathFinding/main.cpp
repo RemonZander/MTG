@@ -1,7 +1,7 @@
-#include "./PathFinding.hpp"
+#include "../../main/PathFinding.hpp"
 #include "../../main/typedefs.h"
 #include "../../main/Pawns.hpp"
-#include "./ludoStates.hpp"
+#include "../../main/ludoStates.hpp"
 
 #include <stdio.h>
 #include <stddef.h>

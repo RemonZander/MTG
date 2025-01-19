@@ -1,5 +1,9 @@
 #pragma once
+#ifdef IDF_VER
 #include "LudoUserInput.idf.hpp"
+#else
+#include "LudoUserInput.arduino.hpp"
+#endif
 #include <stdint.h>
 #include <vector>
 #include "typedefs.h"
